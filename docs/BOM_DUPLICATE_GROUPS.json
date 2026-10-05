@@ -1,0 +1,1541 @@
+[
+  {
+    "cableMaterialNumber": "10009538",
+    "rawMaterialCode": "HB02",
+    "weightA": 27.88,
+    "weightB": 205,
+    "weights": [
+      27.88,
+      205
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      558,
+      565
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009539",
+    "rawMaterialCode": "HB02",
+    "weightA": 43.94,
+    "weightB": 281,
+    "weights": [
+      43.94,
+      281
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      574,
+      581
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009540",
+    "rawMaterialCode": "HB02",
+    "weightA": 57.98,
+    "weightB": 348,
+    "weights": [
+      57.98,
+      348
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      590,
+      597
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009542",
+    "rawMaterialCode": "HB02",
+    "weightA": 111.52,
+    "weightB": 639,
+    "weights": [
+      111.52,
+      639
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      621,
+      628
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009543",
+    "rawMaterialCode": "HB02",
+    "weightA": 136.06,
+    "weightB": 810,
+    "weights": [
+      136.06,
+      810
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      637,
+      644
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009544",
+    "rawMaterialCode": "HB02",
+    "weightA": 172.53,
+    "weightB": 965,
+    "weights": [
+      172.53,
+      965
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      653,
+      660
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009545",
+    "rawMaterialCode": "HB02",
+    "weightA": 220.71,
+    "weightB": 1183,
+    "weights": [
+      220.71,
+      1183
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      669,
+      676
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009546",
+    "rawMaterialCode": "HB02",
+    "weightA": 270.61,
+    "weightB": 1471,
+    "weights": [
+      270.61,
+      1471
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      685,
+      692
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009547",
+    "rawMaterialCode": "HB02",
+    "weightA": 362.12,
+    "weightB": 1855,
+    "weights": [
+      362.12,
+      1855
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      701,
+      708
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009548",
+    "rawMaterialCode": "HB02",
+    "weightA": 440.81,
+    "weightB": 2278,
+    "weights": [
+      440.81,
+      2278
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      717,
+      724
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10009549",
+    "rawMaterialCode": "HB02",
+    "weightA": 555.66,
+    "weightB": 2777,
+    "weights": [
+      555.66,
+      2777
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      733,
+      740
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010197",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2236,
+      2237
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010198",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2247,
+      2248
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010212",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2379,
+      2380
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010213",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2390,
+      2391
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010225",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2512,
+      2513
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010226",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2523,
+      2524
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010238",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2635,
+      2636
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010239",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2646,
+      2647
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010251",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2789,
+      2790
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010252",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2802,
+      2803
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010264",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2947,
+      2948
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010265",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      2960,
+      2961
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010278",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3105,
+      3106
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010279",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3118,
+      3119
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010294",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3252,
+      3253
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010295",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3265,
+      3266
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010299",
+    "rawMaterialCode": "SC01",
+    "weightA": 40,
+    "weightB": 44,
+    "weights": [
+      40,
+      44
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3283,
+      3285
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010300",
+    "rawMaterialCode": "SC01",
+    "weightA": 44,
+    "weightB": 47,
+    "weights": [
+      44,
+      47
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3299,
+      3301
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010301",
+    "rawMaterialCode": "SC01",
+    "weightA": 51,
+    "weightB": 52,
+    "weights": [
+      51,
+      52
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3315,
+      3317
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010303",
+    "rawMaterialCode": "SC01",
+    "weightA": 59,
+    "weightB": 61,
+    "weights": [
+      59,
+      61
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3348,
+      3350
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010304",
+    "rawMaterialCode": "SC01",
+    "weightA": 64,
+    "weightB": 69,
+    "weights": [
+      64,
+      69
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3365,
+      3367
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010305",
+    "rawMaterialCode": "SC01",
+    "weightA": 82,
+    "weightB": 86,
+    "weights": [
+      82,
+      86
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3382,
+      3384
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010306",
+    "rawMaterialCode": "SC01",
+    "weightA": 89,
+    "weightB": 96,
+    "weights": [
+      89,
+      96
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3399,
+      3401
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010307",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.58,
+    "weightB": 1059.5,
+    "weights": [
+      640.58,
+      1059.5
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3411,
+      3412
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010307",
+    "rawMaterialCode": "SC01",
+    "weightA": 110,
+    "weightB": 113,
+    "weights": [
+      110,
+      113
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3417,
+      3419
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010308",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3429,
+      3430
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010308",
+    "rawMaterialCode": "SC01",
+    "weightA": 126,
+    "weightB": 127,
+    "weights": [
+      126,
+      127
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3435,
+      3437
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010322",
+    "rawMaterialCode": "SC01",
+    "weightA": 40,
+    "weightB": 49,
+    "weights": [
+      40,
+      49
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3450,
+      3452
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010323",
+    "rawMaterialCode": "SC01",
+    "weightA": 44,
+    "weightB": 52,
+    "weights": [
+      44,
+      52
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3466,
+      3468
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010324",
+    "rawMaterialCode": "SC01",
+    "weightA": 51,
+    "weightB": 57,
+    "weights": [
+      51,
+      57
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3482,
+      3484
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010325",
+    "rawMaterialCode": "SC01",
+    "weightA": 54,
+    "weightB": 58,
+    "weights": [
+      54,
+      58
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3498,
+      3500
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010326",
+    "rawMaterialCode": "SC01",
+    "weightA": 61,
+    "weightB": 64,
+    "weights": [
+      61,
+      64
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3515,
+      3517
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010328",
+    "rawMaterialCode": "SC01",
+    "weightA": 86,
+    "weightB": 87,
+    "weights": [
+      86,
+      87
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3549,
+      3551
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010329",
+    "rawMaterialCode": "SC01",
+    "weightA": 94,
+    "weightB": 96,
+    "weights": [
+      94,
+      96
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3566,
+      3568
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010330",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.58,
+    "weightB": 1059.5,
+    "weights": [
+      640.58,
+      1059.5
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3578,
+      3579
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010330",
+    "rawMaterialCode": "SC01",
+    "weightA": 110,
+    "weightB": 119,
+    "weights": [
+      110,
+      119
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3584,
+      3586
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010331",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3596,
+      3597
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010331",
+    "rawMaterialCode": "SC01",
+    "weightA": 126,
+    "weightB": 133,
+    "weights": [
+      126,
+      133
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3602,
+      3604
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010332",
+    "rawMaterialCode": "SC01",
+    "weightA": 40,
+    "weightB": 53,
+    "weights": [
+      40,
+      53
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3617,
+      3619
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010333",
+    "rawMaterialCode": "SC01",
+    "weightA": 44,
+    "weightB": 56,
+    "weights": [
+      44,
+      56
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3633,
+      3635
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010334",
+    "rawMaterialCode": "SC01",
+    "weightA": 51,
+    "weightB": 61,
+    "weights": [
+      51,
+      61
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3649,
+      3651
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010335",
+    "rawMaterialCode": "SC01",
+    "weightA": 54,
+    "weightB": 63,
+    "weights": [
+      54,
+      63
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3665,
+      3667
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010336",
+    "rawMaterialCode": "SC01",
+    "weightA": 61,
+    "weightB": 68,
+    "weights": [
+      61,
+      68
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3682,
+      3684
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010337",
+    "rawMaterialCode": "SC01",
+    "weightA": 69,
+    "weightB": 73,
+    "weights": [
+      69,
+      73
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3699,
+      3701
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010338",
+    "rawMaterialCode": "SC01",
+    "weightA": 86,
+    "weightB": 92,
+    "weights": [
+      86,
+      92
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3716,
+      3718
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010339",
+    "rawMaterialCode": "SC01",
+    "weightA": 96,
+    "weightB": 99,
+    "weights": [
+      96,
+      99
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3733,
+      3735
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010340",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.58,
+    "weightB": 1059.5,
+    "weights": [
+      640.58,
+      1059.5
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3745,
+      3746
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010340",
+    "rawMaterialCode": "SC01",
+    "weightA": 110,
+    "weightB": 125,
+    "weights": [
+      110,
+      125
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3751,
+      3753
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010341",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3763,
+      3764
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010341",
+    "rawMaterialCode": "SC01",
+    "weightA": 126,
+    "weightB": 139,
+    "weights": [
+      126,
+      139
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3769,
+      3771
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010342",
+    "rawMaterialCode": "SC01",
+    "weightA": 40,
+    "weightB": 64,
+    "weights": [
+      40,
+      64
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3784,
+      3786
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010343",
+    "rawMaterialCode": "SC01",
+    "weightA": 44,
+    "weightB": 67,
+    "weights": [
+      44,
+      67
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3800,
+      3802
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010344",
+    "rawMaterialCode": "SC01",
+    "weightA": 51,
+    "weightB": 72,
+    "weights": [
+      51,
+      72
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3816,
+      3818
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010345",
+    "rawMaterialCode": "SC01",
+    "weightA": 54,
+    "weightB": 73,
+    "weights": [
+      54,
+      73
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3832,
+      3834
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010346",
+    "rawMaterialCode": "SC01",
+    "weightA": 61,
+    "weightB": 79,
+    "weights": [
+      61,
+      79
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3849,
+      3851
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010347",
+    "rawMaterialCode": "SC01",
+    "weightA": 69,
+    "weightB": 84,
+    "weights": [
+      69,
+      84
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3866,
+      3868
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010348",
+    "rawMaterialCode": "SC01",
+    "weightA": 86,
+    "weightB": 104,
+    "weights": [
+      86,
+      104
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3883,
+      3885
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010349",
+    "rawMaterialCode": "SC01",
+    "weightA": 96,
+    "weightB": 112,
+    "weights": [
+      96,
+      112
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3900,
+      3902
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010350",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.58,
+    "weightB": 1059.5,
+    "weights": [
+      640.58,
+      1059.5
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3912,
+      3913
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010350",
+    "rawMaterialCode": "SC01",
+    "weightA": 110,
+    "weightB": 139,
+    "weights": [
+      110,
+      139
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3918,
+      3920
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010351",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3930,
+      3931
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010351",
+    "rawMaterialCode": "SC01",
+    "weightA": 126,
+    "weightB": 153,
+    "weights": [
+      126,
+      153
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      3936,
+      3938
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010388",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4019,
+      4020
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010389",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4028,
+      4029
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010399",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4110,
+      4111
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010400",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4119,
+      4120
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010410",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4201,
+      4202
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010411",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4210,
+      4211
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010421",
+    "rawMaterialCode": "AR01",
+    "weightA": 640.55,
+    "weightB": 1059.46,
+    "weights": [
+      640.55,
+      1059.46
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4292,
+      4293
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  },
+  {
+    "cableMaterialNumber": "10010422",
+    "rawMaterialCode": "AR01",
+    "weightA": 825.44,
+    "weightB": 1409.6,
+    "weights": [
+      825.44,
+      1409.6
+    ],
+    "occurrenceCount": 2,
+    "sourceWorksheet": "Cable Materials",
+    "sourceFile": "Energya Cable Master Data.xlsx",
+    "sourceRowNumbers": [
+      4301,
+      4302
+    ],
+    "classification": "BUSINESS_DECISION_REQUIRED",
+    "classificationReason": "Source has no BOM version, plant, manufacturing route, or effective date. Different weights cannot be classified as legitimate variation from the workbook alone."
+  }
+]

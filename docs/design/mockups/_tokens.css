@@ -1,0 +1,19 @@
+/* Energya Connect — shared mockup tokens (design-only, mirrors src/index.css @theme).
+   Each mockup also inlines the essentials so it stays self-contained; this file
+   is a reference and can be linked when serving the folder. */
+:root{
+  --brand-50:#eef3fb;--brand-100:#dbe5f5;--brand-200:#b7cbeb;--brand-300:#5b82c4;
+  --brand-400:#3a68b3;--brand-500:#1d4fa1;--brand-600:#17407f;--brand-700:#143a78;
+  --brand-800:#0f2c5c;--brand-900:#0a1f42;
+  --accent-500:#f04e30;--accent-600:#d8421f;--accent-700:#c93a20;
+  --surface-page:#fff;--surface-muted:#f4f6fa;--surface-subtle:#f8fafc;
+  --success-500:#1e8e3e;--warning-500:#d97706;--error-500:#dc2626;--info-500:#2563eb;
+  --copper-500:#b45309;--aluminium-500:#0284c7;
+  --border-subtle:#e5e7eb;--border-default:#e2e8f0;--border-strong:#cbd5e1;
+  --radius-md:8px;--radius-lg:10px;--radius-xl:12px;--radius-2xl:16px;
+  --shadow-card:0 1px 3px rgba(15,23,42,.06);
+  --shadow-raised:0 4px 12px rgba(15,23,42,.08);
+  --shadow-overlay:0 12px 32px rgba(10,31,66,.18);
+  --font-display:"Poppins","Inter","Segoe UI",system-ui,sans-serif;
+  --font-sans:"Inter","Segoe UI",system-ui,sans-serif;
+}

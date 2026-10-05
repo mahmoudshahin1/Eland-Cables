@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Technical Office (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--warning:#d97706;--info:#2563eb;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b;padding:18px 22px}
+.crumb{font-size:12px;color:#94a3b8}h1{font-family:var(--fd);font-size:20px;color:var(--brand-900)}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border);margin:10px 0 14px}
+.tab{white-space:nowrap;padding:10px 14px;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:var(--brand-500);border-color:var(--brand-500)}
+.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.card h3{font-family:var(--fd);font-size:13px;padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.toolbar{display:flex;gap:8px;padding:12px 16px;flex-wrap:wrap}
+.toolbar input,.toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--subtle);text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;color:#64748b;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+tr:hover td{background:#f8fbff;cursor:pointer}
+.s{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px}
+.s-sub{background:#dbeafe;color:#1e40af}.s-rev{background:#fef3c7;color:#92400e}.s-app{background:#c6e6c6;color:#0f5a24}.s-rej{background:#fee2e2;color:#991b1b}
+.detail{padding:16px}
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:13px}.kv .k{color:#64748b}.kv .v{font-weight:600}
+.pill{display:inline-block;font-size:11px;background:#eef3fb;color:var(--brand-600);padding:3px 9px;border-radius:999px;margin:3px 4px 0 0}
+.btn{padding:8px 12px;border-radius:8px;font-family:var(--fd);font-weight:600;font-size:12px;border:1px solid transparent;cursor:pointer;margin-top:6px}
+.btn.primary{background:var(--brand-500);color:#fff}.btn.secondary{background:#fff;color:var(--brand-600);border-color:#5b82c4}.btn.accent{background:#fff;color:var(--accent-500);border-color:#f69380}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+</style></head><body>
+<div class="crumb">Internal › Technical Office &amp; Cable Specs</div>
+<h1>Technical Office</h1>
+<div class="tabs">
+  <div class="tab active">Engineering Mapping (Increment 7)</div><div class="tab">BOM Governance (Increment 8)</div><div class="tab">Technical Requests (TCR Queue)</div><div class="tab">Cable Master Catalog</div><div class="tab">Bulk Excel Pre-Import (Method B)</div><div class="tab">Master Parameters</div><div class="tab">Raw Materials Reference</div>
+</div>
+<div class="layout">
+  <div class="card"><h3>Engineering Mapping Queue</h3>
+    <div class="toolbar"><input placeholder="Search material / description / customer code"/><select><option>All</option><option>DRAFT</option><option>SUBMITTED</option><option>UNDER_REVIEW</option><option>APPROVED</option><option>REJECTED</option></select></div>
+    <table><thead><tr><th>Material No.</th><th>Description</th><th>Customer Code</th><th>Status</th></tr></thead><tbody>
+      <tr><td>10009487</td><td>MV 33kV Cu 3C 240 XLPE SWA</td><td>SEC</td><td><span class="s s-app">APPROVED</span></td></tr>
+      <tr><td>NEW-0421</td><td>LV 0.6/1kV Al 4C 95 XLPE</td><td>DEWA</td><td><span class="s s-sub">SUBMITTED</span></td></tr>
+      <tr><td>NEW-0422</td><td>MV 11kV Cu 3C 185 XLPE</td><td>ADDC</td><td><span class="s s-rev">UNDER_REVIEW</span></td></tr>
+      <tr><td>NEW-0419</td><td>Control 0.6/1kV Cu 12C 2.5</td><td>Standard</td><td><span class="s s-rej">REJECTED</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="card"><h3>Mapping detail — NEW-0421</h3>
+    <div class="detail">
+      <div class="kv"><span class="k">Family</span><span class="v">UGC Power Cable</span></div>
+      <div class="kv"><span class="k">Voltage</span><span class="v">0.6/1 kV</span></div>
+      <div class="kv"><span class="k">Conductor</span><span class="v">Aluminium · 95 mm² · 4C</span></div>
+      <div class="kv"><span class="k">Insulation / Sheath</span><span class="v">XLPE / PVC</span></div>
+      <div class="kv"><span class="k">Standard</span><span class="v">IEC 60502-1</span></div>
+      <div style="margin-top:10px"><span class="pill">Screen: None</span><span class="pill">Armour: None</span><span class="pill">Core: Std</span><span class="pill">Additives: None</span></div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn secondary">Assign Reviewer</button>
+        <button class="btn accent">Reject</button>
+        <button class="btn secondary">Save As Draft</button>
+        <button class="btn primary">Approve &amp; Publish Authoritative</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="tag">H · Technical Office queues</div>
+</body></html>

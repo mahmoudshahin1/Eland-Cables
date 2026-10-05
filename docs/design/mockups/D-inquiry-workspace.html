@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Inquiry Workspace (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-700:#143a78;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--warning:#d97706;--info:#2563eb;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b;padding:18px 22px}
+.topbar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.topbar h1{font-family:var(--fd);font-size:18px;color:var(--brand-900)}
+.topbar .sub{font-size:12px;color:#64748b}
+.pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#fef3c7;color:#92400e;margin-left:8px}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:8px 12px;border-radius:8px;font-family:var(--fd);font-weight:600;font-size:12px;border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--brand-500);color:#fff}.btn.secondary{background:#fff;color:var(--brand-600);border-color:#5b82c4}.btn.accent{background:#fff;color:var(--accent-500);border-color:#f69380}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);margin-top:14px}
+.card h3{font-family:var(--fd);font-size:13px;padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.hdr-grid{padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fset{border:1px solid var(--border);border-radius:10px;padding:12px}
+.fset .t{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--brand-500);font-weight:700;margin-bottom:8px}
+.f{margin-bottom:8px}
+.f label{display:block;font-size:11px;color:#64748b;margin-bottom:3px}
+.f .v{font-size:13px;font-weight:600;color:#0f172a}
+.f .rq::after{content:" *";color:var(--accent-500)}
+.badge-src{font-size:9px;background:#eef3fb;color:var(--brand-600);padding:1px 6px;border-radius:999px;margin-left:6px}
+.tabs{display:flex;gap:4px;padding:0 8px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tab{padding:12px 14px;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:var(--brand-500);border-color:var(--brand-500)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--subtle);text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;color:#64748b;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+.scroll{overflow-x:auto}
+.tech{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px}
+.t-map{background:#c6e6c6;color:#0f5a24}.t-cfg{background:#fef3c7;color:#92400e}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:14px 16px}
+.sm{background:var(--subtle);border-radius:10px;padding:12px;text-align:center}
+.sm .l{font-size:11px;color:#64748b}.sm .v{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--brand-900)}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.hdr-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<div class="topbar">
+  <div><h1>Commercial Inquiry / INQ-10091 · V2 <span class="pill">Open</span></h1><div class="sub">Inquiry No. INQ-10091 · ELAND Cables</div></div>
+  <div class="tools"><button class="btn secondary">Back</button><button class="btn secondary">Field Visibility</button><button class="btn secondary">Discard</button><button class="btn secondary">Calculate</button><button class="btn secondary">More ▾</button><button class="btn accent">Cancel Inquiry</button><button class="btn primary">Save</button><button class="btn primary">Submit</button></div>
+</div>
+
+<div class="card">
+  <h3>Inquiry header <span style="color:#94a3b8;font-weight:500">USD · Cu 14,600 · Al 3,300 · Open</span></h3>
+  <div class="hdr-grid">
+    <div class="fset"><div class="t">Transaction</div>
+      <div class="f"><label class="rq">Transaction Type</label><div class="v">Customer Request</div></div>
+      <div class="f"><label class="rq">Trx Date</label><div class="v">2026-08-24</div></div>
+      <div class="f"><label class="rq">Ref. No</label><div class="v">ELD-PO-4471</div></div>
+      <div class="f"><label>Status</label><div class="v">Open</div></div>
+      <div class="f"><label>Version No</label><div class="v">2</div></div>
+    </div>
+    <div class="fset"><div class="t">Parties</div>
+      <div class="f"><label class="rq">Customer</label><div class="v">ELAND Cables</div></div>
+      <div class="f"><label class="rq">Organization</label><div class="v">ELAND Cables</div></div>
+      <div class="f"><label>Contact Person</label><div class="v">David Smith</div></div>
+      <div class="f"><label>Sales Agent</label><div class="v">M. Ahmed</div></div>
+      <div class="f"><label>Quotation Owner</label><div class="v">M. Ahmed</div></div>
+      <div class="f"><label>Project Name</label><div class="v">33kV Substation</div></div>
+    </div>
+    <div class="fset"><div class="t">Commercial</div>
+      <div class="f"><label class="rq">Currency</label><div class="v">USD</div></div>
+      <div class="f"><label>Exchange Rate</label><div class="v">1.00</div></div>
+      <div class="f"><label>Raw Material Currency</label><div class="v">USD</div></div>
+      <div class="f"><label>RM Exchange Rate</label><div class="v">1.00</div></div>
+      <div class="f"><label class="rq">Copper Price</label><div class="v">14,600 USD/MT <span class="badge-src">System Default</span></div></div>
+      <div class="f"><label class="rq">Aluminium Price</label><div class="v">3,300 USD/MT <span class="badge-src">Inquiry Override</span></div></div>
+    </div>
+    <div class="fset"><div class="t">Delivery</div>
+      <div class="f"><label class="rq">Incoterms (Delivery)</label><div class="v">CIF — Cost, Insurance &amp; Freight</div></div>
+      <div class="f"><label>Destination</label><div class="v">Jeddah Port</div></div>
+      <div class="f"><label>Delivery Date</label><div class="v">2026-11-15</div></div>
+    </div>
+    <div class="fset" style="grid-column:span 2"><div class="t">Notes</div>
+      <div class="f"><label>Remarks</label><div class="v">Drum tolerance ±3%. Technical Offer attached per line.</div></div>
+      <div class="f"><label>Sales Comments (internal)</label><div class="v">Margin target 12%. Verify Al price vs LME.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="tabs">
+    <div class="tab">Overview</div><div class="tab active">Cables</div><div class="tab">Costing</div><div class="tab">Drums</div><div class="tab">Cutting</div><div class="tab">Documents</div><div class="tab">Quotation</div><div class="tab">Activity</div>
+  </div>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Line</th><th>Cable Material No.</th><th>Description</th><th>Voltage</th><th>Conductor</th><th>Size</th><th>Drums</th><th>Total Length (m)</th><th>Cutting (m)</th><th>Cable Tol.%</th><th>UOM</th><th>Drum Required</th><th>Value</th><th>Tech. Status</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>10009487</td><td>MV 33kV Cu 3C 240 XLPE PVC SWA PVC</td><td>19/33 kV</td><td>Copper</td><td>240 mm²</td><td>17</td><td>17,000</td><td>1,000</td><td>3.0</td><td>KM</td><td>EWD700-3</td><td>—</td><td><span class="tech t-map">Mapped</span></td></tr>
+    <tr><td>2</td><td>NEW-CABLE</td><td>LV 0.6/1kV Al 4C 95 XLPE PVC</td><td>0.6/1 kV</td><td>Aluminium</td><td>95 mm²</td><td>13</td><td>12,300</td><td>950</td><td>3.0</td><td>KM</td><td>EWD630-0</td><td>—</td><td><span class="tech t-cfg">Config Required</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="summary">
+    <div class="sm"><div class="l">Total Lines</div><div class="v">2</div></div>
+    <div class="sm"><div class="l">Total Drums</div><div class="v">30</div></div>
+    <div class="sm"><div class="l">Total Length (m)</div><div class="v">29,300</div></div>
+    <div class="sm"><div class="l">Value</div><div class="v">—</div></div>
+    <div class="sm"><div class="l">Currency</div><div class="v">USD</div></div>
+  </div>
+</div>
+<div class="tag">D · Inquiry Workspace (header + 8 tabs)</div>
+</body></html>

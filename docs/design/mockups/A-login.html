@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Login (Redesign Mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-700:#143a78;--brand-800:#0f2c5c;--brand-900:#0a1f42;--accent-500:#f04e30;--surface-muted:#f4f6fa;--border:#e2e8f0;--font-display:"Poppins",system-ui,sans-serif;--font-sans:"Inter",system-ui,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--surface-muted);color:#1e293b;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:1120px;background:#fff;border-radius:16px;box-shadow:0 12px 32px rgba(10,31,66,.18);display:grid;grid-template-columns:46% 54%;overflow:hidden;min-height:620px}
+.form-panel{padding:56px 56px}
+.logo{height:44px;margin-bottom:40px}
+h1{font-family:var(--font-display);font-size:30px;font-weight:700;color:var(--brand-900)}
+.sub{color:#64748b;margin-top:6px;font-size:14px}
+.badge{display:inline-block;margin-top:14px;background:#eef3fb;color:var(--brand-600,#17407f);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
+.toggle{display:flex;gap:8px;margin:26px 0 22px}
+.toggle button{flex:1;padding:10px;border:1px solid var(--border);background:#fff;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;color:#475569}
+.toggle button.active{background:var(--brand-500);color:#fff;border-color:var(--brand-500)}
+label{display:block;font-size:13px;font-weight:600;margin:16px 0 6px;color:#334155}
+.field{position:relative}
+.field input{width:100%;padding:12px 12px 12px 40px;border:1px solid var(--border);border-radius:10px;font-size:14px}
+.field input:focus{outline:none;border-color:var(--brand-500);box-shadow:0 0 0 3px #5b82c433}
+.field .ic{position:absolute;left:12px;top:12px;color:#94a3b8}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px}
+.row a{color:var(--brand-500);text-decoration:none;font-weight:600}
+.btn{width:100%;margin-top:22px;padding:13px;background:var(--brand-500);color:#fff;border:none;border-radius:10px;font-family:var(--font-display);font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--brand-700)}
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#94a3b8;font-size:12px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.entra{width:100%;padding:12px;background:#fff;border:1px solid var(--border);border-radius:10px;font-weight:600;font-size:14px;color:#334155;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.pill{font-size:10px;background:#fde0da;color:var(--accent-500);padding:2px 8px;border-radius:999px;font-weight:700}
+.foot{margin-top:26px;color:#94a3b8;font-size:12px;text-align:center}
+.hero{background:linear-gradient(160deg,var(--brand-800),var(--brand-900));color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.hero .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:#93b0e0;font-weight:600}
+.hero h2{font-family:var(--font-display);font-size:34px;line-height:1.15;margin-top:12px;font-weight:700}
+.hero p{color:#c9d8f0;margin-top:16px;max-width:420px;line-height:1.6;font-size:14px}
+.feats{margin-top:34px;display:flex;flex-direction:column;gap:16px}
+.feat{display:flex;gap:12px;align-items:center}
+.feat .dot{width:38px;height:38px;border-radius:10px;background:#ffffff1a;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.feat b{font-family:var(--font-display);font-size:14px}
+.feat span{display:block;color:#a9c0e6;font-size:12px}
+.hero .cr{position:absolute;bottom:24px;left:56px;color:#7f9bcb;font-size:12px}
+.note{position:fixed;top:10px;left:10px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px;opacity:.9}
+@media(max-width:900px){.card{grid-template-columns:1fr}.hero{display:none}.form-panel{padding:40px 28px}}
+</style>
+</head>
+<body>
+<div class="note">DESIGN MOCKUP · presentation-only · real fields preserved</div>
+<div class="card">
+  <div class="form-panel">
+    <img class="logo" src="/logo.png" alt="Energya Cables / elsewedy HELAL" onerror="this.style.opacity=.25;this.alt='[/logo.png]'"/>
+    <h1>Welcome Back</h1>
+    <p class="sub">Sign in to your Energya Digital Platform.</p>
+    <span class="badge">B2B Customer Access</span>
+    <div class="toggle"><button class="active">Customer</button><button>Internal</button></div>
+    <label>Email</label>
+    <div class="field"><span class="ic">✉</span><input type="email" placeholder="name@energya.com" value="david.smith@elandcables.com"/></div>
+    <label>Password</label>
+    <div class="field"><span class="ic">🔒</span><input type="password" placeholder="••••••••" value="••••••••"/></div>
+    <div class="row"><label style="margin:0"><input type="checkbox" checked/> Remember me</label><a href="#">Forgot password?</a></div>
+    <button class="btn">Sign In →</button>
+    <div class="divider">OR</div>
+    <button class="entra">Sign in with Microsoft Entra ID <span class="pill">Coming Soon</span></button>
+    <p class="foot">Secure • Reliable • Built for Performance</p>
+  </div>
+  <div class="hero">
+    <span class="eyebrow">Energya Digital Platform</span>
+    <h2>Powering Connections.<br/>Building a Stronger Future.</h2>
+    <p>End-to-end cable design, configuration, costing, quotation, and order management for Energya Cables — Elsewedy Helal.</p>
+    <div class="feats">
+      <div class="feat"><span class="dot">⚡</span><div><b>Engineering Excellence</b><span>Advanced cable design & configuration</span></div></div>
+      <div class="feat"><span class="dot">🛡</span><div><b>Trusted Quality</b><span>International standards & certifications</span></div></div>
+      <div class="feat"><span class="dot">🔌</span><div><b>Powering Tomorrow</b><span>Delivering reliable energy solutions</span></div></div>
+    </div>
+    <span class="cr">© 2026 Energya Cables. All rights reserved.</span>
+  </div>
+</div>
+</body>
+</html>

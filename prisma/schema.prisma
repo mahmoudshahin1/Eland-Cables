@@ -1,0 +1,4058 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+  SUPERSEDED
+}
+
+enum PriceStatus {
+  CONFIGURED
+  PRICE_NOT_CONFIGURED
+}
+
+enum ParameterKind {
+  FAMILY
+  VOLTAGE
+  CONDUCTOR
+  INSULATION
+  SCREEN
+  ARMOUR
+  SHEATH
+  CORE_COLOUR
+  STANDARD
+}
+
+enum ImportKind {
+  cables
+  boms
+  drums
+  raw_materials
+}
+
+enum ImportStatus {
+  PREVIEWED
+  COMMITTED
+  REJECTED
+}
+
+model CableParameter {
+  id     String        @id @default(cuid())
+  kind   ParameterKind
+  code   String
+  name   String
+  status RecordStatus  @default(ACTIVE)
+
+  @@unique([kind, code])
+}
+
+model CableMaster {
+  id               String       @id @default(cuid())
+  materialNumber   String       @unique
+  itemCode         String
+  customerCode     String
+  elandItemNumber  String?
+  description      String
+  family           String?
+  voltage          String?
+  conductor        String?
+  conductorSize    String?
+  cores            String?
+  insulation       String?
+  screen           String?
+  armour           String?
+  sheath           String?
+  sheathColour     String?
+  coreColour       String?
+  standard         String?
+  specialAdditives String?
+  diameter         Decimal
+  weight           Decimal
+  uom              String       @default("CONFIGURATION_REQUIRED")
+  status           RecordStatus @default(ACTIVE)
+  approvalStatus   String       @default("IMPORTED")
+  /// Cable stock path eligibility — independent of Sales Order Origin / Order Fulfillment Mode.
+  /// MTO = quotation path only; MTS / MTO_MTS = Direct MTS SO allowed.
+  fulfillmentPolicy CableFulfillmentPolicy @default(MTO)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  sourceBatch      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  bomLines         CableBomLine[]
+  governedBomLines GovernedBomLine[]
+  engineeringMappings CableEngineeringMapping[]
+  costingRuns      CostingRun[]
+  attachments      CableMasterAttachment[]
+  serviceCases     CustomerServiceCase[]
+
+  @@index([fulfillmentPolicy])
+}
+
+model RawMaterial {
+  code        String      @id
+  description String
+  shortDescription String?
+  category    String?
+  /// MARKET_METAL_COPPER | MARKET_METAL_ALUMINIUM | STANDARD_RAW_MATERIAL
+  pricingCategory String  @default("STANDARD_RAW_MATERIAL")
+  /// COPPER | ALUMINIUM | NONE — explicit market-metal classification (not inferred from code)
+  metalType   String      @default("NONE")
+  uom         String
+  supplier    String?
+  currency    String?
+  notes       String?
+  priceStatus PriceStatus @default(PRICE_NOT_CONFIGURED)
+  status      RecordStatus @default(ACTIVE)
+  sourceBatch String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  prices      RawMaterialPrice[]
+  bomLines    CableBomLine[]
+  governedBomLines GovernedBomLine[]
+
+  @@index([pricingCategory])
+  @@index([metalType])
+  @@index([status])
+}
+
+enum PriceWorkflowStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum PriceBasis {
+  PER_KG
+  PER_TON
+  PER_METER
+  PER_PCS
+  PER_M2
+}
+
+model RawMaterialPrice {
+  id              String              @id @default(cuid())
+  rawMaterialCode String
+  rawMaterial     RawMaterial         @relation(fields: [rawMaterialCode], references: [code])
+  /// Null means PRICE_NOT_CONFIGURED. Never persist a fake 0 for a blank Excel price.
+  price           Decimal?
+  currency        String?
+  /// Price quantity basis for this record (KG, MT, PCS, M). Independent of BOM consumption UOM.
+  uom             String?             @default("kg")
+  priceDate       DateTime?
+  /// Null when the source workbook has no date. Do not default to now().
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  supplier        String?
+  source          String?
+  priceBasis      PriceBasis          @default(PER_KG)
+  workflowStatus  PriceWorkflowStatus @default(DRAFT)
+  isCurrent       Boolean             @default(true)
+  revision        Int                 @default(1)
+  /// EFFECTIVE when source dates exist; DATA_REQUIRED otherwise. Missing price is not a row.
+  temporalStatus  String              @default("DATA_REQUIRED")
+  status          RecordStatus        @default(ACTIVE)
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdBy       String?
+  updatedBy       String?
+  comment         String?
+  sourceBatch     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @default(now()) @updatedAt
+
+  @@index([rawMaterialCode])
+  @@index([workflowStatus])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model CableBomLine {
+  id                   String       @id @default(cuid())
+  cableMaterialNumber  String
+  cable                CableMaster? @relation(fields: [cableMaterialNumber], references: [materialNumber])
+  rawMaterialCode      String
+  rawMaterial          RawMaterial? @relation(fields: [rawMaterialCode], references: [code])
+  itemCode             String?
+  customerCode         String?
+  consumption          Decimal
+  uom                  String
+  scrap                Decimal?
+  bomVersion           Int          @default(1)
+  effectiveFrom        DateTime?
+  effectiveTo          DateTime?
+  status               RecordStatus @default(ACTIVE)
+  sourceBatch          String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  /// Until the official duplicate-weight issue is resolved, uniqueness is versioned.
+  /// Cable + Raw Material alone is NOT the sole uniqueness rule.
+  @@unique([cableMaterialNumber, rawMaterialCode, bomVersion])
+}
+
+enum BomInvestigationStatus {
+  BUSINESS_DECISION_REQUIRED
+  ASSIGNED
+  UNDER_REVIEW
+  DECISION_REQUIRED
+  RESOLVED
+  APPROVED
+  REJECTED
+}
+
+model BomDuplicateObservation {
+  id                   String   @id @default(cuid())
+  cableMaterialNumber  String
+  rawMaterialCode      String
+  weightA              Decimal
+  weightB              Decimal
+  occurrenceCount      Int
+  sourceWorksheet      String?
+  sourceFile           String?
+  sourceRows           Json?
+  classification       String   @default("BUSINESS_DECISION_REQUIRED")
+  investigationStatus  BomInvestigationStatus @default(BUSINESS_DECISION_REQUIRED)
+  conflictId           String?  @unique
+  customerCode         String?
+  cableDescription     String?
+  rawMaterialDesc      String?
+  uom                  String   @default("kg")
+  sourceEvidence       Json?
+  
+  // Dimensions required based on classification
+  selectedWeight       Decimal?
+  governedUom          String?
+  bomVersion           Int?
+  plant                String?
+  manufacturingRoute   String?
+  machine              String?
+  effectiveFrom        DateTime?
+  effectiveTo          DateTime?
+
+  // Review & Workflow Fields
+  assignedTo           String?
+  assignedAt           DateTime?
+  reviewer             String?
+  reviewDate           DateTime?
+  decision             String?
+  comment              String?
+  approvedBy           String?
+  approvedAt           DateTime?
+  rejectedBy           String?
+  rejectedAt           DateTime?
+  sourceBatch          String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  governedBomLines     GovernedBomLine[]
+
+  @@index([cableMaterialNumber])
+  @@index([rawMaterialCode])
+  @@index([investigationStatus])
+}
+
+model GovernedBomLine {
+  id                   String       @id @default(cuid())
+  cableMaterialNumber  String
+  cable                CableMaster  @relation(fields: [cableMaterialNumber], references: [materialNumber])
+  rawMaterialCode      String
+  rawMaterial          RawMaterial  @relation(fields: [rawMaterialCode], references: [code])
+  consumption          Decimal
+  uom                  String
+  scrapPercentage      Decimal?
+  bomVersion           Int          @default(1)
+  plant                String?
+  manufacturingRoute   String?
+  effectiveFrom        DateTime?
+  effectiveTo          DateTime?
+  status               String       @default("APPROVED")
+  conflictId           String?
+  conflictObservation  BomDuplicateObservation? @relation(fields: [conflictId], references: [conflictId])
+  decisionReference    String?
+  reviewer             String?
+  approvedBy           String?
+  approvedAt           DateTime     @default(now())
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@unique([cableMaterialNumber, rawMaterialCode, bomVersion])
+  @@index([cableMaterialNumber])
+  @@index([rawMaterialCode])
+  @@index([status])
+}
+
+enum MappingWorkflowStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model CableEngineeringMapping {
+  id               String                @id @default(cuid())
+  materialNumber   String
+  cable            CableMaster           @relation(fields: [materialNumber], references: [materialNumber])
+  revision         Int                   @default(1)
+  isCurrent        Boolean               @default(true)
+  status           MappingWorkflowStatus @default(DRAFT)
+  mappingStatus    String                @default("PARTIAL")
+  dataSource       String                @default("Energya Cable Master Data.xlsx / Cable List")
+  sourceReference  String?
+
+  // Controlled Approved Engineering Attributes (null if not yet approved/configured)
+  family           String?
+  voltage          String?
+  conductor        String?
+  conductorSize    String?
+  cores            String?
+  insulation       String?
+  screen           String?
+  armour           String?
+  sheath           String?
+  sheathColour     String?
+  coreColour       String?
+  standard         String?
+  specialAdditives String?
+
+  // Full audited JSON state including suggested derivations and attribute origins
+  attributes       Json
+  suggested        Json?
+
+  // Controlled Workflow Actors & Timestamps
+  createdBy        String?
+  createdAt        DateTime              @default(now())
+  submittedBy      String?
+  submittedAt      DateTime?
+  assignedReviewer String?
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectedBy       String?
+  rejectedAt       DateTime?
+  comments         String?
+  updatedAt        DateTime              @updatedAt
+
+  @@unique([materialNumber, revision])
+  @@index([materialNumber, isCurrent])
+  @@index([status])
+}
+
+model DrumMaster {
+  id                 String       @id @default(cuid())
+  drumCode           String       @unique
+  drumType           String?
+  description        String?
+  flange             Decimal
+  barrel             Decimal
+  barrelWidth        Decimal?
+  innerWidth         Decimal
+  outerWidth         Decimal
+  usableWidth        Decimal?
+  capacity           Decimal
+  /// MaxLoad = permitted cable payload (kg). TO: set from Capacity when valid; empty weight excluded.
+  maxWeight          Decimal?
+  /// Flange clearance (mm). TO default 50 for ACTIVE; used when cable diameter ≤ 50 mm.
+  clearanceMm        Decimal?
+  /// Empty / tare net weight (kg) — logistics WARNING only; never blocks suitability.
+  emptyDrumNetWeightKg Decimal?
+  capacityUom        String       @default("CONFIGURATION_REQUIRED")
+  dimensionUnitNote  String       @default("SOURCE_UNIT_NOT_IN_FILE")
+  status             RecordStatus @default(ACTIVE)
+  sourceBatch        String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  packingProfiles    DrumPackingProfile[]
+  serviceCases       CustomerServiceCase[]
+}
+
+model DrumCompatibility {
+  id           String       @id @default(cuid())
+  cableFamily  String?
+  voltage      String?
+  minDiameter  Decimal?
+  maxDiameter  Decimal?
+  maxLength    Decimal?
+  maxWeight    Decimal?
+  customerCode String?
+  drumCode     String?
+  priority     Int?
+  status       RecordStatus @default(ACTIVE)
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+}
+
+model ImportBatch {
+  id           String       @id @default(cuid())
+  batchNumber  String       @unique
+  sourceFile   String
+  importedBy   String
+  importedDate DateTime     @default(now())
+  dataType     ImportKind
+  rowCount     Int
+  successCount Int
+  errorCount   Int
+  warningCount Int
+  skippedCount Int          @default(0)
+  status       ImportStatus
+  errorsJson   Json
+  warningsJson Json
+  rows         ImportBatchRow[]
+}
+
+model ImportBatchRow {
+  id        String      @id @default(cuid())
+  batchId   String
+  batch     ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber Int
+  severity  String
+  field     String?
+  code      String
+  message   String
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  actorId    String?
+  actorName  String?
+  entity     String
+  entityId   String
+  action     String
+  oldValue   Json?
+  newValue   Json?
+  message    String?
+
+  @@index([entity, at])
+  @@index([actorId, at])
+}
+
+enum CompatibilityRelation {
+  ALLOWED
+  FORBIDDEN
+}
+
+model ParameterCompatibility {
+  id       String                @id @default(cuid())
+  fromKind ParameterKind
+  fromCode String
+  toKind   ParameterKind
+  toCode   String
+  relation CompatibilityRelation
+  source   String                @default("parameter_master_applicable_families")
+
+  @@unique([fromKind, fromCode, toKind, toCode, relation])
+}
+
+model TechnicalOfficeRequest {
+  id              String   @id @default(cuid())
+  requestNumber   String   @unique
+  canonicalStatus String
+  displayStatus   String
+  configuration   Json
+  customer        String?
+  quantity        String?
+  cuttingLength   String?
+  requestedDate   String?
+  requesterId     String?
+  requesterName   String?
+  requesterEmail  String?
+  reason          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum CostingRunStatus {
+  DRAFT
+  CALCULATED
+  INCOMPLETE
+  BLOCKED
+  SUPERSEDED
+}
+
+enum CostComponentType {
+  MATERIAL
+  PROCESS
+  LABOUR
+  ENERGY
+  OVERHEAD
+  PACKAGING
+  DRUM
+  SCRAP
+  OTHER
+}
+
+model CostingRun {
+  id                      String           @id @default(cuid())
+  costingRunNumber        String           @unique
+  materialNumber          String
+  cable                   CableMaster      @relation(fields: [materialNumber], references: [materialNumber])
+  costingDate             DateTime
+  currency                String           @default("USD")
+  quantity                Decimal          @default(1)
+  lengthMeters            Decimal          @default(1000)
+  lengthKm                Decimal          @default(1)
+  engineeringRevision     Int              @default(1)
+  bomVersion              Int              @default(1)
+  status                  CostingRunStatus @default(INCOMPLETE)
+  /// Null = legacy Increment 10 material-only run (no published costing configuration).
+  configurationVersionId  String?
+  configurationVersion    CostingConfigurationVersion? @relation(fields: [configurationVersionId], references: [id], onDelete: SetNull)
+
+  // Cost Aggregates
+  materialCost        Decimal
+  processCostStatus   String           @default("NOT_CONFIGURED")
+  overheadCostStatus  String           @default("NOT_CONFIGURED")
+  scrapCostStatus     String           @default("NOT_CONFIGURED")
+  manufacturingCost   Decimal?
+
+  // Provenance & Audit
+  isCurrent           Boolean          @default(true)
+  supersededById      String?
+  blockingReasons     Json?
+  inquiryLineId       String?
+  /// V2 drum plan lineage pin (Task 05E).
+  drumPlanId          String?
+  drumPlan            V2DrumPlan?      @relation(fields: [drumPlanId], references: [id], onDelete: SetNull)
+  /// 05I-DF-D: exact ContainerStudyResult consumed by this run. Never latest/currentResultId.
+  containerStudyResultId String?
+  containerStudyResult   ContainerStudyResult? @relation(fields: [containerStudyResultId], references: [id], onDelete: Restrict)
+  createdBy           String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  costingLines        CostingLine[]
+
+  @@index([materialNumber, isCurrent])
+  @@index([inquiryLineId])
+  @@index([costingDate])
+  @@index([status])
+  @@index([configurationVersionId])
+  @@index([drumPlanId])
+  @@index([containerStudyResultId])
+}
+
+model CostingLine {
+  id                  String            @id @default(cuid())
+  costingRunId        String
+  costingRun          CostingRun        @relation(fields: [costingRunId], references: [id], onDelete: Cascade)
+  componentType       CostComponentType @default(MATERIAL)
+  rawMaterialCode     String
+  rawMaterialDesc     String?
+
+  // Quantities
+  consumptionPerKm    Decimal
+  totalConsumption    Decimal
+  consumptionUom      String
+
+  // Price Resolution Snapshot
+  price               Decimal
+  priceCurrency       String
+  priceUom            String
+  priceBasis          String            @default("PER_KG")
+  priceRevision       Int               @default(1)
+  priceId             String?
+  effectiveFrom       DateTime?
+  effectiveTo         DateTime?
+
+  /// INQUIRY_HEADER | RAW_MATERIAL_MASTER
+  pricingSource       String?
+  masterPrice         Decimal?
+  masterPriceCurrency String?
+  masterPriceUom      String?
+  inquiryHeaderPrice  Decimal?
+  inquiryHeaderPriceUom String?
+
+  // Calculated Cost Line
+  lineCost            Decimal
+  calculationNotes    String?
+  createdAt           DateTime          @default(now())
+
+  @@index([costingRunId])
+  @@index([rawMaterialCode])
+}
+
+enum InquiryStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ENGINEERING_REVIEW
+  ENGINEERING_BLOCKED
+  READY_FOR_COMMERCIAL
+  QUOTED
+  CLOSED
+  CANCELLED
+}
+
+enum InquiryLineStatus {
+  DRAFT
+  CONFIGURATION_REQUIRED
+  TECHNICAL_OFFICE_REQUIRED
+  CABLE_VALIDATED
+  COSTING_NOT_READY
+  COSTING_READY
+  READY_FOR_QUOTATION
+  CANCELLED
+}
+
+/// Directional cutting-length tolerance. Do not silently assume SYMMETRIC.
+enum CuttingLengthToleranceMode {
+  NONE
+  POSITIVE
+  NEGATIVE
+  SYMMETRIC
+}
+
+enum QuotationStatus {
+  DRAFT
+  OPEN
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  SUPERSEDED
+  CANCELLED
+}
+
+/// Spec §6 commercial revision approval — separate from CommercialPricingStatus (Increment 12).
+enum CommercialApprovalStatus {
+  NOT_SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+/// Spec §8 / §11.2 — chosen at commercial approval; stored on quotation + commitment.
+enum FulfillmentType {
+  DIRECT_ORDER
+  SALES_AGREEMENT
+}
+
+enum CommercialCommitmentStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+/// Short EPC-owned SO lifecycle (delivery/invoice remain D365-owned — Phase 6).
+enum EpcSalesOrderStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+/// How the Sales Order was created — independent of MTO/MTS fulfillment mode.
+enum SalesOrderOrigin {
+  QUOTATION
+  AGREEMENT_RELEASE
+  DIRECT_MTS
+}
+
+/// Manufacturing / stock path for the order — independent of Order Origin.
+enum OrderFulfillmentMode {
+  MTO
+  MTS
+}
+
+/// Cable / item master eligibility for Direct MTS vs quotation-only paths.
+enum CableFulfillmentPolicy {
+  MTO
+  MTS
+  MTO_MTS
+}
+
+enum EpcIntegrationStatus {
+  NOT_SENT
+  PENDING
+  SYNCED
+  FAILED
+}
+
+enum SalesAgreementStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum AgreementReleaseStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+model CommercialInquiry {
+  id                    String            @id @default(cuid())
+  inquiryNumber         String            @unique
+  customerId            String
+  customerName          String
+  contactPerson         String?
+  customerReference     String?
+  inquiryDate           DateTime          @default(now())
+  requestedDeliveryDate DateTime?
+  currency              String            @default("USD")
+  incoterms             String?           @default("FOB")
+  paymentTerms          String?           @default("LC at sight")
+  deliveryTerms         String?           @default("CIF Alexandria")
+  projectName           String?
+  status                InquiryStatus     @default(DRAFT)
+  notes                 String?
+  createdBy             String?
+  modifiedBy            String?
+  salesAgent            String?
+  quotationOwner        String?
+  versionNo             Int               @default(1)
+  isCurrent             Boolean           @default(true)
+  supersedesInquiryId   String?
+  inquiryGroupKey       String?
+  commercialMetadata    Json?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  customerMasterId      String?
+  customerMaster        Customer?         @relation("InquiryCustomerMaster", fields: [customerMasterId], references: [id], onDelete: SetNull)
+
+  lines                 CommercialInquiryLine[]
+  quotations            CommercialQuotation[]
+  attachments           CommercialInquiryAttachment[]
+  containerShipmentGroups ContainerShipmentGroup[]
+  containerStudies        ContainerStudy[]
+  shipmentCostSnapshots   ShipmentCostSnapshot[]
+  financialOfferSnapshots FinancialOfferSnapshot[]
+  serviceCases            CustomerServiceCase[]
+  supportChatSessions     SupportChatSession[]
+
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([status])
+  @@index([inquiryDate])
+  @@index([inquiryGroupKey])
+  @@index([isCurrent])
+  @@index([customerReference])
+}
+
+model CommercialInquiryAttachment {
+  id         String            @id @default(cuid())
+  inquiryId  String
+  inquiry    CommercialInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  fileName   String
+  mimeType   String
+  byteSize   Int
+  content    Bytes
+  uploadedBy String?
+  createdAt  DateTime          @default(now())
+
+  @@index([inquiryId])
+}
+
+model CableMasterAttachment {
+  id             String      @id @default(cuid())
+  materialNumber String
+  cable          CableMaster @relation(fields: [materialNumber], references: [materialNumber], onDelete: Cascade)
+  kind           String
+  fileName       String
+  mimeType       String
+  byteSize       Int
+  content        Bytes
+  source         String      @default("MANUAL_UPLOAD")
+  uploadedBy     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  inquiryLineCopies CommercialInquiryLineAttachment[]
+
+  @@unique([materialNumber, kind])
+  @@index([materialNumber])
+}
+
+model CommercialInquiryLineAttachment {
+  id                      String               @id @default(cuid())
+  inquiryLineId           String
+  inquiryLine             CommercialInquiryLine @relation(fields: [inquiryLineId], references: [id], onDelete: Cascade)
+  kind                    String
+  fileName                String
+  mimeType                String
+  byteSize                Int
+  content                 Bytes
+  source                  String               @default("MANUAL_UPLOAD")
+  cableMasterAttachmentId String?
+  cableMasterAttachment   CableMasterAttachment? @relation(fields: [cableMasterAttachmentId], references: [id], onDelete: SetNull)
+  uploadedBy              String?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+
+  @@index([inquiryLineId])
+  @@index([inquiryLineId, kind])
+}
+
+model CommercialInquiryLine {
+  id                      String            @id @default(cuid())
+  inquiryId               String
+  inquiry                 CommercialInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  lineNumber              Int               @default(1)
+
+  // Cable Master Link or Unmapped Configuration
+  materialNumber          String?
+  customerCode            String?
+  itemCode                String?
+  cableDescription        String
+
+  // Requested Quantities
+  requestedQuantity       Decimal           @default(1)
+  quantityUom             String            @default("KM")
+  requestedLengthMeters   Decimal           @default(1000)
+  cuttingLengthMeters     Decimal?
+  drumType                String?           @default("Wood Reel 220")
+  /** Order-level cable length tolerance (%) for production / logistics. */
+  cableTolerancePercent   Decimal?
+  /** Multi-drum schedule rows with per-drum tolerance (%). */
+  drumSchedule            Json?
+
+  // Technical Office & Governance
+  configurationPayload    Json?
+  cableAuthorityStatus    String            @default("CONFIGURATION_REQUIRED")
+  technicalOfficeRequestId String?
+
+  // Costing & Feasibility Link
+  costingReadinessStatus  String            @default("NOT_READY")
+  costingRunId            String?
+  costingCalculationId    String?
+  costingCalculation      CostingCalculation? @relation(fields: [costingCalculationId], references: [id], onDelete: SetNull)
+  materialCost            Decimal?
+  materialCostCurrency    String?           @default("USD")
+
+  status                  InquiryLineStatus @default(DRAFT)
+  notes                   String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  quotationLines          CommercialQuotationLine[]
+  financialOfferProductLines FinancialOfferProductLine[]
+  attachments             CommercialInquiryLineAttachment[]
+  v2CurrentSnapshotId     String?
+  v2CurrentCuttingPlanId  String?
+  v2CurrentDrumPlanId     String?
+  v2Snapshots             V2ConfigurationSnapshot[]
+  v2CuttingRequirements   V2CuttingLengthRequirement[]
+  v2CuttingPlans          V2CuttingLengthPlan[]
+  v2DrumPlans             V2DrumPlan[]
+  containerShipmentGroups ContainerShipmentGroup[]
+  containerShipmentGroupMembers ContainerShipmentGroupLine[]
+  serviceCases                  CustomerServiceCase[]
+
+  @@index([inquiryId])
+  @@index([materialNumber])
+  @@index([status])
+  @@index([v2CurrentSnapshotId])
+  @@index([v2CurrentCuttingPlanId])
+  @@index([v2CurrentDrumPlanId])
+}
+
+/// Immutable V2 cable configuration evidence linked to inquiry lines (Task 05B).
+model V2ConfigurationSnapshot {
+  id                         String                @id @default(cuid())
+  snapshotId                 String                @unique
+  versionNo                  Int                   @default(1)
+  inquiryLineId              String
+  inquiryLine                CommercialInquiryLine   @relation(fields: [inquiryLineId], references: [id], onDelete: Cascade)
+
+  cableMaterialNumber        String?
+  itemCode                   String?
+  customerCode               String?
+
+  selections                 Json
+  configInput                Json
+  validationStatus           String
+  flowState                  String
+  engineeringStatus          String
+  summaryDescription         String?
+  estimatedDiameterMm        Decimal?
+  estimatedWeightKgKm        Decimal?
+  catalogSource              String
+  catalogAuthoritative       Boolean
+  bomGovernanceBlocked       Boolean               @default(false)
+  unresolvedBomConflictCount   Int                   @default(81)
+  downstreamGates            Json?
+
+  actorId                    String?
+  actorEmail                 String?
+  actorRole                  String?
+
+  capturedAt                 DateTime              @default(now())
+  createdAt                  DateTime              @default(now())
+
+  cuttingRequirements        V2CuttingLengthRequirement[]
+  cuttingPlans               V2CuttingLengthPlan[]
+  costingCalculations        CostingCalculation[]
+
+  @@index([inquiryLineId])
+  @@index([inquiryLineId, versionNo])
+  @@index([capturedAt])
+}
+
+/// Independent cutting-length requirement on a commercial inquiry line (05I-DRUM-REMEDIATION).
+/// One CommercialInquiryLine may have 1..N requirements; they are never aggregated before drum planning.
+model V2CuttingLengthRequirement {
+  id                      String                     @id @default(cuid())
+  requirementId           String                     @unique
+  sequenceNo              Int
+
+  inquiryLineId           String
+  inquiryLine             CommercialInquiryLine      @relation(fields: [inquiryLineId], references: [id], onDelete: Cascade)
+
+  configurationSnapshotId String
+  configurationSnapshot   V2ConfigurationSnapshot    @relation(fields: [configurationSnapshotId], references: [id], onDelete: Restrict)
+
+  unit                    String                     @default("M")
+  nominalLengthM          Decimal
+  toleranceMode           CuttingLengthToleranceMode @default(SYMMETRIC)
+  positiveTolerancePercent Decimal                   @default(0)
+  negativeTolerancePercent Decimal                   @default(0)
+  minLengthM              Decimal
+  maxLengthM              Decimal
+  requestedDrumCount      Int                        @default(1)
+
+  status                  String                     @default("ACTIVE")
+  versionNo               Int                        @default(1)
+
+  currentCuttingPlanId    String?
+  currentDrumPlanId       String?
+
+  actorId                 String?
+  actorEmail              String?
+  actorRole               String?
+
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+
+  cuttingPlans            V2CuttingLengthPlan[]      @relation("RequirementCuttingPlans")
+  drumPlans               V2DrumPlan[]               @relation("RequirementDrumPlans")
+  drumPlanLines           V2DrumPlanLine[]           @relation("RequirementDrumPlanLines")
+
+  @@unique([inquiryLineId, sequenceNo])
+  @@index([inquiryLineId])
+  @@index([currentCuttingPlanId])
+  @@index([currentDrumPlanId])
+}
+
+/// Immutable V2 cutting-length evidence linked to inquiry line + configuration snapshot (Task 05C).
+model V2CuttingLengthPlan {
+  id                              String                  @id @default(cuid())
+  planId                          String                  @unique
+  versionNo                       Int                     @default(1)
+
+  inquiryLineId                   String
+  inquiryLine                     CommercialInquiryLine   @relation(fields: [inquiryLineId], references: [id], onDelete: Cascade)
+
+  cuttingLengthRequirementId      String?
+  cuttingLengthRequirement        V2CuttingLengthRequirement? @relation("RequirementCuttingPlans", fields: [cuttingLengthRequirementId], references: [id], onDelete: SetNull)
+
+  configurationSnapshotId         String
+  configurationSnapshot           V2ConfigurationSnapshot @relation(fields: [configurationSnapshotId], references: [id], onDelete: Restrict)
+  configurationSnapshotVersionNo  Int
+  configurationSnapshotIdString   String
+
+  nominalLengthM                  Decimal
+  tolerancePercent                Decimal                 @default(1)
+  toleranceMode                   CuttingLengthToleranceMode @default(SYMMETRIC)
+  positiveTolerancePercent        Decimal                 @default(0)
+  negativeTolerancePercent        Decimal                 @default(0)
+  requestedDrumCount              Int                     @default(1)
+  minLengthM                      Decimal
+  maxLengthM                      Decimal
+
+  validationStatus                String
+  validationMessages              Json?
+
+  notes                           String?
+
+  actorId                         String?
+  actorEmail                      String?
+  actorRole                       String?
+
+  capturedAt                      DateTime                @default(now())
+  createdAt                       DateTime                @default(now())
+
+  drumPlans                       V2DrumPlan[]
+  costingCalculations             CostingCalculation[]
+
+  @@index([inquiryLineId])
+  @@index([inquiryLineId, versionNo])
+  @@index([configurationSnapshotId])
+  @@index([cuttingLengthRequirementId])
+  @@index([capturedAt])
+}
+
+/// Authoritative V2 drum packaging plan linked to cutting plan (Task 05D).
+model V2DrumPlan {
+  id                              String                  @id @default(cuid())
+  planId                          String                  @unique
+  versionNo                       Int                     @default(1)
+
+  inquiryLineId                   String
+  inquiryLine                     CommercialInquiryLine   @relation(fields: [inquiryLineId], references: [id], onDelete: Cascade)
+
+  cuttingLengthRequirementId      String?
+  cuttingLengthRequirement        V2CuttingLengthRequirement? @relation("RequirementDrumPlans", fields: [cuttingLengthRequirementId], references: [id], onDelete: SetNull)
+
+  cuttingLengthPlanId             String
+  cuttingLengthPlan               V2CuttingLengthPlan     @relation(fields: [cuttingLengthPlanId], references: [id], onDelete: Restrict)
+  cuttingLengthPlanVersionNo      Int
+  cuttingLengthPlanIdString       String
+
+  configurationSnapshotId         String
+  configurationSnapshotIdString   String
+
+  lifecycleStatus                 String
+  validationStatus                String
+  selectionMethod                 String
+
+  cableTolerancePercent           Decimal
+  totalPlannedLengthM             Decimal
+  drumCount                       Int
+  remainderLengthM                Decimal                 @default(0)
+  quantityReconciliationStatus    String?
+  quantityReconciliationMessages  Json?
+
+  engineeringSnapshot             Json?
+
+  notes                           String?
+  actorId                         String?
+  actorEmail                      String?
+  actorRole                       String?
+
+  capturedAt                      DateTime                @default(now())
+  createdAt                       DateTime                @default(now())
+  updatedAt                       DateTime                @updatedAt
+
+  lines                           V2DrumPlanLine[]
+  costingCalculations             CostingCalculation[]
+  costingRuns                     CostingRun[]
+
+  @@index([inquiryLineId])
+  @@index([inquiryLineId, versionNo])
+  @@index([cuttingLengthPlanId])
+  @@index([cuttingLengthRequirementId])
+  @@index([lifecycleStatus])
+  @@index([capturedAt])
+}
+
+model V2DrumPlanLine {
+  id                       String     @id @default(cuid())
+  drumPlanId               String
+  drumPlan                 V2DrumPlan @relation(fields: [drumPlanId], references: [id], onDelete: Cascade)
+  lineNo                   Int
+
+  cuttingLengthRequirementId String?
+  cuttingLengthRequirement   V2CuttingLengthRequirement? @relation("RequirementDrumPlanLines", fields: [cuttingLengthRequirementId], references: [id], onDelete: SetNull)
+
+  drumCode                 String
+  drumMasterId             String?
+  numberOfDrums            Int
+  cuttingLengthM           Decimal
+  isRemainderDrum          Boolean    @default(false)
+
+  clearanceMm              Decimal?
+  capacityM                Decimal?
+  maxLoadKg                Decimal?
+  plannedCableLengthM      Decimal
+
+  cableWeightKg            Decimal?
+  emptyDrumNetWeightKg     Decimal?
+  grossLoadedDrumWeightKg  Decimal?
+  lengthUtilizationPercent Decimal?
+  loadUtilizationPercent   Decimal?
+  validationStatus         String?
+  validationReasons        Json?
+  engineering              Json?
+
+  @@index([drumPlanId])
+  @@index([drumPlanId, lineNo])
+  @@index([drumCode])
+  @@index([cuttingLengthRequirementId])
+}
+
+model CommercialQuotation {
+  id                      String            @id @default(cuid())
+  quotationNumber         String
+  inquiryId               String
+  inquiry                 CommercialInquiry @relation(fields: [inquiryId], references: [id])
+  customerId              String
+  customerName            String
+  contactPerson           String?
+  versionNo               Int               @default(1)
+  isCurrent               Boolean           @default(true)
+  supersedesQuotationId   String?
+
+  status                  QuotationStatus   @default(DRAFT)
+  currency                String            @default("USD")
+  incoterms               String?           @default("FOB")
+  paymentTerms            String?           @default("LC at sight")
+  deliveryTerms           String?           @default("CIF Alexandria")
+  validUntil              DateTime?
+  billTo                  String?
+  shipTo                  String?
+  requestedDeliveryDate   DateTime?
+
+  // Commercial Boundary Notes
+  materialCostTotal       Decimal           @default(0)
+  commercialPricingStatus String            @default("NOT_CONFIGURED")
+  sellingPrice            Decimal?
+
+  /// Spec commercial approval — must not be conflated with commercialPricingStatus / Increment 12.
+  commercialApprovalStatus CommercialApprovalStatus @default(NOT_SUBMITTED)
+  fulfillmentType          FulfillmentType?
+  commerciallyApprovedBy   String?
+  commerciallyApprovedAt   DateTime?
+
+  /// V2 quotation boundary (Task 05F)
+  workflowChannel          String?
+  issuedAt                 DateTime?
+  issuedBy                 String?
+  inquiryVersionNo         Int?
+  inquirySnapshot          Json?
+  technicalOfferStatus     String                   @default("NOT_READY")
+  commercialOfferStatus    String                   @default("NOT_READY")
+  validityDays             Int?
+  supersededByQuotationId  String?
+  technicalOfferSnapshot   Json?
+  commercialOfferSnapshot  Json?
+  quotationApprovedBy      String?
+  quotationApprovedAt      DateTime?
+
+  /// STANDARD_WORKFLOW customer decision (Accept / Reject / Clarification). Additive — does not replace commitment.
+  customerDecision         String?
+  customerDecisionReason   String?
+  customerDecisionAt       DateTime?
+  customerDecisionBy       String?
+  quotationReturnedAt      DateTime?
+  quotationReturnedBy      String?
+  quotationReturnReason    String?
+
+  quotationOwner          String?
+  remarks                 String?
+  createdBy               String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  customerMasterId        String?
+  customerMaster          Customer?         @relation("QuotationCustomerMaster", fields: [customerMasterId], references: [id], onDelete: SetNull)
+
+  lines                   CommercialQuotationLine[]
+  hostedFinancialOffers   FinancialOfferSnapshot[]
+  shippingCostSnapshot    ShippingCostTransactionSnapshot?
+  commitments             CommercialCommitment[]
+  salesOrders             EpcSalesOrder[]
+  salesAgreements         SalesAgreement[]
+  serviceCases            CustomerServiceCase[]
+
+  @@unique([quotationNumber, versionNo])
+  @@index([inquiryId])
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([isCurrent])
+  @@index([status])
+  @@index([commercialApprovalStatus])
+  @@index([workflowChannel, status, issuedAt])
+}
+
+model CommercialQuotationLine {
+  id                      String              @id @default(cuid())
+  quotationId             String
+  quotation               CommercialQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  lineNumber              Int                 @default(1)
+  inquiryLineId           String?
+  inquiryLine             CommercialInquiryLine? @relation(fields: [inquiryLineId], references: [id])
+
+  materialNumber          String?
+  itemDescription         String
+  quantity                Decimal             @default(1)
+  quantityUom             String              @default("KM")
+  lengthMeters            Decimal             @default(1000)
+
+  // Snapshot fields for SO / agreement copy (Spec §5.2 / §13) — copied scalars; no costing recompute
+  customerCableCode       String?
+  configurationId         String?
+  engineeringRevision     String?
+  bomVersion              String?
+  technicalSpecificationId String?
+  cuttingLengthMeters     Decimal?
+  numberOfCuts            Int?
+  drumType                String?
+  drumSize                String?
+  drumQuantity            Decimal?
+  drumLengthMeters        Decimal?
+  drumWeightKg            Decimal?
+
+  // Governed Costing Link
+  costingRunId            String?
+  costingCalculationId    String?
+  costingCalculation      CostingCalculation? @relation(fields: [costingCalculationId], references: [id], onDelete: SetNull)
+  materialCost            Decimal?
+  materialCostCurrency    String?             @default("USD")
+
+  // Commercial Line State
+  commercialStatus        String              @default("MATERIAL_COST_AVAILABLE")
+  sellingPrice            Decimal?
+  pricingSnapshotId       String?
+  pricingSnapshot         CommercialPricingSnapshot?
+  notes                   String?
+
+  /// V2 lineage pins (Task 05F)
+  workflowChannel              String?
+  v2ConfigurationSnapshotId    String?
+  v2ConfigurationSnapshotIdString String?
+  v2CuttingLengthPlanId        String?
+  v2CuttingLengthPlanIdString  String?
+  v2DrumPlanId                 String?
+  v2DrumPlanVersionNo          Int?
+  v2DrumPlanIdString           String?
+  plannedLengthM               Decimal?
+  drumCount                    Int?
+  technicalOfferAttachmentIds  Json?
+  technicalSummarySnapshot     Json?
+  drumPlanLinesSnapshot        Json?
+  lineageSnapshot              Json?
+
+  createdAt               DateTime            @default(now())
+
+  @@index([quotationId])
+  @@index([v2DrumPlanId])
+}
+
+/// Bridge between approved quotation revision and fulfillment (Spec §10–11). One quotation → many SOs / one agreement.
+model CommercialCommitment {
+  id                       String                     @id @default(cuid())
+  commitmentNumber         String                     @unique
+  quotationId              String
+  quotation                CommercialQuotation        @relation(fields: [quotationId], references: [id])
+  quotationNumber          String
+  quotationVersionNo       Int
+  /// V2 inquiry lineage pin (Task 05H)
+  inquiryId                String?
+  workflowChannel          String?
+  customerId               String
+  customerMasterId         String?
+  customerName             String
+  fulfillmentType          FulfillmentType
+  currency                 String                     @default("USD")
+  totalCommittedQuantity   Decimal
+  totalCommittedAmount     Decimal?
+  quantityUom              String                     @default("KM")
+  orderedQuantity          Decimal                    @default(0)
+  remainingQuantity        Decimal
+  effectiveDate            DateTime                   @default(now())
+  expirationDate           DateTime?
+  status                   CommercialCommitmentStatus @default(ACTIVE)
+  d365DocumentNumber       String?
+  d365RecordId             String?
+  createdBy                String?
+  approvedAt               DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  salesOrders              EpcSalesOrder[]
+  salesAgreements          SalesAgreement[]
+
+  @@index([quotationId])
+  @@index([inquiryId])
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([status])
+  @@index([fulfillmentType])
+}
+
+model EpcSalesOrder {
+  id                      String              @id @default(cuid())
+  salesOrderNumber        String              @unique
+  /// Null for DIRECT_MTS — Commercial Commitment is not required on that path.
+  commitmentId            String?
+  commitment              CommercialCommitment? @relation(fields: [commitmentId], references: [id])
+  /// Null for DIRECT_MTS unless explicitly linked later.
+  quotationId             String?
+  quotation               CommercialQuotation? @relation(fields: [quotationId], references: [id])
+  inquiryId               String?
+  agreementReleaseId      String?             @unique
+  agreementRelease        AgreementRelease?   @relation(fields: [agreementReleaseId], references: [id], onDelete: SetNull)
+  /// Entry point: QUOTATION | AGREEMENT_RELEASE | DIRECT_MTS (not the same as fulfillment mode).
+  orderOrigin             SalesOrderOrigin
+  /// MTO vs MTS stock/manufacturing path (not the same as order origin).
+  orderFulfillmentMode    OrderFulfillmentMode
+  customerId              String
+  customerMasterId        String?
+  customerName            String
+  customerReference       String?
+  currency                String              @default("USD")
+  paymentTerms            String?
+  deliveryTerms           String?
+  incoterms               String?
+  billTo                  String?
+  shipTo                  String?
+  requestedDeliveryDate   DateTime?
+  status                  EpcSalesOrderStatus @default(CONFIRMED)
+  integrationStatus       EpcIntegrationStatus @default(NOT_SENT)
+  d365SalesOrderNumber    String?
+  d365Company             String?
+  d365RecordId            String?
+  /// Client-supplied key for duplicate Direct MTS create requests.
+  idempotencyKey          String?             @unique
+  createdBy               String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  lines                   EpcSalesOrderLine[]
+  serviceCases            CustomerServiceCase[]
+
+  @@index([commitmentId])
+  @@index([quotationId])
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([status])
+  @@index([integrationStatus])
+  @@index([orderOrigin])
+  @@index([orderFulfillmentMode])
+}
+
+model EpcSalesOrderLine {
+  id                       String        @id @default(cuid())
+  salesOrderId             String
+  salesOrder               EpcSalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  lineNumber               Int           @default(1)
+  quotationLineId          String?
+  materialNumber           String?
+  itemCode                 String?
+  itemDescription          String
+  customerCableCode        String?
+  quantity                 Decimal
+  quantityUom              String        @default("KM")
+  unitPrice                Decimal?
+  discountPercent          Decimal?
+  netPrice                 Decimal?
+  lineAmount               Decimal?
+  configurationId          String?
+  engineeringRevision      String?
+  bomVersion               String?
+  technicalSpecificationId String?
+  lengthMeters             Decimal?
+  cuttingLengthMeters      Decimal?
+  numberOfCuts             Int?
+  drumType                 String?
+  drumSize                 String?
+  drumQuantity             Decimal?
+  drumLengthMeters         Decimal?
+  drumWeightKg             Decimal?
+  /// Optional available-stock snapshot at Direct MTS create (not live inventory).
+  availableStockQuantity   Decimal?
+  costingRunId             String?
+  costingCalculationId     String?
+  /// Frozen V2 lineage from quotation line (Task 05H)
+  lineageSnapshot          Json?
+  createdAt                DateTime      @default(now())
+
+  @@index([salesOrderId])
+  @@index([quotationLineId])
+  @@index([materialNumber])
+}
+
+model SalesAgreement {
+  id                       String               @id @default(cuid())
+  agreementNumber          String               @unique
+  commitmentId             String
+  commitment               CommercialCommitment @relation(fields: [commitmentId], references: [id])
+  quotationId              String
+  quotation                CommercialQuotation  @relation(fields: [quotationId], references: [id])
+  customerId               String
+  customerMasterId         String?
+  customerName             String
+  currency                 String               @default("USD")
+  validFrom                DateTime             @default(now())
+  validTo                  DateTime?
+  status                   SalesAgreementStatus @default(ACTIVE)
+  totalCommittedQuantity   Decimal
+  totalReleasedQuantity    Decimal              @default(0)
+  remainingQuantity        Decimal
+  quantityUom              String               @default("KM")
+  integrationStatus        EpcIntegrationStatus @default(NOT_SENT)
+  d365AgreementNumber      String?
+  d365RecordId             String?
+  createdBy                String?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+  lines                    SalesAgreementLine[]
+  releases                 AgreementRelease[]
+
+  @@index([commitmentId])
+  @@index([quotationId])
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([status])
+}
+
+model SalesAgreementLine {
+  id                       String         @id @default(cuid())
+  agreementId              String
+  agreement                SalesAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  lineNumber               Int            @default(1)
+  quotationLineId          String?
+  materialNumber           String?
+  itemDescription          String
+  customerCableCode        String?
+  committedQuantity        Decimal
+  releasedQuantity         Decimal        @default(0)
+  remainingQuantity        Decimal
+  quantityUom              String         @default("KM")
+  unitPrice                Decimal?
+  configurationId          String?
+  engineeringRevision      String?
+  bomVersion               String?
+  technicalSpecificationId String?
+  lengthMeters             Decimal?
+  cuttingLengthMeters      Decimal?
+  numberOfCuts             Int?
+  drumType                 String?
+  costingRunId             String?
+  costingCalculationId     String?
+  /// Frozen V2 lineage from quotation line (Task 05H)
+  lineageSnapshot          Json?
+  createdAt                DateTime       @default(now())
+
+  @@index([agreementId])
+  @@index([quotationLineId])
+}
+
+model AgreementRelease {
+  id                       String                 @id @default(cuid())
+  releaseNumber            String                 @unique
+  agreementId              String
+  agreement                SalesAgreement         @relation(fields: [agreementId], references: [id])
+  status                   AgreementReleaseStatus @default(CONFIRMED)
+  releaseDate              DateTime               @default(now())
+  requestedDeliveryDate    DateTime?
+  shipTo                   String?
+  totalReleasedQuantity    Decimal
+  quantityUom              String                 @default("KM")
+  notes                    String?
+  createdBy                String?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+
+  lines                    AgreementReleaseLine[]
+  salesOrder               EpcSalesOrder?
+
+  @@index([agreementId])
+  @@index([status])
+}
+
+model AgreementReleaseLine {
+  id                       String           @id @default(cuid())
+  releaseId                String
+  release                  AgreementRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  agreementLineId          String?
+  lineNumber               Int              @default(1)
+  quotationLineId          String?
+  materialNumber           String?
+  itemDescription          String
+  quantity                 Decimal
+  quantityUom              String           @default("KM")
+  unitPrice                Decimal?
+  createdAt                DateTime         @default(now())
+
+  @@index([releaseId])
+  @@index([agreementLineId])
+}
+
+enum PricingRuleType {
+  MARKUP
+  GROSS_MARGIN
+}
+
+enum PricingRuleScope {
+  GLOBAL
+  CUSTOMER_TIER
+  CUSTOMER_SPECIFIC
+  CABLE_SPECIFIC
+  CUSTOMER_CABLE_SPECIFIC
+  CUSTOMER_GROUP_CABLE
+  CUSTOMER_FAMILY
+  CUSTOMER_GROUP_FAMILY
+  CABLE_FAMILY
+}
+
+enum CommercialPricingStatus {
+  PRICING_NOT_CONFIGURED
+  PRICING_CALCULATED
+  PRICING_APPROVAL_REQUIRED
+  PRICING_APPROVED
+  PRICING_REJECTED
+  PRICING_EXPIRED
+  PRICING_RULE_CONFLICT
+  PRICING_CURRENCY_MISMATCH
+}
+
+model CustomerPricingTier {
+  id                  String           @id @default(cuid())
+  tierCode            String           @unique
+  tierName            String
+  description         String?
+  defaultMarginType   PricingRuleType  @default(GROSS_MARGIN)
+  status              RecordStatus     @default(ACTIVE)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+}
+
+model CommercialPricingRule {
+  id                  String                 @id @default(cuid())
+  ruleCode            String                 @unique
+  ruleName            String
+  scope               PricingRuleScope       @default(GLOBAL)
+  ruleType            PricingRuleType        @default(GROSS_MARGIN)
+
+  // Scope Targets — Customer Group is Customer.customerGroup; Cable Family is CableMaster.family
+  customerId          String?
+  customerGroupId     String?
+  customerGroup       CustomerGroup?         @relation(fields: [customerGroupId], references: [id], onDelete: Restrict)
+  customerTierCode    String?
+  cableMaterialNumber String?
+  cableFamily         String?
+  /// Deterministic version family key: scope|currency|customer|group|tier|cable|family
+  scopeKey            String
+
+  // Governed Parameters — one rule stores exactly one method (MARKUP or GROSS_MARGIN)
+  percentageValue     Decimal
+  currency            String                 @default("USD")
+  priority            Int                    @default(20)
+
+  // Validity & Versioning (CustomerShippingCostRate pattern: insert version, close prior Effective To, SUPERSEDE)
+  effectiveFrom       DateTime?
+  effectiveTo         DateTime?
+  workflowStatus      PriceWorkflowStatus    @default(DRAFT)
+  status              RecordStatus           @default(ACTIVE)
+  isCurrent           Boolean                @default(true)
+  revision            Int                    @default(1)
+
+  // Threshold Governance
+  minMarginThreshold  Decimal?
+  maxDiscountAllowed  Decimal?               @default(15.00)
+
+  // Audit & Provenance
+  approvedBy          String?
+  approvedAt          DateTime?
+  createdBy           String?
+  updatedBy           String?
+  comment             String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  snapshots           CommercialPricingSnapshot[]
+
+  @@unique([scopeKey, revision])
+  @@index([scope])
+  @@index([customerId])
+  @@index([customerGroupId])
+  @@index([customerTierCode])
+  @@index([cableMaterialNumber])
+  @@index([cableFamily])
+  @@index([workflowStatus])
+  @@index([status])
+  @@index([scopeKey, status])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model CommercialDiscountRule {
+  id                  String                 @id @default(cuid())
+  discountCode        String                 @unique
+  discountName        String
+  customerId          String?
+  customerTierCode    String?
+  cableMaterialNumber String?
+  discountPercentage  Decimal
+  maxDiscountAllowed  Decimal                @default(15.00)
+  effectiveFrom       DateTime?
+  effectiveTo         DateTime?
+  workflowStatus      PriceWorkflowStatus    @default(DRAFT)
+  isCurrent           Boolean                @default(true)
+  revision            Int                    @default(1)
+  approvedBy          String?
+  approvedAt          DateTime?
+  createdBy           String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+}
+
+model CommercialPricingSnapshot {
+  id                  String                  @id @default(cuid())
+  quotationId         String
+  quotationLineId     String                  @unique
+  quotationLine       CommercialQuotationLine @relation(fields: [quotationLineId], references: [id], onDelete: Cascade)
+  quotationNumber     String
+  versionNo           Int
+  materialNumber      String
+
+  // Frozen Costing & Pricing Inputs
+  costingRunId        String?
+  v2CostingCalculationId String?
+  drumPlanId          String?
+  materialCost        Decimal
+  currency            String
+
+  // Resolved Rule Snapshot — frozen at calculation time; later master versions must not rewrite this row
+  pricingRuleId       String?
+  pricingRule         CommercialPricingRule?  @relation(fields: [pricingRuleId], references: [id])
+  pricingRuleRevision Int                     @default(1)
+  pricingRuleType     PricingRuleType
+  pricingRuleScope    PricingRuleScope?
+  percentageValue     Decimal
+  resolutionReason    String?
+
+  // Calculated Financial Outputs
+  baseSellingPrice    Decimal
+  discountPercentage  Decimal                 @default(0)
+  discountAmount      Decimal                 @default(0)
+  finalSellingPrice   Decimal
+  unitSellingPrice    Decimal
+
+  // Status & Governance
+  pricingStatus       CommercialPricingStatus @default(PRICING_CALCULATED)
+  approvalRequired    Boolean                 @default(false)
+  approvalReason      String?
+  approvedBy          String?
+  approvedAt          DateTime?
+  createdAt           DateTime                @default(now())
+
+  financialOfferProductLines FinancialOfferProductLine[]
+
+  @@index([quotationId])
+  @@index([materialNumber])
+  @@index([pricingStatus])
+}
+
+// ---------------------------------------------------------------------------
+// Increment 12 B1 — Platform identity & RBAC (control plane)
+// ---------------------------------------------------------------------------
+
+enum IdentityStatus {
+  ACTIVE
+  INACTIVE
+  LOCKED
+  PENDING
+}
+
+enum IdentityUserType {
+  internal
+  customer
+}
+
+model UserAccount {
+  id                   String           @id @default(cuid())
+  username             String           @unique
+  email                String           @unique
+  fullName             String
+  mobile               String?
+  employeeNumber       String?
+  jobTitle             String?
+  department           String?
+  /// Legacy/denormalized customer key. Canonical scope is CustomerUser → Customer (B2).
+  customerId           String?
+  passwordHash         String
+  userType             IdentityUserType @default(internal)
+  status               IdentityStatus   @default(ACTIVE)
+  isActive             Boolean          @default(true)
+  isLocked             Boolean          @default(false)
+  failedLoginAttempts  Int              @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime?
+  passwordChangedAt    DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdBy            String?
+
+  roles                UserRole[]
+  sessions             UserSession[]
+  resetTickets         PasswordResetTicket[]
+  customerUsers        CustomerUser[]
+  securityGroups       SecurityGroupMember[]
+  notifications        UserNotification[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([userType])
+}
+
+model Role {
+  id          String         @id @default(cuid())
+  code        String         @unique
+  name        String
+  description String?
+  userType    IdentityUserType @default(internal)
+  isSystem    Boolean        @default(false)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+  securityGroups SecurityGroupRole[]
+
+  @@index([isActive])
+}
+
+/// Optional security group between User and Role (User → Group → Role → Permission).
+/// Role continues to act as PermissionSet in V1 compatibility mode.
+model SecurityGroup {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  members SecurityGroupMember[]
+  roles   SecurityGroupRole[]
+
+  @@index([isActive])
+}
+
+model SecurityGroupMember {
+  groupId    String
+  userId     String
+  assignedAt DateTime @default(now())
+  assignedBy String?
+  group      SecurityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       UserAccount   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
+}
+
+model SecurityGroupRole {
+  groupId    String
+  roleId     String
+  assignedAt DateTime @default(now())
+  assignedBy String?
+  group      SecurityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  role       Role          @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([groupId, roleId])
+  @@index([roleId])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  module      String
+  resource    String
+  action      String
+  description String?
+  isActive    Boolean  @default(true)
+
+  roles       RolePermission[]
+
+  @@unique([module, resource, action])
+  @@index([module])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId     String
+  roleId     String
+  user       UserAccount @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role        @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  assignedAt DateTime    @default(now())
+  assignedBy String?
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model UserSession {
+  id               String      @id @default(cuid())
+  userId           String
+  user             UserAccount @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String      @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime    @default(now())
+
+  @@index([userId])
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CustomerType {
+  EPC_CUSTOMER
+  DISTRIBUTOR
+  UTILITY
+  OTHER
+}
+
+enum CustomerAssignmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// Task 05I-A — inquiry business process (orthogonal to workflowChannel / V2 tech).
+enum InquiryProcessCode {
+  VIP_FAST_TRACK
+  STANDARD_WORKFLOW
+}
+
+enum InquiryProcessSource {
+  CUSTOMER_OVERRIDE
+  CUSTOMER_GROUP
+  CUSTOMER_CLASSIFICATION
+  CUSTOMER_SEGMENT
+  SYSTEM_DEFAULT
+}
+
+model CustomerGroup {
+  id                        String              @id @default(cuid())
+  code                      String              @unique
+  name                      String
+  defaultInquiryProcessCode InquiryProcessCode?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  customers                 Customer[]
+  commercialPricingRules    CommercialPricingRule[]
+}
+
+model PaymentTerm {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customers   Customer[]
+
+  @@index([active])
+}
+
+model PaymentMethod {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customers   Customer[]
+
+  @@index([active])
+}
+
+model CustomerClassification {
+  id                        String              @id @default(cuid())
+  code                      String              @unique
+  name                      String
+  description               String?
+  active                    Boolean             @default(true)
+  defaultInquiryProcessCode InquiryProcessCode?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  customers   Customer[]
+
+  @@index([active])
+}
+
+model CustomerSegment {
+  id                        String              @id @default(cuid())
+  code                      String              @unique
+  name                      String
+  description               String?
+  active                    Boolean             @default(true)
+  defaultInquiryProcessCode InquiryProcessCode?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  customers   Customer[]
+
+  @@index([active])
+}
+
+model Customer {
+  id                         String         @id @default(cuid())
+  code                       String         @unique
+  name                       String
+  legalName                  String?
+  countryCode                String?
+  type                       CustomerType   @default(OTHER)
+  status                     CustomerStatus @default(ACTIVE)
+  defaultCurrency            String         @default("USD")
+  defaultIncoterm            String?
+  paymentTerms               String?
+  deliveryTerms              String?
+  taxVatNumber               String?
+  remarks                    String?
+  companyLogoUrl             String?
+  companyTagline             String?
+  allowedQuotationCurrencies Json           @default("[\"USD\"]")
+  defaultInquiryProcessCode  InquiryProcessCode?
+  customerGroupId            String?
+  customerGroup              CustomerGroup? @relation(fields: [customerGroupId], references: [id], onDelete: SetNull)
+  classificationId           String?
+  classification             CustomerClassification? @relation(fields: [classificationId], references: [id], onDelete: SetNull)
+  segmentId                  String?
+  segment                    CustomerSegment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+  paymentTermId              String?
+  paymentTerm                PaymentTerm? @relation(fields: [paymentTermId], references: [id], onDelete: SetNull)
+  paymentMethodId            String?
+  paymentMethod              PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  createdBy                  String?
+  updatedBy                  String?
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
+
+  users                      CustomerUser[]
+  addresses                  CustomerAddress[]
+  contacts                   CustomerContact[]
+  externalMappings           CustomerExternalMapping[]
+  inquiries                  CommercialInquiry[]  @relation("InquiryCustomerMaster")
+  quotations                 CommercialQuotation[] @relation("QuotationCustomerMaster")
+  containerStudies           ContainerStudy[]
+  deliveryCombinations       CustomerDeliveryCombination[]
+  serviceCases               CustomerServiceCase[]
+  supportChatSessions        SupportChatSession[]
+  customerShippingCostRates  CustomerShippingCostRate[]
+  shippingCostSnapshots      ShippingCostTransactionSnapshot[]
+
+  @@index([status])
+  @@index([name])
+  @@index([customerGroupId])
+  @@index([classificationId])
+  @@index([segmentId])
+  @@index([paymentTermId])
+  @@index([paymentMethodId])
+  @@index([countryCode])
+}
+
+model CustomerAddress {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  code         String
+  name         String?
+  addressType  String   @default("OTHER")
+  line1        String
+  line2        String?
+  city         String?
+  stateRegion  String?
+  countryCode  String?
+  postalCode   String?
+  isDefault    Boolean  @default(false)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@unique([customerId, code])
+  @@index([customerId, active])
+}
+
+model CustomerContact {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name       String
+  jobTitle   String?
+  email      String?
+  phone      String?
+  mobile     String?
+  department String?
+  isPrimary  Boolean  @default(false)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  createdBy  String?
+  updatedBy  String?
+
+  @@index([customerId, active])
+}
+
+model CustomerExternalMapping {
+  id                   String   @id @default(cuid())
+  customerId           String
+  customer             Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  system               String
+  externalCustomerCode String
+  externalName         String?
+  mappingStatus        String   @default("PENDING")
+  active               Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([system, externalCustomerCode])
+  @@index([customerId, active])
+  @@index([system])
+}
+
+model CustomerUser {
+  id            String                   @id @default(cuid())
+  customerId    String
+  customer      Customer                 @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  userAccountId String
+  userAccount   UserAccount              @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  status        CustomerAssignmentStatus @default(ACTIVE)
+  assignedAt    DateTime                 @default(now())
+  assignedBy    String?
+  updatedAt     DateTime                 @updatedAt
+
+  @@unique([customerId, userAccountId])
+  @@index([userAccountId])
+  @@index([status])
+}
+
+/// Documented when a historical commercial customerId cannot be mapped without guessing.
+model CustomerMigrationException {
+  id               String   @id @default(cuid())
+  sourceEntity     String
+  sourceId         String
+  legacyCustomerId String
+  reason           String
+  createdAt        DateTime @default(now())
+
+  @@index([legacyCustomerId])
+  @@index([sourceEntity, sourceId])
+}
+
+model PasswordResetTicket {
+  id        String      @id @default(cuid())
+  userId    String
+  user      UserAccount @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String      @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdBy String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Increment 13 — Costing configuration & formula engine (Phase B)
+// ---------------------------------------------------------------------------
+
+enum CostingConfigStatus {
+  DRAFT
+  VALIDATION
+  SUBMITTED
+  APPROVED
+  ACTIVE
+  INACTIVE
+  SUPERSEDED
+}
+
+enum CostingScrapScopeType {
+  GLOBAL
+  FAMILY
+  MATERIAL_CLASS
+  CABLE
+  BOM_LINE
+}
+
+enum CostingVariableKind {
+  INPUT
+  OUTPUT
+  INTERMEDIATE
+  CONSTANT
+  REFERENCE
+}
+
+enum CostingComponentKind {
+  MATERIAL
+  SCRAP
+  PROCESS
+  EX_WORK
+  SHIPPING
+  OVERHEAD
+  DRUM
+  OTHER
+}
+
+model CostingConfiguration {
+  id          String              @id @default(cuid())
+  code        String              @unique
+  name        String
+  description String?
+  status      CostingConfigStatus @default(DRAFT)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  versions    CostingConfigurationVersion[]
+
+  @@index([status])
+}
+
+model CostingConfigurationVersion {
+  id               String              @id @default(cuid())
+  configurationId  String
+  configuration    CostingConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  versionNo        Int
+  status           CostingConfigStatus @default(DRAFT)
+  workflowStatus   CostingConfigStatus @default(DRAFT)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  isCurrent        Boolean             @default(false)
+  revision         Int                 @default(1)
+  changeNotes      String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  approvedBy       String?
+  approvedAt       DateTime?
+  activatedAt      DateTime?
+  deactivatedAt    DateTime?
+  supersededById   String?
+
+  formulas         CostingFormula[]
+  costingRuns      CostingRun[]
+  calculations     CostingCalculation[]
+
+  @@unique([configurationId, versionNo])
+  @@index([configurationId, isCurrent])
+  @@index([status])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model CostingVariable {
+  id           String              @id @default(cuid())
+  code         String              @unique
+  name         String
+  description  String?
+  kind         CostingVariableKind
+  dataType     String              @default("DECIMAL")
+  unit         String?
+  sourceModule String?
+  status       RecordStatus        @default(ACTIVE)
+  isSystem     Boolean             @default(false)
+  defaultValue Decimal?
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  dependencies CostingFormulaDependency[]
+
+  @@index([kind])
+  @@index([status])
+}
+
+model CostingComponent {
+  id             String               @id @default(cuid())
+  code           String               @unique
+  name           String
+  description    String?
+  kind           CostingComponentKind
+  status         RecordStatus         @default(ACTIVE)
+  sortOrder      Int                  @default(0)
+  isConfigurable Boolean              @default(true)
+  metadata       Json?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  formulas       CostingFormula[]
+
+  @@index([kind])
+  @@index([status])
+}
+
+model CostingFormula {
+  id                     String                    @id @default(cuid())
+  configurationVersionId String
+  configurationVersion   CostingConfigurationVersion @relation(fields: [configurationVersionId], references: [id], onDelete: Cascade)
+  componentId            String?
+  component              CostingComponent?         @relation(fields: [componentId], references: [id], onDelete: SetNull)
+  code                   String
+  name                   String
+  description            String?
+  outputVariableCode     String
+  /// GLOBAL (default, previous behaviour) | FAMILY | CABLE
+  assignmentScope        String                    @default("GLOBAL")
+  assignmentValue        String?
+  assignmentPriority     Int                       @default(100)
+  status                 CostingConfigStatus       @default(DRAFT)
+  sortOrder              Int                       @default(0)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  createdBy              String?
+  updatedBy              String?
+
+  versions               CostingFormulaVersion[]
+
+  @@unique([configurationVersionId, code])
+  @@index([configurationVersionId])
+  @@index([outputVariableCode])
+  @@index([status])
+  @@index([assignmentScope, assignmentValue])
+}
+
+model CostingFormulaVersion {
+  id             String              @id @default(cuid())
+  formulaId      String
+  formula        CostingFormula      @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  versionNo      Int
+  expression     String
+  status         CostingConfigStatus @default(DRAFT)
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  changeNotes    String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  activatedAt    DateTime?
+  deactivatedAt  DateTime?
+
+  dependencies   CostingFormulaDependency[]
+
+  @@unique([formulaId, versionNo])
+  @@index([formulaId])
+  @@index([status])
+}
+
+model CostingFormulaDependency {
+  id               String                 @id @default(cuid())
+  formulaVersionId String
+  formulaVersion   CostingFormulaVersion  @relation(fields: [formulaVersionId], references: [id], onDelete: Cascade)
+  variableCode     String
+  variable         CostingVariable?       @relation(fields: [variableCode], references: [code], onDelete: Restrict)
+  dependencyType   String                 @default("VARIABLE")
+
+  @@unique([formulaVersionId, variableCode])
+  @@index([formulaVersionId])
+  @@index([variableCode])
+}
+
+model CostingCalculation {
+  id                     String   @id @default(cuid())
+  calculationNumber      String   @unique
+  configurationVersionId String?
+  configurationVersion   CostingConfigurationVersion? @relation(fields: [configurationVersionId], references: [id], onDelete: SetNull)
+  inquiryId              String?
+  inquiryLineId          String?
+  materialNumber         String?
+  costingDate            DateTime
+  status                 String   @default("DRAFT")
+  inputSnapshot          Json?
+  referenceSnapshot      Json?
+  outputSnapshot         Json?
+  /// V2 inquiry lineage (Task 05E) — immutable pins at calculation time.
+  configurationSnapshotId String?
+  configurationSnapshot   V2ConfigurationSnapshot? @relation(fields: [configurationSnapshotId], references: [id], onDelete: Restrict)
+  cuttingLengthPlanId     String?
+  cuttingLengthPlan       V2CuttingLengthPlan? @relation(fields: [cuttingLengthPlanId], references: [id], onDelete: Restrict)
+  drumPlanId              String?
+  drumPlan                V2DrumPlan? @relation(fields: [drumPlanId], references: [id], onDelete: Restrict)
+  drumPlanVersionNo       Int?
+  workflowChannel         String?
+  /// Propagated from the CostingRun pin (05I-DF-D). Not resolved from currentResultId.
+  containerStudyResultId String?
+  containerStudyResult   ContainerStudyResult? @relation(fields: [containerStudyResultId], references: [id], onDelete: Restrict)
+  createdAt              DateTime @default(now())
+  createdBy              String?
+
+  inquiryLines           CommercialInquiryLine[]
+  quotationLines         CommercialQuotationLine[]
+  snapshots              CostingCalculationSnapshot[]
+
+  @@index([configurationVersionId])
+  @@index([inquiryId])
+  @@index([inquiryLineId])
+  @@index([inquiryLineId, workflowChannel, createdAt])
+  @@index([materialNumber])
+  @@index([status])
+  @@index([drumPlanId])
+  @@index([configurationSnapshotId])
+  @@index([cuttingLengthPlanId])
+  @@index([containerStudyResultId])
+}
+
+model CostingCalculationSnapshot {
+  id             String             @id @default(cuid())
+  calculationId  String
+  calculation    CostingCalculation @relation(fields: [calculationId], references: [id], onDelete: Cascade)
+  snapshotType   String
+  payload        Json
+  formulaTrace   Json?
+  createdAt      DateTime           @default(now())
+
+  @@index([calculationId])
+  @@index([snapshotType])
+}
+
+model CostingScrapRule {
+  id              String                @id @default(cuid())
+  code            String                @unique
+  name            String
+  description     String?
+  scopeType       CostingScrapScopeType @default(GLOBAL)
+  scopeValue      String?
+  materialClass   String?
+  scrapRate       Decimal?
+  status          RecordStatus          @default(ACTIVE)
+  workflowStatus  CostingConfigStatus   @default(DRAFT)
+  priority        Int                   @default(100)
+  versionNo       Int                   @default(1)
+  isCurrent       Boolean               @default(true)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  sourceReference String?
+  changeNotes     String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  submittedBy     String?
+  submittedAt     DateTime?
+  validatedBy     String?
+  validatedAt     DateTime?
+  approvedBy      String?
+  approvedAt      DateTime?
+  activatedAt     DateTime?
+
+  @@index([scopeType, scopeValue])
+  @@index([workflowStatus])
+  @@index([status])
+  @@index([isCurrent])
+}
+
+/// Governed year-serial numbers for costing documents (e.g. scrap SC26-00001).
+model CostingDocumentSequence {
+  id         String   @id @default(cuid())
+  prefix     String
+  year       Int
+  lastSerial Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([prefix, year])
+  @@index([prefix, year])
+}
+
+/// Platform number sequence registry. Costing SC/FM/FX remain backed by CostingDocumentSequence
+/// via the platform allocate wrapper — do not dual-increment those prefixes here.
+model NumberSequence {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  prefix      String
+  /// Format tokens: {PREFIX} {YYYY} {YY} {#####} (serial padded by # count)
+  format      String   @default("{PREFIX}{YY}-{#####}")
+  nextSerial  Int      @default(1)
+  active      Boolean  @default(true)
+  /// GLOBAL | YEAR | MODULE
+  scopeType   String   @default("GLOBAL")
+  scopeValue  String?
+  moduleId    String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@index([prefix])
+  @@index([moduleId])
+  @@index([active])
+  @@index([scopeType, scopeValue])
+}
+
+enum MetalCostMetal {
+  COPPER
+  ALUMINIUM
+}
+
+enum MetalCostComponentType {
+  PREMIUM
+  SHIPPING
+  CLEARANCE
+}
+
+enum MetalCostPriceBasis {
+  KG
+  MT
+  FIXED_AMOUNT
+  PERCENTAGE
+}
+
+enum MetalCostComponentStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+/// Governed currency master for costing (replaces hardcoded currency lists in UI/engine validation).
+model CostingCurrency {
+  id              String       @id @default(cuid())
+  code            String       @unique
+  name            String
+  symbol          String?
+  isBaseCurrency  Boolean      @default(false)
+  decimalPlaces   Int          @default(2)
+  status          RecordStatus @default(ACTIVE)
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  metalCostComponents CostingMetalCostComponent[]
+  shippingCostRates   ShippingCostRate[]
+
+  @@index([status])
+  @@index([isBaseCurrency])
+}
+
+/// Master-data only. Not consumed by costingEngine Direct RM Cost (Option B — LME/Base only).
+model CostingMetalCostComponent {
+  id              String                    @id @default(cuid())
+  metal           MetalCostMetal
+  componentType   MetalCostComponentType
+  value           Decimal
+  currencyCode    String
+  priceBasis      MetalCostPriceBasis
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  status          MetalCostComponentStatus  @default(DRAFT)
+  reference       String?
+  notes           String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  currency        CostingCurrency           @relation(fields: [currencyCode], references: [code])
+
+  @@index([metal, componentType, status])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([currencyCode])
+  @@index([status])
+}
+
+enum MarketMetalImportStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
+enum MarketMetalCostingUsage {
+  CABLE_COPPER
+  CABLE_ALUMINIUM
+  NONE
+}
+
+/// LME instrument catalog. Only CABLE_COPPER and CABLE_ALUMINIUM may feed inquiry metal defaults.
+model MarketMetalInstrument {
+  id           String                  @id @default(cuid())
+  code         String                  @unique
+  name         String
+  costingUsage MarketMetalCostingUsage
+  sortOrder    Int                     @default(0)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  prices       MarketMetalPrice[]
+
+  @@index([costingUsage])
+}
+
+/// One imported LME sheet. OCR/extract stays DRAFT until an admin approves. Publish is a separate step.
+model MarketMetalImportBatch {
+  id             String                 @id @default(cuid())
+  status         MarketMetalImportStatus @default(DRAFT)
+  sourceFileName String?
+  mimeType       String?
+  image          Bytes?
+  extractedJson  Json
+  quoteDate      DateTime?              @db.Date
+  confidence     String                 @default("LOW")
+  createdBy      String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  publishedBy    String?
+  publishedAt    DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  rows           MarketMetalPrice[]
+
+  @@index([status])
+  @@index([quoteDate])
+}
+
+/// Cash ask and 3-month ask are stored separately. Published rows are the only ones copied onto new inquiries.
+model MarketMetalPrice {
+  id             String                  @id @default(cuid())
+  instrumentId   String
+  instrument     MarketMetalInstrument   @relation(fields: [instrumentId], references: [id], onDelete: Restrict)
+  importBatchId  String
+  importBatch    MarketMetalImportBatch  @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  quoteDate      DateTime                @db.Date
+  cashAsk        Decimal?
+  threeMonthAsk  Decimal?
+  suspended      Boolean                 @default(false)
+  blankCash      Boolean                 @default(false)
+  status         MarketMetalImportStatus @default(DRAFT)
+  isCurrent      Boolean                 @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  @@index([instrumentId, status, quoteDate])
+  @@index([importBatchId])
+  @@index([isCurrent])
+}
+
+/// System-level default LME/base metal prices copied onto new inquiry headers only.
+/// CostingEngine never reads this table; existing inquiries are not updated when defaults change.
+model MarketMetalPriceDefault {
+  id            String                   @id @default(cuid())
+  metalType     MetalCostMetal
+  priceRate     Decimal
+  priceUom      String                   @default("USD/MT")
+  status        MetalCostComponentStatus @default(DRAFT)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  notes         String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([metalType, status])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([status])
+}
+
+/// Governed FX pairs for costing (e.g. USD→LE). Inquiry header rates take precedence when set.
+model CostingExchangeRate {
+  id              String              @id @default(cuid())
+  code            String              @unique
+  name            String
+  description     String?
+  fromCurrency    String
+  toCurrency      String
+  rate            Decimal
+  status          RecordStatus        @default(ACTIVE)
+  workflowStatus  CostingConfigStatus @default(DRAFT)
+  versionNo       Int                 @default(1)
+  isCurrent       Boolean             @default(true)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  sourceReference String?
+  changeNotes     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  submittedBy     String?
+  submittedAt     DateTime?
+  validatedBy     String?
+  validatedAt     DateTime?
+  approvedBy      String?
+  approvedAt      DateTime?
+  activatedAt     DateTime?
+
+  @@index([fromCurrency, toCurrency])
+  @@index([workflowStatus])
+  @@index([status])
+  @@index([isCurrent])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+// ---------------------------------------------------------------------------
+// Final consolidation — low-code configuration (metadata only, no fake values)
+// ---------------------------------------------------------------------------
+
+enum MetalRateSource {
+  LME
+  CUSTOMER_COMMERCIAL
+  INTERNAL_GOVERNED
+  MANUAL
+}
+
+enum PlatformEntityCode {
+  INQUIRY
+  INQUIRY_LINE
+  QUOTATION
+  QUOTATION_LINE
+  CUSTOMER
+  CABLE
+  RAW_MATERIAL
+  TECHNICAL_OFFICE_REQUEST
+  COSTING
+}
+
+/// Governed metal rates (LME/commercial/internal). Amounts configured by costing team — never seeded with fake values.
+model CostingMetalRate {
+  id              String              @id @default(cuid())
+  code            String              @unique
+  name            String
+  description     String?
+  metalType       String
+  rate            Decimal?
+  currency        String              @default("USD")
+  unit            String              @default("per_ton")
+  rateSource      MetalRateSource     @default(INTERNAL_GOVERNED)
+  status          RecordStatus        @default(ACTIVE)
+  workflowStatus  CostingConfigStatus @default(DRAFT)
+  versionNo       Int                 @default(1)
+  isCurrent       Boolean             @default(true)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  sourceReference String?
+  changeNotes     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  submittedBy     String?
+  submittedAt     DateTime?
+  approvedBy      String?
+  approvedAt      DateTime?
+  activatedAt     DateTime?
+
+  @@index([metalType])
+  @@index([workflowStatus])
+  @@index([isCurrent])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+/// Incoterm + destination logistics cost rules. cost=null means CONFIGURATION_REQUIRED.
+model CostingLogisticsRule {
+  id              String              @id @default(cuid())
+  code            String              @unique
+  name            String
+  description     String?
+  incoterm        String
+  destination     String?
+  cost            Decimal?
+  currency        String?
+  basis           String?
+  status          RecordStatus        @default(ACTIVE)
+  workflowStatus  CostingConfigStatus @default(DRAFT)
+  priority        Int                 @default(100)
+  versionNo       Int                 @default(1)
+  isCurrent       Boolean             @default(true)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  sourceReference String?
+  changeNotes     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  submittedBy     String?
+  submittedAt     DateTime?
+  approvedBy      String?
+  approvedAt      DateTime?
+  activatedAt     DateTime?
+
+  @@index([incoterm, destination])
+  @@index([workflowStatus])
+  @@index([isCurrent])
+  @@index([priority])
+}
+
+/// Drum/packing cost rules linked to governed drum master. packingCost=null means CONFIGURATION_REQUIRED.
+model CostingPackingRule {
+  id              String              @id @default(cuid())
+  code            String              @unique
+  name            String
+  description     String?
+  drumCode        String?
+  packingCost     Decimal?
+  currency        String?
+  basis           String?
+  status          RecordStatus        @default(ACTIVE)
+  workflowStatus  CostingConfigStatus @default(DRAFT)
+  versionNo       Int                 @default(1)
+  isCurrent       Boolean             @default(true)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  sourceReference String?
+  changeNotes     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([drumCode])
+  @@index([workflowStatus])
+  @@index([isCurrent])
+}
+
+/// Admin-configurable field metadata (low-code). Does not replace mandatory domain fields.
+model PlatformFieldDefinition {
+  id               String              @id @default(cuid())
+  entityCode       PlatformEntityCode
+  fieldCode        String
+  label            String
+  description      String?
+  dataType         String
+  unit             String?
+  section          String?
+  /// UI tab grouping (metadata only — does not alter relational storage)
+  tab              String?
+  required         Boolean             @default(false)
+  readOnly         Boolean             @default(false)
+  searchable       Boolean             @default(false)
+  filterable       Boolean             @default(false)
+  sortable         Boolean             @default(false)
+  exportable       Boolean             @default(true)
+  visible          Boolean             @default(true)
+  customerVisible  Boolean             @default(false)
+  displayOrder     Int                 @default(100)
+  defaultValue     String?
+  minValue         String?
+  maxValue         String?
+  precision        Int?
+  helpText         String?
+  validationRules  Json?
+  roleVisibility   Json?
+  /// Field-level security policy (hideFromCustomer, requiredPermissionCodes, etc.)
+  fieldSecurity    Json?
+  lookupEntity     String?
+  lookupDisplayField String?
+  status           RecordStatus        @default(ACTIVE)
+  workflowStatus   CostingConfigStatus @default(DRAFT)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?
+  updatedBy        String?
+
+  @@unique([entityCode, fieldCode])
+  @@index([entityCode])
+  @@index([status])
+}
+
+/// Notification routing configuration (no hard-coded recipients).
+model NotificationRule {
+  id              String       @id @default(cuid())
+  code            String       @unique
+  name            String
+  description     String?
+  eventCode       String
+  recipientType   String
+  recipientValue  String
+  subjectTemplate String?
+  bodyTemplate    String?
+  active          Boolean      @default(true)
+  status          RecordStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([eventCode])
+  @@index([active])
+}
+
+/// Controlled report definition — executes via approved entity queries, never arbitrary SQL.
+model ReportDefinition {
+  id               String              @id @default(cuid())
+  code             String              @unique
+  name             String
+  description      String?
+  entityCode       String
+  fieldCodes       Json
+  filters          Json?
+  sortConfig       Json?
+  grouping         Json?
+  aggregations     Json?
+  roleVisibility   Json?
+  customerVisible  Boolean             @default(false)
+  status           RecordStatus        @default(ACTIVE)
+  workflowStatus   CostingConfigStatus @default(DRAFT)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?
+  updatedBy        String?
+
+  @@index([entityCode])
+  @@index([status])
+}
+
+/// Task 05I-B — configurable workflow runtime foundation.
+enum WorkflowInstanceStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkflowTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkflowAssignmentType {
+  USER
+  ROLE
+  GROUP
+}
+
+enum WorkflowEventType {
+  INSTANCE_STARTED
+  STEP_ENTERED
+  STEP_EXITED
+  TASK_CREATED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TRANSITION
+  INSTANCE_COMPLETED
+  INSTANCE_CANCELLED
+}
+
+model WorkflowTemplate {
+  id                 String              @id @default(cuid())
+  code               String
+  version            Int                 @default(1)
+  name               String
+  description        String?
+  inquiryProcessCode InquiryProcessCode?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  steps       WorkflowStep[]
+  transitions WorkflowTransition[]
+  instances   WorkflowInstance[]
+
+  @@unique([code, version])
+  @@index([code])
+}
+
+model WorkflowStep {
+  id                  String           @id @default(cuid())
+  templateId          String
+  template            WorkflowTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  stepCode            String
+  name                String
+  sortOrder           Int              @default(0)
+  isTerminal          Boolean          @default(false)
+  allowCustomerAction Boolean          @default(false)
+  requiredPermission  String?
+
+  @@unique([templateId, stepCode])
+  @@index([templateId])
+}
+
+model WorkflowTransition {
+  id             String           @id @default(cuid())
+  templateId     String
+  template       WorkflowTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  transitionCode String
+  fromStepCode   String
+  toStepCode     String
+  label          String?
+  conditionJson  Json?
+
+  @@unique([templateId, transitionCode])
+  @@index([templateId, fromStepCode])
+}
+
+model WorkflowInstance {
+  id               String                 @id @default(cuid())
+  templateId       String
+  template         WorkflowTemplate       @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  templateCode     String
+  templateVersion  Int
+  entityType       String
+  entityId         String
+  currentStepCode  String
+  status           WorkflowInstanceStatus @default(ACTIVE)
+  contextJson      Json?
+  customerMasterId String?
+  startedAt        DateTime               @default(now())
+  completedAt      DateTime?
+  startedBy        String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  tasks  WorkflowTask[]
+  events WorkflowEvent[]
+  stageTimings WorkflowStageTiming[]
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([customerMasterId])
+  @@index([templateCode, templateVersion])
+}
+
+model WorkflowTask {
+  id          String             @id @default(cuid())
+  instanceId  String
+  instance    WorkflowInstance   @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  stepCode    String
+  title       String
+  status      WorkflowTaskStatus @default(PENDING)
+  resultJson  Json?
+  dueAt       DateTime?
+  completedAt DateTime?
+  completedBy String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  assignments WorkflowAssignment[]
+
+  @@index([instanceId])
+  @@index([status])
+  @@index([stepCode])
+}
+
+model WorkflowAssignment {
+  id             String                 @id @default(cuid())
+  taskId         String
+  task           WorkflowTask           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  assignmentType WorkflowAssignmentType
+  assigneeRef    String
+
+  @@index([taskId])
+  @@index([assigneeRef])
+}
+
+model WorkflowEvent {
+  id           String             @id @default(cuid())
+  instanceId   String
+  instance     WorkflowInstance   @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  eventType    WorkflowEventType
+  fromStepCode String?
+  toStepCode   String?
+  taskId       String?
+  actorId      String?
+  actorName    String?
+  payloadJson  Json?
+  createdAt    DateTime           @default(now())
+
+  @@index([instanceId])
+  @@index([createdAt])
+}
+
+/// Server-side per-stage timing for STANDARD_WORKFLOW (not frontend-only).
+model WorkflowStageTiming {
+  id               String           @id @default(cuid())
+  instanceId       String
+  instance         WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  stepCode         String
+  startedAt        DateTime
+  completedAt      DateTime?
+  durationSeconds  Int?
+  owner            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([instanceId])
+  @@index([instanceId, stepCode])
+}
+
+enum EmailOutboxStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+/// Durable email queue. SMTP failure never rolls back the business transaction.
+model EmailOutbox {
+  id                  String            @id @default(cuid())
+  toAddress           String
+  subject             String
+  bodyText            String
+  eventCode           String
+  entityType          String?
+  entityId            String?
+  status              EmailOutboxStatus @default(QUEUED)
+  attempts            Int               @default(0)
+  lastError           String?
+  providerConfigured  Boolean           @default(false)
+  sentAt              DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([status])
+  @@index([eventCode])
+  @@index([entityType, entityId])
+}
+
+/// In-app notification for the existing header bell.
+model UserNotification {
+  id              String       @id @default(cuid())
+  userAccountId   String?
+  userAccount     UserAccount? @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  roleCode        String?
+  title           String
+  message         String
+  eventCode       String
+  entityType      String?
+  entityId        String?
+  readAt          DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@index([userAccountId, readAt])
+  @@index([roleCode])
+  @@index([createdAt])
+}
+
+/// Task 05I-DD — Container Study persistence foundation (no calculation engine).
+enum ContainerStudyStatus {
+  DRAFT
+  VALIDATED
+  CONFIRMED
+  SUPERSEDED
+}
+
+enum ContainerStuffingMethod {
+  Rolling
+  Forklifting
+}
+
+enum ContainerStudyRegion {
+  Europe
+  Africa
+}
+
+enum DeliveryAllocationMode {
+  ENTIRE_INQUIRY
+  PER_INQUIRY_LINE
+  DESTINATION_CLUSTER
+}
+
+/// Task 05I-DF-B1 — shipment group lifecycle (Logistics-owned).
+/// SUPERSEDED = identity replaced by a new group (B4-A); historical studies remain.
+enum ShipmentGroupStatus {
+  DRAFT
+  ACTIVE
+  LOCKED
+  SUPERSEDED
+}
+
+enum ContainerDimensionsStatus {
+  PENDING_APPROVAL
+  APPROVED
+}
+
+enum AlgorithmImplementationStatus {
+  NOT_IMPLEMENTED
+  BLOCKED
+  ENABLED
+}
+
+enum AlgorithmConfigStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+  INACTIVE
+}
+
+enum AlgorithmParameterRuleStatus {
+  ENABLED
+  DISABLED
+  BLOCKED
+}
+
+enum ContainerMasterRecordStatus {
+  ACTIVE
+  INACTIVE
+  SUPERSEDED
+}
+
+model ContainerType {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions          ContainerTypeVersion[]
+  shippingCostRates ShippingCostRate[]
+
+  @@index([active])
+}
+
+/// B4-B — platform destination-port master. Canonical identity is `code` (UPPER+trim), not display name.
+model DestinationPort {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  countryCode String
+  active      Boolean  @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  shippingCostRates ShippingCostRate[]
+  customerDeliveryCombinations CustomerDeliveryCombination[]
+
+  @@index([active])
+  @@index([countryCode])
+}
+
+/// B4-B — platform Incoterm master. Canonical identity is `code` (UPPER+trim).
+model Incoterm {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  shippingCostRates ShippingCostRate[]
+  customerDeliveryCombinations CustomerDeliveryCombination[]
+  customerShippingCostRates CustomerShippingCostRate[]
+  shippingCostSnapshots ShippingCostTransactionSnapshot[]
+
+  @@index([active])
+}
+
+/// Customer-specific approved delivery combinations (customer + country + incoterm + destination port).
+/// Do not treat ports or incoterms as independently mixable global options.
+model CustomerDeliveryCombination {
+  id                  String          @id @default(cuid())
+  customerId          String
+  customer            Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  countryCode         String
+  countryLabel        String
+  incotermCode        String
+  incoterm            Incoterm        @relation(fields: [incotermCode], references: [code], onDelete: Restrict)
+  destinationPortCode String
+  destinationPort     DestinationPort @relation(fields: [destinationPortCode], references: [code], onDelete: Restrict)
+  active              Boolean         @default(true)
+  isDefault           Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  createdBy           String?
+  updatedBy           String?
+
+  @@unique([customerId, countryCode, incotermCode, destinationPortCode])
+  @@index([customerId, active])
+  @@index([destinationPortCode])
+  @@index([incotermCode])
+}
+
+/// B4-B — governed customer-shipment rate. Grain = dest + incoterm + container type + covering date.
+/// Amount/currency/grain/effectiveFrom are immutable after create. Do not reuse CostingLogisticsRule.
+model ShippingCostRate {
+  id                   String   @id @default(cuid())
+  destinationPortCode  String
+  destinationPort      DestinationPort @relation(fields: [destinationPortCode], references: [code], onDelete: Restrict)
+  incotermCode         String
+  incoterm             Incoterm        @relation(fields: [incotermCode], references: [code], onDelete: Restrict)
+  containerTypeCode    String
+  containerType        ContainerType   @relation(fields: [containerTypeCode], references: [code], onDelete: Restrict)
+  rateAmount           Decimal
+  currencyCode         String
+  currency             CostingCurrency @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  effectiveFrom        DateTime @db.Date
+  effectiveTo          DateTime? @db.Date
+  active               Boolean  @default(true)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  snapshotLines ShipmentCostSnapshotLine[]
+
+  @@index([destinationPortCode, incotermCode, containerTypeCode, active, effectiveFrom], map: "ShippingCostRate_grain_active_from_idx")
+  @@index([destinationPortCode, incotermCode, containerTypeCode], map: "ShippingCostRate_grain_idx")
+  @@index([currencyCode])
+  @@index([active])
+}
+
+/// Customer-lane shipping cost master. Distinct from B4-B ShippingCostRate
+/// (destination port + container type code). A new price is a new version.
+/// Historical rows are never updated in place. Logical key:
+/// customer + delivery point + incoterm + container type.
+enum CustomerShippingCostRateStatus {
+  ACTIVE
+  SUPERSEDED
+}
+
+model CustomerShippingCostRate {
+  id            String                         @id @default(cuid())
+  customerId    String
+  customer      Customer                       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  /// Business label. Canonical values: "Doncaster/SD or HC", "Doncaster/RORO", "Rotterdam".
+  deliveryPoint String
+  incotermId    String
+  incoterm      Incoterm                       @relation(fields: [incotermId], references: [id], onDelete: Restrict)
+  /// Business label. Canonical values: "20' SD", "40' SD/HC".
+  containerType String
+  amount        Decimal                        @db.Decimal(18, 2)
+  currency      String
+  effectiveFrom DateTime                       @db.Date
+  effectiveTo   DateTime?                      @db.Date
+  status        CustomerShippingCostRateStatus @default(ACTIVE)
+  version       Int
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime                       @default(now())
+  updatedAt     DateTime                       @updatedAt
+
+  snapshots ShippingCostTransactionSnapshot[]
+
+  @@unique([customerId, deliveryPoint, incotermId, containerType, version], map: "CustomerShippingCostRate_family_version_key")
+  @@index([customerId, deliveryPoint, incotermId, containerType, status], map: "CustomerShippingCostRate_family_status_idx")
+  @@index([customerId])
+  @@index([incotermId])
+  @@index([status, effectiveFrom])
+}
+
+/// Frozen shipping facts for a container-study result and/or an issued commercial offer.
+/// Does not write CostingRun or CommercialPricingSnapshot and does not reprice the offer.
+/// Hook: quotation issue copies an already applied amount into commercialOfferSnapshot.shippingCostSnapshot.
+model ShippingCostTransactionSnapshot {
+  id                     String    @id @default(cuid())
+  resolutionCode         String
+  customerId             String?
+  customer               Customer? @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  deliveryPoint          String?
+  incotermId             String?
+  incoterm               Incoterm? @relation(fields: [incotermId], references: [id], onDelete: Restrict)
+  containerType          String?
+  shippingCostRateId     String?
+  shippingCostRate       CustomerShippingCostRate? @relation(fields: [shippingCostRateId], references: [id], onDelete: Restrict)
+  shippingRateVersion    Int?
+  amount                 Decimal?  @db.Decimal(18, 2)
+  currency               String?
+  appliedAt              DateTime  @default(now())
+  blocksPacking          Boolean   @default(false)
+  containerStudyResultId String?   @unique
+  containerStudyResult   ContainerStudyResult? @relation(fields: [containerStudyResultId], references: [id], onDelete: Cascade)
+  quotationId            String?   @unique
+  quotation              CommercialQuotation? @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([customerId])
+  @@index([incotermId])
+  @@index([shippingCostRateId])
+  @@index([resolutionCode])
+}
+
+model ContainerTypeVersion {
+  id                String                     @id @default(cuid())
+  containerTypeId   String
+  containerType     ContainerType                @relation(fields: [containerTypeId], references: [id], onDelete: Restrict)
+  versionNo         Int
+  parityLabel       String
+  usableLengthMm    Decimal?
+  internalWidthMm   Decimal?
+  payloadCapacityKg Decimal?
+  dimensionsStatus  ContainerDimensionsStatus   @default(PENDING_APPROVAL)
+  status            ContainerMasterRecordStatus @default(ACTIVE)
+  isCurrent         Boolean                     @default(true)
+  effectiveFrom     DateTime                    @default(now())
+  effectiveTo       DateTime?
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  createdBy         String?
+
+  snapshotPins ContainerStudyInputSnapshotContainerPin[]
+
+  @@unique([containerTypeId, versionNo])
+  @@index([containerTypeId, isCurrent])
+  @@index([parityLabel])
+  @@index([status])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model AlgorithmVersionRegistry {
+  id                   String                         @id @default(cuid())
+  code                 String                         @unique
+  name                 String
+  implementationStatus AlgorithmImplementationStatus    @default(NOT_IMPLEMENTED)
+  notes                String?
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
+
+  configurations AlgorithmConfiguration[]
+
+  @@index([implementationStatus])
+}
+
+model AlgorithmConfiguration {
+  id                   String                 @id @default(cuid())
+  configurationVersion String                 @unique
+  algorithmVersionId   String
+  algorithmVersion     AlgorithmVersionRegistry @relation(fields: [algorithmVersionId], references: [id], onDelete: Restrict)
+  status               AlgorithmConfigStatus @default(DRAFT)
+  effectiveFrom        DateTime?
+  effectiveTo          DateTime?
+  activatedAt          DateTime?
+  activatedBy          String?
+  notes                String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime             @updatedAt
+  createdBy            String?
+
+  parameters AlgorithmConfigurationParameter[]
+  snapshots  ContainerStudyInputSnapshot[]
+
+  @@index([status])
+  @@index([algorithmVersionId])
+}
+
+model AlgorithmConfigurationParameter {
+  id                 String                       @id @default(cuid())
+  configurationId    String
+  configuration      AlgorithmConfiguration          @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  name               String
+  value              String
+  numericValue       Decimal?
+  unit               String?
+  scope              String
+  ruleStatus         AlgorithmParameterRuleStatus  @default(ENABLED)
+  notes              String?
+
+  @@unique([configurationId, name])
+  @@index([name])
+}
+
+model DrumPackingProfile {
+  id           String       @id @default(cuid())
+  drumMasterId String?
+  drumMaster   DrumMaster?  @relation(fields: [drumMasterId], references: [id], onDelete: Restrict)
+  drumCode     String
+  description  String?
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  versions DrumPackingProfileVersion[]
+
+  @@index([drumCode])
+  @@index([drumMasterId])
+  @@index([active])
+}
+
+model DrumPackingProfileVersion {
+  id              String                     @id @default(cuid())
+  profileId       String
+  profile         DrumPackingProfile         @relation(fields: [profileId], references: [id], onDelete: Restrict)
+  versionNo       Int
+  packedLengthMm  Decimal?
+  packedWidthMm   Decimal?
+  packedHeightMm  Decimal?
+  status          ContainerMasterRecordStatus @default(ACTIVE)
+  isCurrent       Boolean                     @default(true)
+  effectiveFrom   DateTime                    @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt         DateTime                   @updatedAt
+  createdBy       String?
+
+  snapshotDrums ContainerStudyInputDrum[]
+
+  @@unique([profileId, versionNo])
+  @@index([profileId, isCurrent])
+  @@index([status])
+}
+
+model ContainerShipmentGroup {
+  id                          String                 @id @default(cuid())
+  inquiryId                   String
+  inquiry                     CommercialInquiry      @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  inquiryLineId               String?
+  inquiryLine                 CommercialInquiryLine? @relation(fields: [inquiryLineId], references: [id], onDelete: Restrict)
+  groupCode                   String
+  deliveryAllocationMode      DeliveryAllocationMode  @default(ENTIRE_INQUIRY)
+  destinationKey              String?
+  destinationPortCode         String?
+  incotermCode                String?
+  containerTypePreferenceCode String?
+  status                      ShipmentGroupStatus    @default(ACTIVE)
+  versionNo                   Int                    @default(1)
+  notes                       String?
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
+  createdBy                   String?
+
+  studies               ContainerStudy[]
+  memberLines           ContainerShipmentGroupLine[]
+  shipmentCostSnapshots ShipmentCostSnapshot[]
+  financialOfferShipmentLines FinancialOfferShipmentLine[]
+  serviceCases                CustomerServiceCase[]
+
+  @@unique([inquiryId, groupCode])
+  @@index([inquiryId])
+  @@index([inquiryLineId])
+}
+
+/// B4-A — authoritative shipment-group membership. inquiryLineId on the group is a PER_INQUIRY_LINE compatibility mirror.
+model ContainerShipmentGroupLine {
+  id              String                 @id @default(cuid())
+  shipmentGroupId String
+  shipmentGroup   ContainerShipmentGroup @relation(fields: [shipmentGroupId], references: [id], onDelete: Cascade)
+  inquiryLineId   String
+  inquiryLine     CommercialInquiryLine  @relation(fields: [inquiryLineId], references: [id], onDelete: Restrict)
+  createdAt       DateTime               @default(now())
+
+  @@unique([shipmentGroupId, inquiryLineId])
+  @@index([shipmentGroupId])
+  @@index([inquiryLineId])
+}
+
+model ContainerStudy {
+  id                      String                 @id @default(cuid())
+  studyNumber              String
+  versionNo               Int                    @default(1)
+  inquiryId               String
+  inquiry                 CommercialInquiry      @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  shipmentGroupId         String
+  shipmentGroup           ContainerShipmentGroup @relation(fields: [shipmentGroupId], references: [id], onDelete: Restrict)
+  customerId              String
+  customerMasterId       String?
+  customerMaster          Customer?               @relation(fields: [customerMasterId], references: [id], onDelete: Restrict)
+  status                  ContainerStudyStatus  @default(DRAFT)
+  stuffingMethod          ContainerStuffingMethod
+  region                  ContainerStudyRegion
+  deliveryAllocationMode DeliveryAllocationMode
+  currentSnapshotId      String?                 @unique
+  currentSnapshot         ContainerStudyInputSnapshot? @relation("StudyCurrentSnapshot", fields: [currentSnapshotId], references: [id], onDelete: Restrict)
+  currentResultId         String?                 @unique
+  currentResult           ContainerStudyResult?  @relation("StudyCurrentResult", fields: [currentResultId], references: [id], onDelete: Restrict)
+  supersedesStudyId      String?
+  createdBy               String?
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+
+  snapshots             ContainerStudyInputSnapshot[] @relation("StudySnapshots")
+  results               ContainerStudyResult[]          @relation("StudyResults")
+  shipmentCostSnapshots ShipmentCostSnapshot[]
+
+  @@unique([studyNumber, versionNo])
+  @@index([inquiryId])
+  @@index([shipmentGroupId])
+  @@index([customerId])
+  @@index([customerMasterId])
+  @@index([status])
+  @@index([studyNumber])
+}
+
+model ContainerStudyInputSnapshot {
+  id                       String                 @id @default(cuid())
+  snapshotId               String                 @unique
+  studyId                  String
+  study                    ContainerStudy        @relation("StudySnapshots", fields: [studyId], references: [id], onDelete: Restrict)
+  stuffingMethod           ContainerStuffingMethod
+  region                   ContainerStudyRegion
+  deliveryAllocationMode  DeliveryAllocationMode
+  algorithmVersionCode     String
+  configurationId          String
+  configuration            AlgorithmConfiguration @relation(fields: [configurationId], references: [id], onDelete: Restrict)
+  configurationVersion     String
+  containerMasterPinJson   Json
+  packingProfilePinJson   Json
+  algorithmParameterPinJson Json
+  lineageProvenanceJson    Json?
+  payloadUsedKg            Decimal?
+  containerWidthUsedMm     Decimal?
+  capturedAt               DateTime               @default(now())
+  capturedBy               String?
+  createdAt                DateTime               @default(now())
+
+  drums          ContainerStudyInputDrum[]
+  containerPins  ContainerStudyInputSnapshotContainerPin[]
+  currentFor     ContainerStudy?            @relation("StudyCurrentSnapshot")
+  results        ContainerStudyResult[]
+
+  @@index([studyId])
+  @@index([configurationId])
+  @@index([capturedAt])
+}
+
+model ContainerStudyInputSnapshotContainerPin {
+  id                     String                      @id @default(cuid())
+  snapshotId             String
+  snapshot               ContainerStudyInputSnapshot   @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  containerTypeVersionId String
+  containerTypeVersion   ContainerTypeVersion           @relation(fields: [containerTypeVersionId], references: [id], onDelete: Restrict)
+  code                   String
+  parityLabel            String
+  usableLengthMm         Decimal?
+  internalWidthMm        Decimal?
+  payloadCapacityKg      Decimal?
+  dimensionsStatus       ContainerDimensionsStatus
+
+  @@index([snapshotId])
+  @@index([containerTypeVersionId])
+}
+
+model ContainerStudyInputDrum {
+  id                       String                      @id @default(cuid())
+  snapshotId               String
+  snapshot                 ContainerStudyInputSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  sourceLineId             String
+  quantity                 Int
+  drumCode                 String?
+  drumMasterId             String?
+  packingProfileVersionId String?
+  packingProfileVersion    DrumPackingProfileVersion?  @relation(fields: [packingProfileVersionId], references: [id], onDelete: Restrict)
+  packedLengthMm           Decimal?
+  packedWidthMm            Decimal?
+  packedHeightMm           Decimal?
+  grossWeightKg            Decimal?
+
+  @@unique([snapshotId, sourceLineId])
+  @@index([snapshotId])
+  @@index([sourceLineId])
+  @@index([packingProfileVersionId])
+}
+
+model ContainerStudyResult {
+  id                   String                      @id @default(cuid())
+  resultId             String                      @unique
+  studyId              String
+  study                ContainerStudy             @relation("StudyResults", fields: [studyId], references: [id], onDelete: Restrict)
+  studyVersionNo       Int
+  inputSnapshotId      String
+  inputSnapshot        ContainerStudyInputSnapshot @relation(fields: [inputSnapshotId], references: [id], onDelete: Restrict)
+  algorithmVersionCode String
+  configurationVersion String
+  containerMasterPinJson Json
+  packingProfilePinJson Json
+  summaryJson          Json?
+  warningsJson         Json?
+  errorsJson           Json?
+  calculatedAt         DateTime                    @default(now())
+  createdAt            DateTime                    @default(now())
+
+  containers            ContainerStudyResultContainer[]
+  allocations           ContainerStudyResultAllocation[]
+  unallocated           ContainerStudyResultUnallocated[]
+  currentFor            ContainerStudy?                   @relation("StudyCurrentResult")
+  shipmentCostSnapshot  ShipmentCostSnapshot?
+  /// Financial shipping application. Not part of the physical packing result.
+  customerShippingSnapshot ShippingCostTransactionSnapshot?
+  costingRuns           CostingRun[]
+  costingCalculations   CostingCalculation[]
+
+  @@index([studyId])
+  @@index([inputSnapshotId])
+  @@index([calculatedAt])
+}
+
+model ContainerStudyResultContainer {
+  id                  String               @id @default(cuid())
+  resultId            String
+  result              ContainerStudyResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  containerIndex      Int
+  typeCode            String?
+  parityLabel         String?
+  usableLengthMm      Decimal?
+  loadedWeightKg      Decimal?
+  remainingWeightKg  Decimal?
+  remainingLengthMm  Decimal?
+  utilizationWeightPct Decimal?
+  utilizationLengthPct Decimal?
+  utilizationWidthPct Decimal?
+  drumCountQ3         Int                   @default(0)
+  secondLayerEnabled  Boolean               @default(false)
+
+  allocations ContainerStudyResultAllocation[]
+
+  @@unique([resultId, containerIndex])
+  @@index([resultId])
+}
+
+model ContainerStudyResultAllocation {
+  id               String                         @id @default(cuid())
+  resultId         String
+  result           ContainerStudyResult           @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  containerId      String
+  container        ContainerStudyResultContainer  @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  physicalDrumKey  String
+  sourceLineId     String
+  instanceIndex    Int
+  allocationKind   String                           @default("PHYSICAL")
+  acceptReason     String?
+
+  @@unique([resultId, physicalDrumKey])
+  @@index([resultId])
+  @@index([physicalDrumKey])
+  @@index([containerId])
+}
+
+model ContainerStudyResultUnallocated {
+  id              String               @id @default(cuid())
+  resultId        String
+  result          ContainerStudyResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  physicalDrumKey String
+  sourceLineId    String
+  instanceIndex   Int
+  reasonCode      String
+  detail          String?
+  traceRef        String?
+
+  @@unique([resultId, physicalDrumKey])
+  @@index([resultId])
+  @@index([physicalDrumKey])
+  @@index([reasonCode])
+}
+
+/// B4-C — immutable customer-shipment proof for one CONFIRMED ContainerStudyResult.
+/// No status machine. Dest/incoterm are copied codes, not FKs to DestinationPort/Incoterm.
+model ShipmentCostSnapshot {
+  id                     String   @id @default(cuid())
+  inquiryId              String
+  inquiry                CommercialInquiry      @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  shipmentGroupId        String
+  shipmentGroup          ContainerShipmentGroup @relation(fields: [shipmentGroupId], references: [id], onDelete: Restrict)
+  containerStudyId       String
+  containerStudy         ContainerStudy         @relation(fields: [containerStudyId], references: [id], onDelete: Restrict)
+  containerStudyResultId String   @unique
+  containerStudyResult   ContainerStudyResult   @relation(fields: [containerStudyResultId], references: [id], onDelete: Restrict)
+  destinationPortCode    String
+  incotermCode           String
+  rateAsOfDate           DateTime @db.Date
+  totalAmount            Decimal
+  currencyCode           String
+  createdBy              String?
+  createdAt              DateTime @default(now())
+
+  lines ShipmentCostSnapshotLine[]
+  financialOfferShipmentLines FinancialOfferShipmentLine[]
+
+  @@index([inquiryId])
+  @@index([shipmentGroupId])
+  @@index([containerStudyId])
+}
+
+/// B4-C line: container-count × copied B4-B rate evidence. Copied amount is source of truth.
+model ShipmentCostSnapshotLine {
+  id                     String               @id @default(cuid())
+  shipmentCostSnapshotId String
+  shipmentCostSnapshot   ShipmentCostSnapshot @relation(fields: [shipmentCostSnapshotId], references: [id], onDelete: Cascade)
+  containerTypeCode      String
+  containerQuantity      Int
+  shippingCostRateId     String
+  shippingCostRate       ShippingCostRate     @relation(fields: [shippingCostRateId], references: [id], onDelete: Restrict)
+  rateAmount             Decimal
+  currencyCode           String
+  effectiveFrom          DateTime             @db.Date
+  effectiveTo            DateTime?            @db.Date
+  lineTotal              Decimal
+
+  @@unique([shipmentCostSnapshotId, containerTypeCode])
+  @@index([shipmentCostSnapshotId])
+  @@index([shippingCostRateId])
+}
+
+/// B4-D — immutable financial aggregation SoT (D4-D-2).
+/// Consumes quotation-hosted CommercialPricingSnapshot (D4-D-1) + B4-C ShipmentCostSnapshot.
+/// One current row per inquiry is enforced by SQL partial unique index (D4-D-3), not Prisma @@unique.
+/// No status machine. No CostingRun FK. No FX. Does not write CommercialQuotation.commercialOfferSnapshot.
+model FinancialOfferSnapshot {
+  id                          String   @id @default(cuid())
+  inquiryId                   String
+  inquiry                     CommercialInquiry @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  versionNo                   Int
+  isCurrent                   Boolean  @default(true)
+  supersedesOfferId           String?
+  supersedesOffer             FinancialOfferSnapshot?  @relation("FinancialOfferLineage", fields: [supersedesOfferId], references: [id], onDelete: Restrict)
+  successors                  FinancialOfferSnapshot[] @relation("FinancialOfferLineage")
+  /// D4-D-1 provenance: DRAFT quotation that hosted the consumed pricing snapshots. Not a financial SoT.
+  hostQuotationId             String
+  hostQuotation               CommercialQuotation @relation(fields: [hostQuotationId], references: [id], onDelete: Restrict)
+  currencyCode                String
+  productsTotal               Decimal
+  shipmentTotal               Decimal
+  inquiryTotal                Decimal
+  /// Internal warnings only (D4-D-4). Not a customer-display contract.
+  warningsJson                Json?
+  pricingSnapshotIdsJson      Json
+  shipmentCostSnapshotIdsJson Json
+  createdBy                   String?
+  createdAt                   DateTime @default(now())
+
+  productLines  FinancialOfferProductLine[]
+  shipmentLines FinancialOfferShipmentLine[]
+
+  @@unique([inquiryId, versionNo])
+  @@index([inquiryId])
+  @@index([hostQuotationId])
+  @@index([supersedesOfferId])
+}
+
+model FinancialOfferProductLine {
+  id                          String @id @default(cuid())
+  snapshotId                  String
+  snapshot                    FinancialOfferSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  inquiryLineId               String
+  inquiryLine                 CommercialInquiryLine @relation(fields: [inquiryLineId], references: [id], onDelete: Restrict)
+  commercialPricingSnapshotId String
+  commercialPricingSnapshot   CommercialPricingSnapshot @relation(fields: [commercialPricingSnapshotId], references: [id], onDelete: Restrict)
+  materialNumber              String
+  description                 String
+  quantity                    Decimal
+  quantityUom                 String
+  lengthMeters                Decimal
+  unitPrice                   Decimal
+  lineTotal                   Decimal
+  currencyCode                String
+
+  @@unique([snapshotId, inquiryLineId])
+  @@index([snapshotId])
+  @@index([inquiryLineId])
+  @@index([commercialPricingSnapshotId])
+}
+
+model FinancialOfferShipmentLine {
+  id                     String @id @default(cuid())
+  snapshotId             String
+  snapshot               FinancialOfferSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  shipmentGroupId        String
+  shipmentGroup          ContainerShipmentGroup @relation(fields: [shipmentGroupId], references: [id], onDelete: Restrict)
+  shipmentCostSnapshotId String?
+  shipmentCostSnapshot   ShipmentCostSnapshot? @relation(fields: [shipmentCostSnapshotId], references: [id], onDelete: Restrict)
+  destinationPortCode    String
+  incotermCode           String
+  currencyCode           String
+  groupTotal             Decimal
+  typeLines              FinancialOfferShipmentTypeLine[]
+
+  @@unique([snapshotId, shipmentGroupId])
+  @@index([snapshotId])
+  @@index([shipmentGroupId])
+  @@index([shipmentCostSnapshotId])
+}
+
+model FinancialOfferShipmentTypeLine {
+  id                  String @id @default(cuid())
+  offerShipmentLineId String
+  offerShipmentLine   FinancialOfferShipmentLine @relation(fields: [offerShipmentLineId], references: [id], onDelete: Cascade)
+  containerTypeCode   String
+  containerQuantity   Int
+  shippingCostRateId  String?
+  rateAmount          Decimal
+  currencyCode        String
+  lineTotal           Decimal
+
+  @@unique([offerShipmentLineId, containerTypeCode])
+  @@index([offerShipmentLineId])
+}
+
+enum CustomerServiceCaseStatus {
+  OPEN
+  IN_PROGRESS
+  AWAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum CustomerServiceCaseType {
+  COMPLAINT
+  TECHNICAL_SUPPORT
+  GENERAL_SUPPORT
+  INFORMATION_REQUEST
+}
+
+enum SupportChatChannel {
+  AI_ASSISTANT
+  ENGINEER
+}
+
+enum SupportChatEngineerStatus {
+  AVAILABLE
+  WAITING
+  ASSIGNED
+}
+
+enum SupportChatRole {
+  CUSTOMER
+  ASSISTANT
+  SYSTEM
+}
+
+enum CustomerServiceCasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CaseCommentVisibility {
+  CUSTOMER
+  INTERNAL
+}
+
+enum CaseAssignmentDepartment {
+  CUSTOMER_SERVICE
+  SALES
+  TECHNICAL_OFFICE
+  QUALITY
+  LOGISTICS
+  FINANCE
+  PRODUCTION
+}
+
+/// Controlled complaint category master. Seed only — do not hardcode in UI.
+model ComplaintCategory {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subcategories ComplaintSubcategory[]
+  cases         CustomerServiceCase[]
+
+  @@index([active, sortOrder])
+}
+
+model ComplaintSubcategory {
+  id         String            @id @default(cuid())
+  categoryId String
+  category   ComplaintCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code       String
+  name       String
+  sortOrder  Int               @default(0)
+  active     Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  cases CustomerServiceCase[]
+
+  @@unique([categoryId, code])
+  @@index([categoryId, active, sortOrder])
+}
+
+/// Customer Service / complaint case (CRM-lite). Numbered CS-YY-##### via CUSTOMER_SERVICE_CASE.
+model CustomerServiceCase {
+  id                         String                       @id @default(cuid())
+  caseNumber                 String                       @unique
+  customerId                 String
+  customer                   Customer                     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  subject                    String
+  description                String
+  status                     CustomerServiceCaseStatus    @default(OPEN)
+  caseType                   CustomerServiceCaseType?
+  priority                   CustomerServiceCasePriority  @default(MEDIUM)
+  issueDate                  DateTime                     @default(now())
+  categoryId                 String
+  category                   ComplaintCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategoryId              String?
+  subcategory                ComplaintSubcategory?        @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  inquiryId                  String?
+  inquiry                    CommercialInquiry?           @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+  inquiryLineId              String?
+  inquiryLine                CommercialInquiryLine?       @relation(fields: [inquiryLineId], references: [id], onDelete: SetNull)
+  cableMaterialNumber        String?
+  cable                      CableMaster?                 @relation(fields: [cableMaterialNumber], references: [materialNumber], onDelete: SetNull)
+  quotationId                String?
+  quotation                  CommercialQuotation?         @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  salesOrderId               String?
+  salesOrder                 EpcSalesOrder?               @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+  shipmentGroupId            String?
+  shipmentGroup              ContainerShipmentGroup?      @relation(fields: [shipmentGroupId], references: [id], onDelete: SetNull)
+  drumMasterId               String?
+  drumMaster                 DrumMaster?                  @relation(fields: [drumMasterId], references: [id], onDelete: SetNull)
+  drumType                   String?
+  drumPlanId                 String?
+  affectedQuantity           Decimal?
+  affectedQuantityUom        String?
+  affectedLengthMeters       Decimal?
+  requestedResolution        String?
+  assignedDepartment         CaseAssignmentDepartment?
+  assignedRepresentativeName String?
+  createdBy                  String?
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+
+  comments      CaseComment[]
+  attachments   CaseAttachment[]
+  assignments   CaseAssignment[]
+  statusHistory CaseStatusHistory[]
+  resolution    CaseResolution?
+  chatSessions  SupportChatSession[]
+
+  @@index([customerId, status])
+  @@index([customerId, createdAt])
+  @@index([categoryId])
+  @@index([inquiryId])
+  @@index([inquiryLineId])
+  @@index([quotationId])
+  @@index([salesOrderId])
+  @@index([shipmentGroupId])
+  @@index([status])
+  @@index([issueDate])
+}
+
+model CaseComment {
+  id            String                 @id @default(cuid())
+  caseId        String
+  case          CustomerServiceCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  visibility    CaseCommentVisibility  @default(CUSTOMER)
+  body          String
+  createdBy     String?
+  createdByName String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@index([caseId, createdAt])
+  @@index([caseId, visibility])
+}
+
+model CaseAttachment {
+  id            String                 @id @default(cuid())
+  caseId        String
+  case          CustomerServiceCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fileName      String
+  mimeType      String
+  byteSize      Int
+  content       Bytes
+  visibility    CaseCommentVisibility  @default(CUSTOMER)
+  uploadedBy    String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@index([caseId])
+  @@index([caseId, visibility])
+}
+
+/// Internal routing history. Customer sees current department / representative only.
+model CaseAssignment {
+  id               String                   @id @default(cuid())
+  caseId           String
+  case             CustomerServiceCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  department       CaseAssignmentDepartment
+  assignedToUserId String?
+  assignedToName   String?
+  assignedBy       String?
+  note             String?
+  assignedAt       DateTime                 @default(now())
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  @@index([caseId, assignedAt])
+  @@index([department])
+}
+
+/// Immutable status trail. Application never updates or deletes rows.
+model CaseStatusHistory {
+  id            String                    @id @default(cuid())
+  caseId        String
+  case          CustomerServiceCase       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromStatus    CustomerServiceCaseStatus?
+  toStatus      CustomerServiceCaseStatus
+  changedBy     String?
+  changedByName String?
+  note          String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@index([caseId, createdAt])
+}
+
+model CaseResolution {
+  id                   String              @id @default(cuid())
+  caseId               String              @unique
+  case                 CustomerServiceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  internalNotes        String?
+  resolutionSummary    String
+  resolvedBy           String?
+  resolvedAt           DateTime            @default(now())
+  customerConfirmed    Boolean             @default(false)
+  customerConfirmedAt  DateTime?
+  customerConfirmedBy  String?
+  reopenRequested      Boolean             @default(false)
+  reopenRequestedAt    DateTime?
+  reopenRequestedBy    String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+}
+
+/// Customer Help & Support chat. One session per customer per channel.
+/// AI replies are scripted. Engineer channel persists a request + optional case link.
+model SupportChatSession {
+  id             String                     @id @default(cuid())
+  customerId     String
+  customer       Customer                   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  channel        SupportChatChannel
+  engineerStatus SupportChatEngineerStatus  @default(AVAILABLE)
+  caseId         String?
+  case           CustomerServiceCase?       @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  inquiryId      String?
+  inquiry        CommercialInquiry?         @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+  createdBy      String?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  messages       SupportChatMessage[]
+
+  @@unique([customerId, channel])
+  @@index([customerId, channel])
+  @@index([caseId])
+  @@index([inquiryId])
+}
+
+model SupportChatMessage {
+  id            String                @id @default(cuid())
+  sessionId     String
+  session       SupportChatSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          SupportChatRole
+  visibility    CaseCommentVisibility @default(CUSTOMER)
+  body          String
+  createdBy     String?
+  createdByName String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([sessionId, createdAt])
+  @@index([sessionId, visibility])
+}

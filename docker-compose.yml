@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: energya-connect-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: energya
+      POSTGRES_PASSWORD: energya_dev
+      POSTGRES_DB: energya_connect
+    volumes:
+      - energya_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U energya -d energya_connect"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  energya_pgdata:

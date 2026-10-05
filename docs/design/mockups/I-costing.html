@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Costing Workspace (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-700:#143a78;--brand-800:#0f2c5c;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--warning:#d97706;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.sb{background:var(--brand-800);color:#cdd9ee;padding:14px 10px;overflow:auto}
+.sb .logo{height:30px;margin:4px 8px 14px}
+.sb .title{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:700;color:#fff;font-size:13px;padding:8px;background:#ffffff12;border-radius:9px;margin-bottom:10px}
+.sb .g{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#7f9bcb;margin:12px 8px 6px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:12.5px;color:#cdd9ee;cursor:pointer;margin-bottom:2px}
+.ni:hover{background:#ffffff12}.ni.active{background:var(--brand-500);color:#fff}
+main{padding:18px 22px;overflow:auto}
+.hdr{display:flex;justify-content:space-between;align-items:center}
+.crumb{font-size:12px;color:#94a3b8}h1{font-family:var(--fd);font-size:20px;color:var(--brand-900)}
+.optb{background:#eef3fb;border:1px solid #dbe5f5;color:var(--brand-700);font-size:12px;padding:8px 12px;border-radius:9px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.card h3{font-family:var(--fd);font-size:13px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.form{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:11px;color:#64748b;margin-bottom:3px}
+.f input,.f select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px}
+.btn{padding:9px 14px;border-radius:9px;font-family:var(--fd);font-weight:600;font-size:13px;border:none;background:var(--brand-500);color:#fff;cursor:pointer;margin:0 16px 14px}
+.gates{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}
+.gate{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:#c6e6c6;color:#0f5a24}
+.total{padding:16px;border-top:1px solid var(--border)}
+.total .l{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
+.total .v{font-family:var(--fd);font-size:32px;font-weight:700;color:var(--brand-900)}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{background:var(--subtle);text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;color:#64748b;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+.scroll{overflow-x:auto}
+.src{font-size:9px;background:#eef3fb;color:var(--brand-600);padding:1px 7px;border-radius:999px}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sb{display:none}.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+</style></head><body>
+<div class="app">
+  <aside class="sb">
+    <img class="logo" src="/logo.png" alt="Energya" onerror="this.style.opacity=.3"/>
+    <div class="title">$ PRODUCTION COSTING</div>
+    <div class="g">Costing</div>
+    <div class="ni">▦ Dashboard</div><div class="ni">🛡 Costing Readiness</div><div class="ni">✔ Production Readiness</div>
+    <div class="g">Currency &amp; FX</div><div class="ni">◎ Currency Master</div><div class="ni">⇄ Exchange Rates</div>
+    <div class="g">Raw Materials</div><div class="ni">▦ Raw Material Master</div><div class="ni">◆ Metal Classification</div><div class="ni">$ Raw Material Prices</div><div class="ni">$ Market Metal Pricing</div><div class="ni">▧ Metal Cost Components</div>
+    <div class="g">Cable BOM</div><div class="ni">▤ BOM Explorer</div>
+    <div class="g">Validation &amp; Audit</div><div class="ni active">☑ Validation</div><div class="ni">⟲ Audit Trail</div>
+  </aside>
+  <main>
+    <div class="hdr"><div><div class="crumb">Costing › Validation</div><h1>Costing Validation — Direct Raw Material Cost</h1></div></div>
+    <div class="optb">Current Costing Mode: <b>Option B — LME / Base Metal Price Only</b> · Business Decision 5: Pending</div>
+    <div class="grid">
+      <div class="card"><h3>Test costing readiness</h3>
+        <div class="form">
+          <div class="f"><label>Cable Material Number</label><input value="10009487"/></div>
+          <div class="f"><label>Quantity</label><input value="1"/></div>
+          <div class="f"><label>Length (m)</label><input value="1000"/></div>
+          <div class="f"><label>Currency</label><select><option>USD</option><option>EUR</option><option>GBP</option><option>LE</option></select></div>
+          <div class="f"><label>Costing Date</label><input type="date" value="2026-08-29"/></div>
+          <div class="f"><label>Copper Price (USD/MT)</label><input value="14600"/></div>
+          <div class="f"><label>Aluminium Price (USD/MT)</label><input value="3300"/></div>
+        </div>
+        <button class="btn">Run Costing Validation</button>
+        <div class="gates"><span class="gate">G1 Engineering ✓</span><span class="gate">G2 Governed BOM ✓</span><span class="gate">G3 Raw Materials ✓</span><span class="gate">G4 RM Prices ✓</span><span class="gate">G5 Currency / FX ✓</span></div>
+      </div>
+      <div class="card"><h3>Direct Raw Material Cost breakdown</h3>
+        <div class="scroll"><table>
+          <thead><tr><th>Raw Material</th><th>Consumption</th><th>UOM</th><th>Applied Unit Price</th><th>Price Currency</th><th>Pricing Source</th><th>Metal Type</th><th>FX Rate</th><th>Txn Currency</th><th>Final Line Cost</th></tr></thead>
+          <tbody>
+          <tr><td>Copper Conductor</td><td>135.23</td><td>KG</td><td>14.60</td><td>USD</td><td><span class="src">INQUIRY HEADER</span></td><td>COPPER</td><td>1.00</td><td>USD</td><td>1,974.36</td></tr>
+          <tr><td>XLPE Insulation</td><td>90.92</td><td>KG</td><td>6.20</td><td>USD</td><td><span class="src">RAW MATERIAL MASTER</span></td><td>—</td><td>1.00</td><td>USD</td><td>563.70</td></tr>
+          <tr><td>PVC Outer Sheath</td><td>96.5</td><td>KG</td><td>1.80</td><td>USD</td><td><span class="src">RAW MATERIAL MASTER</span></td><td>—</td><td>1.00</td><td>USD</td><td>173.70</td></tr>
+          <tr><td>Aluminium Tape</td><td>15.30</td><td>KG</td><td>3.30</td><td>USD</td><td><span class="src">INQUIRY HEADER</span></td><td>ALUMINIUM</td><td>1.00</td><td>USD</td><td>50.49</td></tr>
+          </tbody>
+        </table></div>
+        <div class="total"><div class="l">Direct Raw Material Cost</div><div class="v">2,762.25 USD</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="tag">I · Costing workspace + Direct RM breakdown</div>
+</body></html>

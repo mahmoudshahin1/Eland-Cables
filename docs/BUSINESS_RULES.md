@@ -1,0 +1,37 @@
+# Business rules (discovered, not invented)
+
+Rules below are **as found in code or Excel**. Unsigned engineering is `CONFIGURATION_REQUIRED`.
+
+1. **Blank raw-material price** is `PRICE_NOT_CONFIGURED`. Never store or calculate as 0.
+2. **Do not convert PCS to kg** without an approved conversion.
+3. **Cable material number** is the Cable Master natural key in ENERGYA Excel; item code is not unique.
+4. **Technically valid configuration ≠ existing Cable Master.** Unknown cables go to Technical Office; do not fabricate material numbers.
+5. **Automatic EWD drum selection** is `CONFIGURATION_REQUIRED` (no capacity UOM / winding rule in Drum List.xlsx). Prototype K/S/P optimizer remains a separate catalog.
+6. **Quotation versioning (target):** new version row; previous SUPERSEDED; do not overwrite. **Current prototype overwrites `versionNo` on the same record** — non-compliant until Increment 9.
+7. **Margin/discount formula:** not defined in discovery docs. Mark `BUSINESS_RULE_REQUIRED` / `CONFIGURATION_REQUIRED`. Do not invent.
+8. **One configurator family** (hub / V1 modal / V2). Do not add a second.
+9. **One Import Center pipeline** (`importPipelineService`).
+11. **Import:** ERROR rows reject the kind. Conflicting BOM Cable+RM **weights** are skipped (`BUSINESS_DECISION_REQUIRED`) and never auto-resolved. Unique clean BOM lines may commit. No silent auto-fix of business data.
+12. **Cable Master existence** is decided in PostgreSQL via `evaluateCableAuthority`. Blank compatibility rules are `CONFIGURATION_REQUIRED`, not assumed allowed.
+13. **BOM duplicate weights** in the official Cable Materials sheet: **BUSINESS DECISION REQUIRED** (`docs/BOM_DATA_QUALITY.md`). Cable+RM is not the sole uniqueness rule until the grain is decided.
+14. **Blank RM price** is `PRICE_NOT_CONFIGURED`. Price history does not invent `effectiveFrom`. Missing dates are `DATA_REQUIRED`.
+15. **Customers** may read approved Cable Master through search/evaluate APIs. They must not import or modify Cable Master, BOM, raw materials, or prices.
+16. **Description parse is Suggested only.** It must not silently become Cable Master engineering attributes.
+17. **Structured EXISTING_CABLE** requires authoritative family, voltage, conductor, size, cores, and insulation. Unmapped official cables are not forced into structured matches.
+18. **BOM conflict classification** is recorded without deleting or overwriting consumption. Insufficient evidence stays BUSINESS_DECISION_REQUIRED.
+19. **Engineering Mapping Approval**: Only `APPROVED` status engineering mappings signed off by authorized Technical Office roles are used by Cable Authority for structured `EXISTING_CABLE` matching. DRAFT, SUBMITTED, UNDER_REVIEW, and REJECTED remain non-authoritative (`CONFIGURATION_REQUIRED`).
+20. **Engineering Mapping Revision Immutability**: Modifying an already `APPROVED` mapping archives the existing revision and starts a new revision in `DRAFT` status. Past revisions cannot be overwritten.
+21. **Strict Separation of Source & Approved Data**: Engineering mapping values are stored in `CableEngineeringMapping` and do not overwrite raw `CableMaster` extract columns. Provenance of source diameter/weight is preserved.
+22. **No Automatic Batch Approval**: Batch operations in Technical Office Workbench must never blindly approve records. Batch approval requires explicit record selection, multi-record validation, authorized Technical Office Manager sign-off, atomic per-record audit logs, and immutable revisions.
+23. **Excel Mapping Import Workflow**: Excel mapping uploads update or create records in `DRAFT` status and never directly transition to `APPROVED`. Excel mappings cannot modify raw `CableMaster` source extract values.
+24. **Zero Price Prohibition**: Raw Material price = 0 or negative price is rejected as `INVALID_PRICE`. Free material is prohibited.
+25. **Price Validity & Non-Overlapping Revisions**: Approved prices for the same Raw Material, Currency, UOM, and Price Basis must not have overlapping effective date periods (`PRICE_PERIOD_OVERLAP`). Historical approved prices are immutable.
+26. **4-Gate Costing Readiness**: Cables must pass all 4 gates (Approved Engineering Mapping, Resolved Authoritative BOM, Verified Raw Materials, Active Approved Price matching Costing Date & BOM UOM) before reaching `READY_FOR_COSTING`. Gate 1 still requires `APPROVED` status. Persist costing auto-creates a missing mapping from Cable Master SOURCE fields and auto-approves `DRAFT` / `SUBMITTED` / `UNDER_REVIEW` so calculation can be created; `REJECTED` / `CANCELLED` still block. Preview and costing-readiness reporting do not auto-approve. BOM and price gates are unchanged.
+34. **Costing persist auto-approval of engineering mapping**: Creating a persisted costing calculation may auto-create and auto-approve the current engineering mapping from Cable Master SOURCE data (`COSTING_AUTO_APPROVE` audit). This is not Technical Office batch approval (rule 22). Description suggestions stay Suggested. Raw-material prices, scrap, shipping, and LME/ELAND values are never auto-approved or invented.
+27. **Material Cost vs Selling Price Separation**: The system calculates raw material manufacturing cost only. Commercial selling price, margin, markup, and discount calculations remain strictly prohibited (`NOT_CONFIGURED` / `NULL`). Material cost is NOT selling price.
+28. **Commercial Line Cable Authority**: All commercial inquiry and quotation lines must validate cable existence via `evaluateCableAuthority`. Unmapped configurations automatically create `TechnicalOfficeRequest` records without fabricating master codes.
+29. **Non-Destructive Quotation Versioning**: Creating a new quotation version generates Version V(N+1) and marks previous versions as `SUPERSEDED` and immutable.
+30. **Customer Ownership Enforcement**: Customer users are strictly restricted to creating and viewing their own commercial inquiries and quotations (`403 UNAUTHORIZED` on cross-tenant access). Customer users cannot create quotations directly or modify governed master data. Ownership is resolved from authenticated `CustomerUser` assignments (Increment 12 B2). Request `customerId` is never trusted for customer actors.
+31. **Customer master**: `Customer` is the governed commercial party (code, name, type, status, default currency/incoterm, payment/delivery terms, allowed quotation currencies). Administrators require `ADMIN / CUSTOMER / *`. Customer users cannot mutate customer master or assign themselves to another customer.
+32. **Customer identity migration**: Historical inquiry/quotation `customerId` strings are preserved. `customerMasterId` is set only when mapping is unique; otherwise `CustomerMigrationException` is recorded. No fabricated customers.
+33. **Costing vs Commercial Pricing Separation (Increment 13)**: The costing formula engine calculates manufacturing cost components only (material, ex-work loading, scrap, process — when configured). Commercial selling price, margin, markup, and discount remain in the commercial pricing layer (`commercialPricingEngine.ts`). `EX_WORK` ex-work loading is a **configurable costing component** (`CostingComponent` kind `EX_WORK`) with admin-defined `EX_WORK_RATE` — it is **not hard-coded at 6%** and is **not commercial margin**. Costing configuration admin requires `COSTING:FORMULA:*` / `COSTING:CONFIGURATION:*` permissions. Customers never see formulas, variables, or internal cost breakdowns.

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — My Inquiries (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-700:#143a78;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--warning:#d97706;--info:#2563eb;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b;padding:22px 26px}
+.crumb{font-size:12px;color:#94a3b8}
+h1{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--brand-900);margin:2px 0 14px}
+.head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.actions{display:flex;gap:8px}
+.btn{padding:9px 14px;border-radius:9px;font-family:var(--fd);font-weight:600;font-size:13px;border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--brand-500);color:#fff}.btn.secondary{background:#fff;color:var(--brand-600);border-color:#5b82c4}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin:14px 0}
+.filters input,.filters select{padding:9px 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;width:100%}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--subtle);text-align:left;padding:11px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid #f1f5f9}
+tr:hover td{background:#f8fbff;cursor:pointer}
+.pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.p-open{background:#fef3c7;color:#92400e}.p-review{background:#dbeafe;color:#1e40af}.p-sub{background:#dbe5f5;color:#17407f}.p-quo{background:#c6e6c6;color:#0f5a24}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;font-size:12px;color:#64748b}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<div class="crumb">Home › My Inquiries</div>
+<div class="head"><h1>My Inquiries</h1><div class="actions"><button class="btn secondary">Columns</button><button class="btn secondary">Export</button><button class="btn primary">+ New Inquiry</button></div></div>
+<div class="filters">
+  <input placeholder="Search inquiry no., customer, project, ref…"/>
+  <select><option>All statuses</option><option>Open</option><option>Under Review</option><option>Submitted</option><option>Quotation Generated</option><option>Canceled</option></select>
+  <input type="date"/><input type="date"/>
+  <select><option>Sort: Modified</option><option>Date</option><option>Customer</option><option>Status</option></select>
+</div>
+<div class="card">
+<table>
+<thead><tr><th>Inquiry No.</th><th>Ver</th><th>Trx Date</th><th>Customer</th><th>Project</th><th>Cable</th><th>Length</th><th>Drum</th><th>Currency</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>INQ-10091</td><td>V2</td><td>2026-08-24</td><td>ELAND Cables</td><td>33kV Substation</td><td>MV-33KV-CU-3C-240-XLPE</td><td>17,000 m</td><td>EWD700-3</td><td>USD</td><td><span class="pill p-open">Open</span></td></tr>
+<tr><td>INQ-10090</td><td>V1</td><td>2026-08-22</td><td>ELAND Cables</td><td>Export Reels</td><td>LV-0.6/1KV-AL-4C-95</td><td>12,300 m</td><td>EWD630-0</td><td>USD</td><td><span class="pill p-review">Under Review</span></td></tr>
+<tr><td>INQ-10089</td><td>V1</td><td>2026-08-21</td><td>ELAND Cables</td><td>Feeder Upgrade</td><td>MV-11KV-CU-3C-185-XLPE</td><td>8,400 m</td><td>EWD700-3</td><td>USD</td><td><span class="pill p-sub">Submitted</span></td></tr>
+<tr><td>INQ-10087</td><td>V3</td><td>2026-08-18</td><td>ELAND Cables</td><td>Control Cabling</td><td>LV-0.6/1KV-CU-12C-2.5</td><td>3,200 m</td><td>EWD450-2</td><td>USD</td><td><span class="pill p-quo">Quotation Generated</span></td></tr>
+</tbody>
+</table>
+<div class="foot"><span>Showing 1–4 of 128 entries</span><span><button class="btn secondary">Previous</button> <button class="btn secondary">Next</button></span></div>
+</div>
+<div class="tag">C · My Inquiries list</div>
+</body></html>

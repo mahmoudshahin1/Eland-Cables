@@ -1,0 +1,17 @@
+Eng. Mohamed Ahmed
+V1 Internal
+NAVIGATOR
+Modules
+Effective Access
+
+SECURITY
+
+Why does this user have access?
+
+Explains EFFECTIVE ACCESS = auth ∩ roles ∩ scope ∩ ownership ∩ workflow ∩ field. Deny by default.
+
+User ID
+Module
+Resource
+Action
+Explain access

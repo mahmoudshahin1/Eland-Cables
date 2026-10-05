@@ -1,0 +1,48 @@
+Sequence,Parameter Code,Parameter Name,Parent Parameter(s),Condition,Available Values,Requirement Class,UI Control,Value Source,Data Gap (Y/N),Reviewer Notes
+1,family,Cable Family,,Always,UGC | OHL | ABC | SINGLE | CONTROL | TELECOM,Required,Dropdown,STATIC,N,
+2,voltageClass,Voltage Level / Class,family,family set,LV | MV | HV | EHV (family-dependent — see matrix doc),Required,Dropdown,FILTER,Y,OHL/TELECOM return empty list today
+3,voltage,Voltage Rating / Level,voltageClass,voltageClass set,MV: 5 ratings; else DEFAULT_VOLTAGES_BY_CLASS[class],Required,Dropdown,FILTER,N,
+4,standard,Standard & Specification,voltage,voltage set,DEFAULT_STANDARDS filtered by voltage class,Optional,Dropdown,FILTER + CATALOG,N,
+5,conductorMaterial,Conductor Material,voltage,voltage set,CU | AL,Required,Dropdown,STATIC + CATALOG,N,
+6,conductorClass,Construction Class,conductorMaterial,material set,Class 1 | Class 2 | Class 5,Optional,Dropdown,STATIC + CATALOG,N,Class 1 >35mm² validation exists
+7,conductorShape,Conductor Shape,conductorClass,class set,4 shapes,Optional,Dropdown,STATIC,N,
+8,conductorSize,Conductor Size,"conductorMaterial, family, voltage",material set,DEFAULT_CONDUCTOR_SIZES (0.5-2500),Required,Dropdown,STATIC + CATALOG,Y,No family/voltage CSA matrix in code
+9,cores,No. of Cores,"conductorSize, family",size set,DEFAULT_CORE_COUNTS (1-61),Required,Dropdown,STATIC,Y,No family-specific core limits
+10,conductorWaterTight,Conductor Water Blocking,conductorSize,size set,Yes | No,Optional,Checkbox,STATIC,N,
+11,insulation,Insulation Material,"cores, family, voltage",cores set,XLPE|PVC|LSHF|EPR (filtered MV+/bare),Required,Dropdown,FILTER + CATALOG,N,
+12,insulationColor,Insulation Color,insulation,insulation set & not bare,DEFAULT_INSULATION_COLORS,Optional,Dropdown,STATIC,Y,N/A when bare not explicit
+13,outerSemiConductor,Outer Semi-Conductor,"insulation, voltage, voltageClass",insulation set,Filtered semi-con options,Conditional,Dropdown,FILTER,N,MV/HV required per validation
+14,screenType,Screen Type,"insulation, family, voltage",insulation set,Filtered screen types,Conditional,Dropdown,FILTER + CATALOG,N,MV/HV metallic required
+15,screenCSA,Screen Cross-Section (CSA),screenType,metallic screen selected,DEFAULT_SCREEN_CSAS minus None,Conditional,Dropdown,STATIC,Y,No type/size to CSA table
+16,screenWaterTight,Screen Water Tightness,screenType,has screen,Yes | No,Optional,Checkbox,STATIC,N,N/A when no screen
+17,bedding,Inner Sheath / Bedding,"insulation, screenType, family",insulation + screenType set,BEDDING_OPTIONS (bare: Not Applicable only),Optional,Dropdown,FILTER,Y,Bedding vs armour necessity unclear
+18,armour,Armour Layer,"bedding | screenType, cores, family",bedding OR screen set,Filtered armour types,Optional,Dropdown,FILTER + CATALOG,Y,specialArea not linked
+19,armourWaterTight,Armour Water Tightness,armour,has armour,Yes | No,Optional,Checkbox,STATIC,N,N/A when no armour
+20,sheathing,Outer Sheath (Jacket),"insulation, family",insulation set,DEFAULT_SHEATHINGS (bare: None only),Optional,Dropdown,FILTER + CATALOG,N,
+21,sheathingColor,Outer Sheath Color,sheathing,sheathing set & not None,DEFAULT_SHEATHING_COLORS,Optional,Dropdown,STATIC,Y,MV red convention not coded
+22,waterTight,Water Tight / Water Blocking,sheathing,sheathing set,DEFAULT_WATER_BLOCKING_TYPES (5 types),Optional,Dropdown,STATIC,Y,Not linked to MV matrix water note
+23,termiteProtection,Termite / Rodent Protection,sheathing,sheathing set,DEFAULT_TERMITE_PROTECTIONS,Optional,Dropdown,STATIC,Y,Not linked to specialArea
+24,cpr,CPR (Yes/No),sheathing,sheathing set,Yes | No,Optional,Checkbox,STATIC,N,Reintroduced to technical sequence
+25,cprClass,CPR Euroclass,cpr,cpr = Yes,DEFAULT_CPR_CLASSES (excl N/A),Required if cpr=Yes,Dropdown,STATIC,N,Hidden when cpr=No
+25,cprClass,CPR Euroclass,cpr,cpr = No,—,Not Applicable,Hidden,—,N,
+26,specialArea,Special Installation Area,sheathing,sheathing set,DEFAULT_SPECIAL_AREAS,Optional,Dropdown,STATIC,Y,No cross-filter with armour/termite
+27,specialAdditives,Special Engineering Req.,"sheathing, insulation",sheathing set,5 visible additives,Optional,Dropdown,STATIC,Y,Multi-select policy undefined
+28,coreColors,Core Colors (per core),cores,coresCount > 1,DEFAULT_CORE_COLORS per row,Required (multi),Dropdown per core,STATIC + PG,Y,DEFAULT_STANDARD_CORE_COLORS_BY_COUNT not wired
+28,coreColors,Core Colors (per core),cores,coresCount = 1,—,Not Applicable,Hidden,—,N,
+29,customerIdentification,Customer-Specific Identification,"family, standard",sheathing set,DEFAULT_CUSTOMER_IDENTIFICATIONS,Optional,Dropdown,STATIC,N,Marking scheme not construction
+—,familySubType,Family Sub-Type,"family, voltageClass",Derived,UGC: sync voltageClass; OHL: AAC|AAAC|ACSR,Derived,Hidden,DERIVED,Y,OHL sub-type not user-selectable
+—,um,Um (Highest Equipment Voltage),voltage,Derived,DEFAULT_VOLTAGE_RATINGS_DETAILED lookup,Derived,Hidden,DERIVED,N,
+—,coresCount,Core Count (numeric),cores,Derived,Parse from cores label,Derived,Hidden,DERIVED,N,
+—,semiConApplicable,Semi-Con Applicable,"family, voltageClass",Derived,From construction matrix requiresSemiCon,Derived,Hidden,DERIVED,N,
+—,innerSemiConductor,Inner Semi-Conductor,"voltage, insulation",Derived,MV/HV implied required,Derived,Hidden,DERIVED,Y,No explicit derivation table
+—,screenMaterial,Screen Material,screenType,Derived,Map from screen type,Derived,Hidden,DERIVED,Y,No mapping table in code
+—,armourMaterial,Armour Material,armour,Derived,Map from armour type,Derived,Hidden,DERIVED,Y,No mapping table in code
+—,armourCSA,Armour Dimension,armour,Derived,—,Derived,Hidden,DERIVED,Y,No lookup table
+—,coreIdentification,Core Identification Scheme,"standard, customerIdentification",Derived,—,Derived,Hidden,DERIVED,Y,
+—,coreNumbering,Core Numbering,standard,Derived,—,Derived,Hidden,DERIVED,Y,
+—,selectionMode,Selection Mode,,Outside technical,CUSTOMER | TECHNICAL,Required,Session,STATIC,N,Commercial/session layer
+—,customerCode,Customer Specification Code,selectionMode,CUSTOMER mode,Catalog customerCodes,Optional,Dropdown,CATALOG,N,Outside technical
+—,itemCode,Customer / SAP Item Code,,Outside technical,Free text,Optional,Text,—,N,Outside technical
+—,cuttingLength,Cutting Length,,Outside technical,Numeric meters,Optional,Number,—,N,Post-resolve commercial
+—,lengthTolerance,Cutting Length Tolerance,,Outside technical,±1% | ±2% | Exact,Optional,Dropdown,STATIC,N,Post-resolve commercial
+—,drumType,Packaging Drum Type,,Outside technical,DEFAULT_DRUM_TYPES,Optional,Dropdown,STATIC,N,Post-resolve / DrumMaster

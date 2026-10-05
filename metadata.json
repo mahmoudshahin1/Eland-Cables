@@ -1,0 +1,6 @@
+{
+  "name": "Energya Connect Platform",
+  "description": "Digital Customer Experience & Enterprise Engineering Platform for Energya Cables B2B cable manufacturing, featuring Smart Cable Configurator, Drum Optimizer, Dynamic Pricing, and AI Quotation Copilot.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

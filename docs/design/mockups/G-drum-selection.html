@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Drum Selection (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--warning:#d97706;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b;padding:18px 22px}
+.crumb{font-size:12px;color:#94a3b8}
+h1{font-family:var(--fd);font-size:20px;color:var(--brand-900)}
+.sub{font-size:12px;color:#64748b;margin-bottom:12px}
+.head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.btn{padding:9px 14px;border-radius:9px;font-family:var(--fd);font-weight:600;font-size:13px;border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--brand-500);color:#fff}.btn.secondary{background:#fff;color:var(--brand-600);border-color:#5b82c4}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);margin-bottom:14px}
+.card h3{font-family:var(--fd);font-size:13px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.f label{display:block;font-size:11px;color:#64748b;margin-bottom:3px}
+.f input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--subtle);text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;color:#64748b;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+.scroll{overflow-x:auto}
+.fill{height:8px;border-radius:999px;background:#eef3fb;position:relative;min-width:70px}
+.fill i{position:absolute;left:0;top:0;bottom:0;background:var(--brand-500);border-radius:999px}
+.summary{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px}
+.sm{background:var(--subtle);border-radius:10px;padding:12px;text-align:center}
+.sm .l{font-size:11px;color:#64748b}.sm .v{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--brand-900)}
+.cont{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}
+.cc{border:1px solid var(--border);border-radius:10px;padding:14px}
+.cc .t{font-family:var(--fd);font-weight:600;font-size:13px}
+.cc .m{font-size:11px;color:#64748b;margin:4px 0 10px}
+.util{height:8px;border-radius:999px;background:#eef3fb;position:relative}.util i{position:absolute;left:0;top:0;bottom:0;background:var(--success);border-radius:999px}
+.warn{background:#fffbeb;border:1px solid #fef3c7;color:#92400e;font-size:12px;padding:8px 12px;border-radius:9px;margin:12px 16px}
+.badge{font-size:10px;background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:999px}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.inputs,.cont{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<div class="crumb">Drum Optimizer</div>
+<div class="head"><div><h1>Multi-Drum Size &amp; Cutting Length Schedule Engine</h1><div class="sub">MULTIPLE DRUM CUTTING SCHEDULE &amp; PACKING OPTIMIZER</div></div>
+<div><button class="btn secondary">33kV Substation Project (17,000m)</button> <button class="btn secondary">Export Container Reels (12,300m)</button> <button class="btn primary">Proceed to Price Estimation</button></div></div>
+<div class="card"><h3>Order inputs</h3><div class="inputs">
+  <div class="f"><label>Cable Weight/m (kg/m)</label><input value="4.18" step="0.05"/></div>
+  <div class="f"><label>Total Order Tolerance (%)</label><input value="5"/></div>
+</div></div>
+<div class="card"><h3>Cutting schedule <span class="badge" style="margin-left:8px">Cable Tolerance * 3%</span></h3>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Drum Code &amp; parameters</th><th>No. of Drums</th><th>Cutting Length / Drum</th><th>Drum Tolerance *</th><th>Fill %</th><th>Nominal Line (m)</th><th>Total Line Wt (kg)</th><th></th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>EWD700-3 — Wooden Drum F2200 x B1250</td><td>17</td><td>1,000 m</td><td>3%</td><td><div class="fill"><i style="width:78%"></i></div>78% vs capacity</td><td>17,000 <span class="badge">[16,490–17,510]</span></td><td>71,060 (4,180/drum)</td><td>🗑</td></tr>
+    <tr><td>2</td><td>EWD630-0 — Wooden Drum F1800 x B1120</td><td>13</td><td>950 m</td><td>3%</td><td><div class="fill"><i style="width:62%"></i></div>62% vs capacity</td><td>12,350 <span class="badge">[11,979–12,721]</span></td><td>49,127 (3,779/drum)</td><td>🗑</td></tr>
+    </tbody>
+  </table></div>
+  <div style="padding:12px 16px"><button class="btn secondary">+ Add Drum Line</button></div>
+</div>
+<div class="card"><h3>Summary</h3><div class="summary">
+  <div class="sm"><div class="l">Nominal Cable Length</div><div class="v">29,350 m</div></div>
+  <div class="sm"><div class="l">Total Drum Packages</div><div class="v">30</div></div>
+  <div class="sm"><div class="l">Total Gross Weight</div><div class="v">120.2 MT</div></div>
+  <div class="sm"><div class="l">Total Packaging Volume</div><div class="v">58.4 m³</div></div>
+  <div class="sm"><div class="l">Drum packaging cost</div><div class="v"><span class="badge">NOT_CONFIGURED</span></div></div>
+  <div class="sm"><div class="l">Total Order Tolerance</div><div class="v">±5%</div></div>
+</div></div>
+<div class="card"><h3>Container recommendation</h3>
+  <div class="cont">
+    <div class="cc"><div class="t">Standard 20ft Dry Container</div><div class="m">Max payload 22.0 MT / 28 m³ · Required: 6</div><div class="util"><i style="width:91%"></i></div><div style="font-size:11px;color:#64748b;margin-top:6px">Payload utilization 91%</div></div>
+    <div class="cc"><div class="t">Standard 40ft High Cube (40HC)</div><div class="m">Max payload 26.5 MT / 58 m³ · Required: 5</div><div class="util"><i style="width:90%"></i></div><div style="font-size:11px;color:#64748b;margin-top:6px">Payload utilization 90%</div></div>
+  </div>
+  <div class="warn">EWD automatic drum selection unavailable — CONFIGURATION_REQUIRED (capacity UOM / winding rule not in Drum List source). Manual EWD code selection preserved.</div>
+</div>
+<div class="tag">G · Drum Selection / cutting schedule</div>
+</body></html>

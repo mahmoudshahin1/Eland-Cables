@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Energya Connect — Cable Selection (Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand-500:#1d4fa1;--brand-600:#17407f;--brand-700:#143a78;--brand-900:#0a1f42;--accent-500:#f04e30;--muted:#f4f6fa;--subtle:#f8fafc;--border:#e2e8f0;--success:#1e8e3e;--info:#2563eb;--fd:"Poppins",system-ui;--fs:"Inter",system-ui}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--fs);background:var(--muted);color:#1e293b;padding:18px 22px}
+h1{font-family:var(--fd);font-size:20px;color:var(--brand-900)}
+.crumb{font-size:12px;color:#94a3b8}
+.stepper{display:flex;gap:6px;overflow-x:auto;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:12px 0}
+.step{white-space:nowrap;font-size:12px;font-weight:600;color:#94a3b8;padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px}
+.step.done{color:var(--success)}.step.active{background:var(--brand-500);color:#fff}
+.layout{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.card h3{font-family:var(--fd);font-size:13px;padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.chip{font-size:11px;background:#eef3fb;color:var(--brand-600);padding:2px 10px;border-radius:999px;font-weight:600}
+.grp{padding:12px 16px}
+.grp .gt{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--brand-500);font-weight:700;margin:6px 0 8px}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:11px;color:#64748b;margin-bottom:3px}
+.f select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:#fff}
+.f.locked select{background:#f1f5f9;color:#94a3b8}
+.f.locked label::after{content:" 🔒";font-size:10px}
+.result{padding:16px}
+.rbadge{font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;display:inline-block;margin-bottom:10px}
+.r-ok{background:#c6e6c6;color:#0f5a24}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.kv .k{color:#64748b}.kv .v{font-weight:600;color:#0f172a}
+.mono{font-family:ui-monospace,monospace;background:var(--subtle);border-radius:8px;padding:10px;font-size:12px;margin:10px 0;color:#334155}
+.btn{padding:9px 14px;border-radius:9px;font-family:var(--fd);font-weight:600;font-size:13px;border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--brand-500);color:#fff}.btn.secondary{background:#fff;color:var(--brand-600);border-color:#5b82c4}
+.tag{position:fixed;bottom:10px;right:12px;background:#0a1f42;color:#cfe0ff;font-size:11px;padding:6px 10px;border-radius:8px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.pg{grid-template-columns:1fr}}
+</style></head><body>
+<div class="crumb">Cable Parameters › Cable Technical Parameter (Cascading Selection)</div>
+<h1>Select Cable Construction Parameters</h1>
+<div class="stepper">
+  <div class="step done">✓ Family &amp; Voltage</div><div class="step done">✓ Conductor</div><div class="step done">✓ Cores &amp; Colors</div><div class="step active">4 Insulation</div><div class="step">5 Screen &amp; Armour</div><div class="step">6 Sheathing</div><div class="step">7 Validation Result</div>
+</div>
+<div class="layout">
+  <div class="card"><h3>Construction Parameters <span class="chip">27 Parameters Active · 3 matching cables</span></h3>
+    <div class="grp"><div class="gt">Family &amp; Voltage</div><div class="pg">
+      <div class="f"><label>Cable Family</label><select><option>UGC Power Cable</option></select></div>
+      <div class="f"><label>Voltage Level / Class</label><select><option>MV</option></select></div>
+      <div class="f"><label>Voltage Rating / Level</label><select><option>18/30 kV (19/33 kV)</option></select></div>
+      <div class="f"><label>Standard &amp; Specification</label><select><option>IEC 60502-2</option></select></div>
+    </div></div>
+    <div class="grp"><div class="gt">Conductor</div><div class="pg">
+      <div class="f"><label>Conductor Material</label><select><option>Copper (Cu)</option></select></div>
+      <div class="f"><label>Construction Class</label><select><option>Class 2 — Stranded</option></select></div>
+      <div class="f"><label>Conductor Shape</label><select><option>Compacted Round (rm)</option></select></div>
+      <div class="f"><label>Conductor Size</label><select><option>240 mm²</option></select></div>
+      <div class="f"><label>No. of Cores</label><select><option>3 Cores</option></select></div>
+      <div class="f"><label>Conductor Water Blocking</label><select><option>No</option></select></div>
+    </div></div>
+    <div class="grp"><div class="gt">Insulation</div><div class="pg">
+      <div class="f"><label>Insulation Material</label><select><option>XLPE</option></select></div>
+      <div class="f"><label>Insulation Color</label><select><option>Natural</option></select></div>
+      <div class="f"><label>Outer Semi-Conductor</label><select><option>Extruded Cold Strippable</option></select></div>
+    </div></div>
+    <div class="grp"><div class="gt">Screen &amp; Armour (unlocks after insulation)</div><div class="pg">
+      <div class="f"><label>Screen Type</label><select><option>Copper Wire + Tape</option></select></div>
+      <div class="f"><label>Screen Cross-Section (CSA)</label><select><option>35 mm²</option></select></div>
+      <div class="f locked"><label>Armour Water Tightness</label><select><option>—</option></select></div>
+      <div class="f locked"><label>Outer Sheath Color</label><select><option>—</option></select></div>
+    </div></div>
+  </div>
+  <div class="card"><h3>Validation Result</h3>
+    <div class="result">
+      <span class="rbadge r-ok">Existing Approved Cable Found · Released</span>
+      <div class="kv"><span class="k">Material Number</span><span class="v">10009487</span></div>
+      <div class="kv"><span class="k">Item Code</span><span class="v">MV33-CU3C240</span></div>
+      <div class="kv"><span class="k">Outer Diameter (Ø)</span><span class="v">62.4 mm</span></div>
+      <div class="kv"><span class="k">Approx. Weight</span><span class="v">4,180 kg/km</span></div>
+      <div class="kv"><span class="k">Standard</span><span class="v">IEC 60502-2</span></div>
+      <div class="kv"><span class="k">Conductor</span><span class="v">Copper (240 mm²)</span></div>
+      <div class="mono">MV / 19/33kV · Cu 3C 240 XLPE · CWS+Tape 35 · SWA · PVC</div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn secondary">Continue to Cutting Length</button><button class="btn primary">Select this cable</button></div>
+    </div>
+  </div>
+</div>
+<div class="tag">E · Cable Selection (cascading + result)</div>
+</body></html>

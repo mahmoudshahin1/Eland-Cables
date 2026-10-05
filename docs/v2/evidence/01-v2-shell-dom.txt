@@ -1,0 +1,87 @@
+Eng. Mohamed Ahmed
+V1 Internal
+NAVIGATOR
+Modules
+Effective Access
+
+ENERGYA CONNECT V2
+
+Platform workspace
+
+Module navigator shows implemented / live / frozen modules only. Planned, stub, and not-implemented modules stay registered but are not mounted as fake screens.
+
+00 · PLATFORM
+Platform Services
+LIVE
+PLATFORM
+/v2
+01 · CORE
+Administration
+LIVE
+ADMIN
+/internal/administration
+02 · CORE
+Security
+LIVE
+SECURITY
+/v2/security
+03 · CORE
+Master Data
+LIVE
+MASTER_DATA
+/internal/master-data
+05 · CORE
+Reporting
+PARTIAL
+REPORTING
+/internal/analytics
+06 · CORE
+Analytics
+PARTIAL
+ANALYTICS
+/internal
+07 · COMMERCIAL
+Customer Management
+LIVE
+CUSTOMER
+/internal/administration
+08 · COMMERCIAL
+Sales
+FROZEN
+SALES
+/internal/fulfillment
+09 · COMMERCIAL
+Inquiry & Quotation
+LIVE
+INQUIRY_QUOTATION
+/internal/quotations
+10 · COMMERCIAL
+Pricing
+LIVE
+PRICING
+/internal/quotations
+11 · COMMERCIAL
+Commercial
+FROZEN
+COMMERCIAL
+/internal/fulfillment
+12 · ENGINEERING
+Engineering
+LIVE
+ENGINEERING
+/internal/technical-office
+13 · ENGINEERING
+Cable Master
+LIVE
+CABLE_MASTER
+/internal/cable-parameters
+14 · ENGINEERING
+BOM
+LIVE
+BOM
+/internal/technical-office
+15 · ENGINEERING
+Costing
+LIVE
+COSTING
+/internal/costing
