@@ -38,9 +38,9 @@ const isCustomer = computed(() => authStore.currentUser?.userType === 'customer'
 const navItems = computed(() => (isCustomer.value ? customerNavItems : internalNavItems));
 
 const userDisplayName = computed(() => {
-  const u = authStore.currentUser;
+  const u = authStore.currentUser as any;
   if (!u) return 'User';
-  return u.displayName || u.fullName || u.username || 'User';
+  return u.displayName || u.fullName || u.userName || u.username || 'User';
 });
 
 const userInitials = computed(() => {

@@ -12,9 +12,9 @@ const greeting = computed(() => {
 });
 
 const userDisplayName = computed(() => {
-  const u = authStore.currentUser;
+  const u = authStore.currentUser as any;
   if (!u) return '';
-  return u.displayName || u.fullName || u.username || '';
+  return u.displayName || u.fullName || u.userName || u.username || '';
 });
 
 // Placeholder KPI data — will be replaced with real API calls

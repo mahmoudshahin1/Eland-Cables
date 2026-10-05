@@ -6,6 +6,10 @@ const Login = () => import('../views/Login.vue');
 const MainLayout = () => import('../layouts/MainLayout.vue');
 const InternalDashboard = () => import('../views/internal/DashboardView.vue');
 const CustomerDashboard = () => import('../views/customer/CustomerDashboardView.vue');
+const MasterDataView = () => import('../views/internal/MasterDataView.vue');
+const InquiriesView = () => import('../views/internal/InquiriesView.vue');
+const AdminView = () => import('../views/internal/AdminView.vue');
+const CustomerInquiriesView = () => import('../views/customer/CustomerInquiriesView.vue');
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,13 +38,24 @@ const router = createRouter({
           component: InternalDashboard,
           meta: { title: 'Dashboard' },
         },
-        // Future phases will add more child routes here:
-        // { path: 'master-data', ... },
-        // { path: 'inquiries', ... },
-        // { path: 'quotations', ... },
-        // { path: 'technical-office', ... },
-        // { path: 'costing', ... },
-        // { path: 'admin', ... },
+        {
+          path: 'master-data',
+          name: 'internal-master-data',
+          component: MasterDataView,
+          meta: { title: 'Master Data Hub' },
+        },
+        {
+          path: 'inquiries',
+          name: 'internal-inquiries',
+          component: InquiriesView,
+          meta: { title: 'Commercial Inquiries' },
+        },
+        {
+          path: 'admin',
+          name: 'internal-admin',
+          component: AdminView,
+          meta: { title: 'Administration' },
+        },
       ],
     },
 
@@ -60,9 +75,12 @@ const router = createRouter({
           component: CustomerDashboard,
           meta: { title: 'My Dashboard' },
         },
-        // Future phases:
-        // { path: 'inquiries', ... },
-        // { path: 'support', ... },
+        {
+          path: 'inquiries',
+          name: 'customer-inquiries',
+          component: CustomerInquiriesView,
+          meta: { title: 'My Inquiries' },
+        },
       ],
     },
 

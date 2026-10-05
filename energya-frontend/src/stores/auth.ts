@@ -49,8 +49,8 @@ export const useAuthStore = defineStore('auth', {
 
         if (data.success && data.accessToken && data.refreshToken) {
           this.setTokens(data.accessToken, data.refreshToken, rememberMe);
-          this.currentUser = (data.user as UserAccount) ?? null;
-          this.decodedClaims = (data.claims as JwtTokenClaims) ?? null;
+          this.currentUser = (data.user as unknown as UserAccount) ?? null;
+          this.decodedClaims = (data.claims as unknown as JwtTokenClaims) ?? null;
           this.isSessionReady = true;
           return { success: true, message: data.message, user: data.user };
         }
@@ -80,7 +80,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const data = await authApi.me();
         if (data.success && data.user) {
-          this.currentUser = data.user as UserAccount;
+          this.currentUser = data.user as unknown as UserAccount;
         } else {
           this.clearSession();
         }

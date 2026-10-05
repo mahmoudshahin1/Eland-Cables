@@ -7,7 +7,7 @@
  *   redirects to /login.
  */
 import axios from 'axios';
-import type { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 // ── Axios Instance ──────────────────────────────────────────────────────────
 const api = axios.create({
