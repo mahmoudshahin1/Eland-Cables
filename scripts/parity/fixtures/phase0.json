@@ -1,0 +1,18 @@
+[
+  {
+    "id": "health-check",
+    "phase": 0,
+    "method": "GET",
+    "path": "/api/platform/health",
+    "expectedStatus": 200,
+    "ignoreFields": ["database.error", "database.ok", "database.postgresql"]
+  },
+  {
+    "id": "status-check",
+    "phase": 0,
+    "method": "GET",
+    "path": "/api/platform/status",
+    "expectedStatus": 200,
+    "ignoreFields": ["nestjs", "database.error", "database.ok", "database.postgresql", "persistence"]
+  }
+]

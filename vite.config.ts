@@ -15,8 +15,16 @@ export default defineConfig(() => {
       // Allow Cursor Cloud / preview Host headers. Vite 6 blocks unknown hosts.
       allowedHosts: true as const,
       host: true,
+      port: 5173,
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      proxy: {
+        '/api': {
+          target: process.env.BACKEND_URL || 'http://localhost:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   };
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service.js';
 import * as bcrypt from 'bcryptjs';
@@ -11,92 +11,36 @@ export class AuthService {
   ) {}
 
   /**
-   * Authenticate a user by email/username + password.
-   * Returns JWT tokens on success.
+   * Authenticate a user by email/username + password strictly against PostgreSQL.
+   * No mock data or demo credentials allowed.
    */
   async login(emailOrUsername: string, pass: string) {
-    let user: any = null;
-    try {
-      user = await this.prisma.userAccount.findFirst({
-        where: {
-          OR: [
-            { email: emailOrUsername.toLowerCase() },
-            { username: emailOrUsername.toLowerCase() },
-          ],
-        },
-      });
-    } catch {
-      // Database not reachable, fallback to demo login below
-    }
+    const user = await this.prisma.userAccount.findFirst({
+      where: {
+        OR: [
+          { email: emailOrUsername.toLowerCase() },
+          { username: emailOrUsername.toLowerCase() },
+        ],
+      },
+    });
 
-    // Demo fallback for local development & immediate testing
     if (!user) {
-      const lower = emailOrUsername.toLowerCase();
-      if ((lower === 'admin' || lower === 'admin@energya.com') && (pass === 'Admin@2026!' || pass === 'admin123')) {
-        const demoUser = {
-          id: 'demo-admin-id',
-          username: 'admin',
-          email: 'admin@energya.com',
-          fullName: 'System Administrator',
-          userType: 'internal',
-          department: 'Executive',
-          jobTitle: 'Administrator',
-          isActive: true,
-          isLocked: false,
-        };
-        const payload = { sub: demoUser.id, username: demoUser.username, role: demoUser.userType };
-        return {
-          success: true,
-          message: 'Logged in successfully (Administrator Demo)',
-          accessToken: await this.jwtService.signAsync(payload),
-          refreshToken: await this.jwtService.signAsync(payload, { expiresIn: '7d' }),
-          user: demoUser,
-          claims: payload,
-        };
-      }
-
-      if ((lower === 'customer' || lower === 'customer@eland.com') && (pass === 'Customer@2026!' || pass === 'customer123')) {
-        const demoUser = {
-          id: 'demo-customer-id',
-          username: 'customer',
-          email: 'customer@eland.com',
-          fullName: 'Eland Cables UK',
-          userType: 'customer',
-          companyName: 'Eland Cables UK',
-          department: 'Procurement',
-          jobTitle: 'Purchasing Lead',
-          isActive: true,
-          isLocked: false,
-        };
-        const payload = { sub: demoUser.id, username: demoUser.username, role: demoUser.userType };
-        return {
-          success: true,
-          message: 'Logged in successfully (Customer Portal Demo)',
-          accessToken: await this.jwtService.signAsync(payload),
-          refreshToken: await this.jwtService.signAsync(payload, { expiresIn: '7d' }),
-          user: demoUser,
-          claims: payload,
-        };
-      }
-
-      return { success: false, error: 'Invalid email or password credentials.' };
+      throw new UnauthorizedException('Invalid credentials.');
     }
 
     if (!user.isActive || user.isLocked) {
-      return { success: false, error: 'Account is inactive or locked.' };
+      throw new UnauthorizedException('Account is inactive or locked.');
     }
 
     const isMatch = await bcrypt.compare(pass, user.passwordHash);
     if (!isMatch) {
-      // Increment failed login attempts
       await this.prisma.userAccount.update({
         where: { id: user.id },
         data: { failedLoginAttempts: { increment: 1 } },
       });
-      return { success: false, error: 'Invalid email or password credentials.' };
+      throw new UnauthorizedException('Invalid credentials.');
     }
 
-    // Reset failed attempts on successful login
     await this.prisma.userAccount.update({
       where: { id: user.id },
       data: {
@@ -106,9 +50,7 @@ export class AuthService {
     });
 
     const payload = { sub: user.id, username: user.username, role: user.userType };
-
-    // Remove passwordHash before returning to frontend
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
     return {
       success: true,
@@ -127,13 +69,12 @@ export class AuthService {
     try {
       const decoded = await this.jwtService.verifyAsync(refreshToken);
 
-      // Verify user still exists and is active
       const user = await this.prisma.userAccount.findUnique({
         where: { id: decoded.sub },
       });
 
       if (!user || !user.isActive || user.isLocked) {
-        return { success: false, error: 'User account is no longer valid.' };
+        throw new UnauthorizedException('User account is no longer valid.');
       }
 
       const payload = { sub: user.id, username: user.username, role: user.userType };
@@ -144,61 +85,24 @@ export class AuthService {
         refreshToken: await this.jwtService.signAsync(payload, { expiresIn: '7d' }),
       };
     } catch {
-      return { success: false, error: 'Invalid or expired refresh token.' };
+      throw new UnauthorizedException('Invalid or expired refresh token.');
     }
   }
 
   /**
-   * Return the current user profile from a verified JWT payload.
+   * Return the current user profile from a verified JWT payload strictly from PostgreSQL.
    */
   async getMe(userId: string) {
-    if (userId === 'demo-admin-id') {
-      return {
-        success: true,
-        user: {
-          id: 'demo-admin-id',
-          username: 'admin',
-          email: 'admin@energya.com',
-          fullName: 'System Administrator',
-          userType: 'internal',
-          department: 'Executive',
-          jobTitle: 'Administrator',
-          isActive: true,
-        },
-      };
+    const user = await this.prisma.userAccount.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.isActive) {
+      throw new NotFoundException('User not found or inactive.');
     }
 
-    if (userId === 'demo-customer-id') {
-      return {
-        success: true,
-        user: {
-          id: 'demo-customer-id',
-          username: 'customer',
-          email: 'customer@eland.com',
-          fullName: 'Eland Cables UK',
-          userType: 'customer',
-          companyName: 'Eland Cables UK',
-          department: 'Procurement',
-          jobTitle: 'Purchasing Lead',
-          isActive: true,
-        },
-      };
-    }
-
-    try {
-      const user = await this.prisma.userAccount.findUnique({
-        where: { id: userId },
-      });
-
-      if (!user || !user.isActive) {
-        return { success: false, error: 'User not found or inactive.' };
-      }
-
-      const { passwordHash, ...userWithoutPassword } = user;
-      return { success: true, user: userWithoutPassword };
-    } catch {
-      return { success: false, error: 'User profile lookup error.' };
-    }
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
+    return { success: true, user: userWithoutPassword };
   }
 
   /**
@@ -210,12 +114,12 @@ export class AuthService {
     });
 
     if (!user) {
-      return { success: false, error: 'User not found.' };
+      throw new NotFoundException('User not found.');
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isMatch) {
-      return { success: false, error: 'Current password is incorrect.' };
+      throw new BadRequestException('Current password is incorrect.');
     }
 
     const salt = await bcrypt.genSalt(12);

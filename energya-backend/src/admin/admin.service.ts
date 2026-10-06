@@ -82,7 +82,7 @@ export class AdminService {
 
       // Remove passwordHash from response
       const sanitized = users.map((u) => {
-        const { passwordHash, ...rest } = u;
+        const { passwordHash: _passwordHash, ...rest } = u;
         return rest;
       });
 
@@ -122,7 +122,7 @@ export class AdminService {
       throw new NotFoundException(`User with ID '${id}' not found.`);
     }
 
-    const { passwordHash, ...sanitized } = user;
+    const { passwordHash: _passwordHash, ...sanitized } = user;
     return sanitized;
   }
 
@@ -198,7 +198,7 @@ export class AdminService {
       },
     });
 
-    const { passwordHash, ...sanitized } = updated;
+    const { passwordHash: _passwordHash, ...sanitized } = updated;
     return sanitized;
   }
 
@@ -216,7 +216,7 @@ export class AdminService {
       },
     });
 
-    const { passwordHash, ...sanitized } = updated;
+    const { passwordHash: _passwordHash, ...sanitized } = updated;
     return sanitized;
   }
 

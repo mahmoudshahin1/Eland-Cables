@@ -18,7 +18,7 @@ if (files.length === 0) {
 
 const require = createRequire(import.meta.url);
 const tsxCli = require.resolve('tsx/cli');
-const result = spawnSync(process.execPath, [tsxCli, '--test', '--test-concurrency=1', ...files], {
+const result = spawnSync(process.execPath, [tsxCli, '--test', '--test-concurrency=1', '--test-timeout=5000', ...files], {
   cwd: root,
   stdio: 'inherit',
   env: process.env,

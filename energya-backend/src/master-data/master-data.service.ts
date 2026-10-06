@@ -71,47 +71,15 @@ export class MasterDataService {
         this.prisma.cableMaster.count({ where }),
       ]);
 
-      if (items.length > 0) {
-        return {
-          items,
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit) || 1,
-        };
-      }
-
-      // Fallback sample catalog for instant development preview
-      const sampleCables = [
-        { id: 'c1', materialNumber: '10009487', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X16 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '16', cores: '1C', diameter: 10.9, weight: 268, status: 'ACTIVE', bomLines: [{ id: 'b1', rawMaterialCode: 'RM-CU-8MM', consumption: 142.5, uom: 'kg', scrap: 1.5, rawMaterial: { description: 'Copper Wire Rod 8mm' } }, { id: 'b2', rawMaterialCode: 'RM-XLPE-INS', consumption: 45.2, uom: 'kg', scrap: 2.0, rawMaterial: { description: 'XLPE Insulation Compound' } }] },
-        { id: 'c2', materialNumber: '10009488', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X25 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '25', cores: '1C', diameter: 12.4, weight: 375, status: 'ACTIVE', bomLines: [{ id: 'b3', rawMaterialCode: 'RM-CU-8MM', consumption: 222.0, uom: 'kg', scrap: 1.5, rawMaterial: { description: 'Copper Wire Rod 8mm' } }] },
-        { id: 'c3', materialNumber: '10009489', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X35 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '35', cores: '1C', diameter: 13.8, weight: 490, status: 'ACTIVE', bomLines: [] },
-        { id: 'c4', materialNumber: '20004120', description: 'Al / XLPE / STA / PVC 0.6/1 kV 4X70 mm2 IEC 60502-1', family: 'ARMOURED', voltage: '0.6/1 kV', conductor: 'Aluminum', conductorSize: '70', cores: '4C', diameter: 34.2, weight: 2150, status: 'ACTIVE', bomLines: [] },
-        { id: 'c5', materialNumber: '30008815', description: 'Cu / XLPE / CTS / PVC 18/30 kV 1X240 mm2 BS 6622', family: 'MEDIUM_VOLTAGE', voltage: '18/30 kV', conductor: 'Copper', conductorSize: '240', cores: '1C', diameter: 48.6, weight: 4850, status: 'ACTIVE', bomLines: [] },
-      ];
-
       return {
-        items: sampleCables,
-        total: sampleCables.length,
-        page: 1,
-        limit: 20,
-        totalPages: 1,
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
       };
-    } catch {
-      const sampleCables = [
-        { id: 'c1', materialNumber: '10009487', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X16 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '16', cores: '1C', diameter: 10.9, weight: 268, status: 'ACTIVE', bomLines: [{ id: 'b1', rawMaterialCode: 'RM-CU-8MM', consumption: 142.5, uom: 'kg', scrap: 1.5, rawMaterial: { description: 'Copper Wire Rod 8mm' } }] },
-        { id: 'c2', materialNumber: '10009488', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X25 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '25', cores: '1C', diameter: 12.4, weight: 375, status: 'ACTIVE', bomLines: [] },
-        { id: 'c3', materialNumber: '10009489', description: 'Cu / XLPE / LSHF 0.6/1 kV 1X35 mm2 RMC IEC 60502-1', family: 'XLPE', voltage: '0.6/1 kV', conductor: 'Copper', conductorSize: '35', cores: '1C', diameter: 13.8, weight: 490, status: 'ACTIVE', bomLines: [] },
-        { id: 'c4', materialNumber: '20004120', description: 'Al / XLPE / STA / PVC 0.6/1 kV 4X70 mm2 IEC 60502-1', family: 'ARMOURED', voltage: '0.6/1 kV', conductor: 'Aluminum', conductorSize: '70', cores: '4C', diameter: 34.2, weight: 2150, status: 'ACTIVE', bomLines: [] },
-        { id: 'c5', materialNumber: '30008815', description: 'Cu / XLPE / CTS / PVC 18/30 kV 1X240 mm2 BS 6622', family: 'MEDIUM_VOLTAGE', voltage: '18/30 kV', conductor: 'Copper', conductorSize: '240', cores: '1C', diameter: 48.6, weight: 4850, status: 'ACTIVE', bomLines: [] },
-      ];
-      return {
-        items: sampleCables,
-        total: sampleCables.length,
-        page: 1,
-        limit: 20,
-        totalPages: 1,
-      };
+    } catch (err: any) {
+      throw new BadRequestException(err?.message || 'Failed to list cables.');
     }
   }
 

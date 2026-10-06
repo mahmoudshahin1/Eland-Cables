@@ -111,42 +111,15 @@ export class InquiriesService {
         this.prisma.commercialInquiry.count({ where }),
       ]);
 
-      if (items.length > 0) {
-        return {
-          items,
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit) || 1,
-        };
-      }
-
-      const sampleInquiries = [
-        { id: 'inq-1', inquiryNumber: 'INQ-20261005-1042', customerId: 'CUST-ELAND', customerName: 'Eland Cables UK', projectName: 'London Crossrail Feeder', status: 'SUBMITTED', deliveryTerms: 'CIF Felixstowe', incoterms: 'CIF', currency: 'GBP', createdAt: new Date().toISOString(), _count: { lines: 2, attachments: 1, quotations: 0 }, lines: [{ id: 'l1', lineNumber: 1, cableDescription: 'Cu / XLPE / LSHF 0.6/1 kV 1X16 mm2 RMC', requestedLengthMeters: 5000, requestedQuantity: 5, quantityUom: 'KM', drumType: 'Wood Reel 220' }, { id: 'l2', lineNumber: 2, cableDescription: 'Cu / XLPE / LSHF 0.6/1 kV 1X25 mm2 RMC', requestedLengthMeters: 3000, requestedQuantity: 3, quantityUom: 'KM', drumType: 'Wood Reel 220' }] },
-        { id: 'inq-2', inquiryNumber: 'INQ-20261004-9811', customerId: 'CUST-SWDY', customerName: 'Elsewedy Electric', projectName: 'Benban Solar Park Substation', status: 'UNDER_REVIEW', deliveryTerms: 'Ex-Works 10th of Ramadan', incoterms: 'EXW', currency: 'USD', createdAt: new Date(Date.now() - 86400000).toISOString(), _count: { lines: 1, attachments: 0, quotations: 0 }, lines: [{ id: 'l3', lineNumber: 1, cableDescription: 'Cu / XLPE / CTS / PVC 18/30 kV 1X240 mm2 BS 6622', requestedLengthMeters: 8000, requestedQuantity: 8, quantityUom: 'KM', drumType: 'Steel Reel 260' }] },
-        { id: 'inq-3', inquiryNumber: 'INQ-20261002-4520', customerId: 'CUST-SEC', customerName: 'Saudi Electricity Company (SEC)', projectName: 'Riyadh Metro Extension', status: 'QUOTED', deliveryTerms: 'CIF Dammam', incoterms: 'CIF', currency: 'USD', createdAt: new Date(Date.now() - 172800000).toISOString(), _count: { lines: 3, attachments: 2, quotations: 1 }, lines: [{ id: 'l4', lineNumber: 1, cableDescription: 'Al / XLPE / STA / PVC 0.6/1 kV 4X70 mm2', requestedLengthMeters: 12000, requestedQuantity: 12, quantityUom: 'KM', drumType: 'Wood Reel 240' }] },
-      ];
-
       return {
-        items: sampleInquiries,
-        total: sampleInquiries.length,
-        page: 1,
-        limit: 20,
-        totalPages: 1,
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
       };
-    } catch {
-      const sampleInquiries = [
-        { id: 'inq-1', inquiryNumber: 'INQ-20261005-1042', customerId: 'CUST-ELAND', customerName: 'Eland Cables UK', projectName: 'London Crossrail Feeder', status: 'SUBMITTED', deliveryTerms: 'CIF Felixstowe', incoterms: 'CIF', currency: 'GBP', createdAt: new Date().toISOString(), _count: { lines: 2, attachments: 1, quotations: 0 }, lines: [{ id: 'l1', lineNumber: 1, cableDescription: 'Cu / XLPE / LSHF 0.6/1 kV 1X16 mm2 RMC', requestedLengthMeters: 5000, requestedQuantity: 5, quantityUom: 'KM', drumType: 'Wood Reel 220' }, { id: 'l2', lineNumber: 2, cableDescription: 'Cu / XLPE / LSHF 0.6/1 kV 1X25 mm2 RMC', requestedLengthMeters: 3000, requestedQuantity: 3, quantityUom: 'KM', drumType: 'Wood Reel 220' }] },
-        { id: 'inq-2', inquiryNumber: 'INQ-20261004-9811', customerId: 'CUST-SWDY', customerName: 'Elsewedy Electric', projectName: 'Benban Solar Park Substation', status: 'UNDER_REVIEW', deliveryTerms: 'Ex-Works 10th of Ramadan', incoterms: 'EXW', currency: 'USD', createdAt: new Date(Date.now() - 86400000).toISOString(), _count: { lines: 1, attachments: 0, quotations: 0 }, lines: [{ id: 'l3', lineNumber: 1, cableDescription: 'Cu / XLPE / CTS / PVC 18/30 kV 1X240 mm2 BS 6622', requestedLengthMeters: 8000, requestedQuantity: 8, quantityUom: 'KM', drumType: 'Steel Reel 260' }] },
-        { id: 'inq-3', inquiryNumber: 'INQ-20261002-4520', customerId: 'CUST-SEC', customerName: 'Saudi Electricity Company (SEC)', projectName: 'Riyadh Metro Extension', status: 'QUOTED', deliveryTerms: 'CIF Dammam', incoterms: 'CIF', currency: 'USD', createdAt: new Date(Date.now() - 172800000).toISOString(), _count: { lines: 3, attachments: 2, quotations: 1 }, lines: [{ id: 'l4', lineNumber: 1, cableDescription: 'Al / XLPE / STA / PVC 0.6/1 kV 4X70 mm2', requestedLengthMeters: 12000, requestedQuantity: 12, quantityUom: 'KM', drumType: 'Wood Reel 240' }] },
-      ];
-      return {
-        items: sampleInquiries,
-        total: sampleInquiries.length,
-        page: 1,
-        limit: 20,
-        totalPages: 1,
-      };
+    } catch (err: any) {
+      throw new BadRequestException(err?.message || 'Failed to list inquiries.');
     }
   }
 

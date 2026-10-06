@@ -65,7 +65,7 @@ export class AuthController {
   /** POST /api/auth/forgot-password — public placeholder */
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
-  async forgotPassword(@Body() body: { email: string }) {
+  async forgotPassword(@Body() _body: { email: string }) {
     // TODO: wire up email/SMTP delivery in a later phase
     return {
       success: true,
