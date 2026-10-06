@@ -10,7 +10,7 @@ Source of Truth Schema: `/prisma/schema.prisma`
 
 | Phase | Module | Endpoints (done/total) | G1 (Contract) | G2 (Tests) | G3 (UI) | G4 (Quality) | G5 (Docs) | Notes |
 |---|---|---|---|---|---|---|---|---|
-| **Phase 0** | **Foundation & Security** | **2 / 2** | ✅ | ✅ | ✅ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
+| **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | Phase 1 | Auth / RBAC / Identity | 0 / 49 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مستعد للبدء بعد اعتماد Phase 0 |
 | Phase 2 | Master Data & Metals | 0 / 130 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | Phase 3 | Cable Authority & Configurator | 0 / 16 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
