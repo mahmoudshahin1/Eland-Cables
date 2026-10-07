@@ -145,6 +145,7 @@ Never claim something works without showing the command output that proves it.
 ### أمثلة جاهزة
 
 **Phase 0:**
+
 ```text
 ابدأ Phase 0: الأساس والأمان. نفّذ البنود 1 إلى 9 من الخطة بالترتيب.
 البند 5 (تنظيف Nest) يشمل: حذف الـ demo login والـ mock data من auth/inquiries/master-data،
@@ -154,6 +155,7 @@ Never claim something works without showing the command output that proves it.
 ```
 
 **Phase 1:**
+
 ```text
 ابدأ Phase 1: Auth / Identity / RBAC / Admin. الأساس: identityAuthRoutes, identityService,
 rbac.ts, customerScope, adminIdentityRoutes, adminCustomerRoutes.
@@ -161,6 +163,7 @@ rbac.ts, customerScope, adminIdentityRoutes, adminCustomerRoutes.
 ```
 
 **التحقق بعد أي Phase (للمراجعة):**
+
 ```text
 أثبتلي إن Phase <N> خلصت: اعرض مخرجات (1) تقرير parity (2) نتيجة الاختبارات (3) build و lint
 (4) جدول الشاشات اللي اتجربت على الـ React القديم (5) محتوى MIGRATION_STATUS.md المحدّث.
