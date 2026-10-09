@@ -1,0 +1,860 @@
+[
+  {
+    "id": "endpoint-1",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/login",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-2",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-3",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/refresh-token",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-4",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-5",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/change-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-6",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-7",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-8",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/register",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-9",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-10",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/assign-role",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-11",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-12",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-13",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/cables",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-14",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/cables/123",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-15",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/master/cables",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-16",
+    "phase": 1,
+    "method": "PUT",
+    "path": "/api/master/cables/123",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-17",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/raw-materials",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-18",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/raw-material-prices",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-19",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/boms",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-20",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/master/drums",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-21",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/inquiries",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-22",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/inquiries/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-23",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/inquiries",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-24",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/inquiries/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-25",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/inquiries/1/submit",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-26",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/inquiries/1/cancel",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-27",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/inquiries/1/lines",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-28",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/inquiries/1/lines/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-29",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/inquiries/1/lines/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-30",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-31",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-32",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-33",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-34",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-35",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-36",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/lock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-37",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/unlock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-38",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-39",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-40",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/users/1/roles/ADMIN",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-41",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-42",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-43",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-44",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-45",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-46",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-47",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-48",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-49",
+    "phase": 1,
+    "method": "PUT",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-50",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-51",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions/matrix",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-52",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/security",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-53",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-54",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/export",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-55",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-reference-masters",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-56",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-57",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1/audit",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-58",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-59",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-60",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-61",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-62",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-63",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-64",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-65",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customer-users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  },
+  {
+    "id": "endpoint-66",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users/1/unassign",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ]
+  }
+]

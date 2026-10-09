@@ -20,8 +20,8 @@ import { validateEnv } from './common/config/env.validation.js';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: Number(process.env.LOGIN_RATE_WINDOW_MS || 60000),
-        limit: Number(process.env.LOGIN_RATE_MAX || 20),
+        ttl: 60000,
+        limit: 100,
       },
     ]),
     PrismaModule,
@@ -34,10 +34,6 @@ import { validateEnv } from './common/config/env.validation.js';
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
   ],
 })
 export class AppModule {}

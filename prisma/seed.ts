@@ -170,6 +170,20 @@ async function main() {
     console.log('Seeded Increment 12 B1 identity catalog and roles. Development users are created only when NODE_ENV is not production and never overwrite existing passwords.');
   }
 
+  const { seedGovernedElandCustomer } = await import('../src/server/customerMigration');
+  await seedGovernedElandCustomer();
+
+  await prisma.incoterm.upsert({
+    where: { code: 'DAP' },
+    create: { code: 'DAP', name: 'Delivered at Place', active: true },
+    update: { active: true },
+  });
+  await prisma.incoterm.upsert({
+    where: { code: 'CIF' },
+    create: { code: 'CIF', name: 'Cost, Insurance and Freight', active: true },
+    update: { active: true },
+  });
+
   const { seedElandCustomerShippingCostRates } = await import('../src/server/customerShippingCostRepository');
   const shippingSeed = await seedElandCustomerShippingCostRates();
   console.log(

@@ -19,8 +19,23 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
       proxy: {
-        '/api': {
+        '/api/auth': {
           target: process.env.BACKEND_URL || 'http://localhost:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/admin/identity': {
+          target: process.env.BACKEND_URL || 'http://localhost:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/admin/customers': {
+          target: process.env.BACKEND_URL || 'http://localhost:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api': {
+          target: 'http://localhost:3847',
           changeOrigin: true,
           secure: false,
         },

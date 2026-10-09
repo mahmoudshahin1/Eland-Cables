@@ -113,7 +113,7 @@ export class AuthService {
     const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
     return {
-      accessToken: await this.jwtService.signAsync(payload, { expiresIn: '1d' }),
+      accessToken: await this.jwtService.signAsync(payload),
       refreshToken: await this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
       user: toSafeUser({ ...user, permissionCodes: codes }),
     };

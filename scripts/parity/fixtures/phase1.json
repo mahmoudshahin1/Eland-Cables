@@ -1,0 +1,12 @@
+[
+  {"id": "auth-login", "phase": 1, "method": "POST", "path": "/api/auth/login", "expectedStatus": 400},
+  {"id": "auth-logout", "phase": 1, "method": "POST", "path": "/api/auth/logout", "expectedStatus": 200},
+  {"id": "auth-me", "phase": 1, "method": "GET", "path": "/api/auth/me", "expectedStatus": 401},
+  {"id": "master-cables", "phase": 1, "method": "GET", "path": "/api/master/cables", "expectedStatus": 401},
+  {"id": "master-boms", "phase": 1, "method": "GET", "path": "/api/master/boms", "expectedStatus": 401},
+  {"id": "inquiries-list", "phase": 1, "method": "GET", "path": "/api/inquiries", "expectedStatus": 401},
+  {"id": "admin-users", "phase": 1, "method": "GET", "path": "/api/admin/users", "expectedStatus": 401},
+  {"id": "admin-roles", "phase": 1, "method": "GET", "path": "/api/admin/roles", "expectedStatus": 401},
+  {"id": "admin-permissions", "phase": 1, "method": "GET", "path": "/api/admin/permissions", "expectedStatus": 401},
+  {"id": "admin-customers", "phase": 1, "method": "GET", "path": "/api/admin/customers", "expectedStatus": 401}
+]

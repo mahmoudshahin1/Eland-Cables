@@ -16,10 +16,13 @@ import type { Request } from 'express';
 import { LoginDto, RefreshTokenDto, ChangePasswordDto, ResetPasswordDto, LogoutDto } from './dto/auth.dto.js';
 import { RequestActor } from '../common/interfaces/request-actor.interface.js';
 
+import { Throttle } from '@nestjs/throttler';
+
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: Number(process.env.LOGIN_RATE_MAX || 20), ttl: Number(process.env.LOGIN_RATE_WINDOW_MS || 60000) } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: LoginDto) {

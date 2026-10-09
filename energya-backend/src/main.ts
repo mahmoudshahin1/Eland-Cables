@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
 
+import { Request, Response, NextFunction } from 'express';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -15,7 +17,7 @@ async function bootstrap() {
     }),
   );
 
-  app.use((_req: any, res: any, next: () => void) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
