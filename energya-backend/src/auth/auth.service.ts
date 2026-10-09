@@ -1,44 +1,30 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma.service.js';
+import { AuthRepository } from './auth.repository.js';
 import * as bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
 import { toSafeUser } from '../shared/domain/safe-user.js';
 import { hashPassword, hashOpaqueToken } from '../shared/domain/password-service.js';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repo: AuthRepository,
     private readonly jwtService: JwtService,
   ) {}
 
   private async generateSession(userId: string, expiresInDays = 1): Promise<string> {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
-    const session = await this.prisma.userSession.create({
-      data: {
-        userId,
-        expiresAt,
-        refreshTokenHash: require('crypto').randomBytes(32).toString('hex'),
-      }
+    const session = await this.repo.createUserSession({
+      userId,
+      expiresAt,
+      refreshTokenHash: require('crypto').randomBytes(32).toString('hex'),
     });
     return session.id;
   }
 
   async login(identifier: string, pass: string) {
-    const user = await this.prisma.userAccount.findFirst({
-      where: {
-        OR: [
-          { email: identifier.toLowerCase() },
-          { username: identifier.toLowerCase() },
-        ],
-      },
-      include: {
-        roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
-        customerUsers: { include: { customer: true } }
-      }
-    });
+    const user = await this.repo.findUserByIdentifier(identifier);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
@@ -53,23 +39,17 @@ export class AuthService {
       const threshold = parseInt(process.env.LOGIN_LOCK_THRESHOLD || '5', 10);
       const newAttempts = user.failedLoginAttempts + 1;
       
-      await this.prisma.userAccount.update({
-        where: { id: user.id },
-        data: { 
-          failedLoginAttempts: newAttempts,
-          isLocked: newAttempts >= threshold,
-          status: newAttempts >= threshold ? 'LOCKED' : user.status
-        },
+      await this.repo.updateUserAccount(user.id, { 
+        failedLoginAttempts: newAttempts,
+        isLocked: newAttempts >= threshold,
+        status: newAttempts >= threshold ? 'LOCKED' : user.status
       });
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    await this.prisma.userAccount.update({
-      where: { id: user.id },
-      data: {
-        failedLoginAttempts: 0,
-        lastLoginAt: new Date(),
-      },
+    await this.repo.updateUserAccount(user.id, {
+      failedLoginAttempts: 0,
+      lastLoginAt: new Date(),
     });
 
     const sessionId = await this.generateSession(user.id, 1);
@@ -121,19 +101,13 @@ export class AuthService {
 
   async logout(sessionId?: string, refreshToken?: string) {
     if (sessionId) {
-      await this.prisma.userSession.updateMany({
-        where: { id: sessionId },
-        data: { revokedAt: new Date() }
-      });
+      await this.repo.revokeSession(sessionId);
     }
     if (refreshToken) {
       try {
         const decoded = await this.jwtService.verifyAsync(refreshToken, { ignoreExpiration: true });
         if (decoded.sid) {
-          await this.prisma.userSession.updateMany({
-            where: { id: decoded.sid },
-            data: { revokedAt: new Date() }
-          });
+          await this.repo.revokeSession(decoded.sid);
         }
       } catch {}
     }
@@ -142,28 +116,19 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const decoded = await this.jwtService.verifyAsync(refreshToken);
-      const session = await this.prisma.userSession.findUnique({ where: { id: decoded.sid } });
+      const session = await this.repo.findSessionById(decoded.sid);
       
       if (!session || session.revokedAt || session.expiresAt < new Date()) {
         throw new UnauthorizedException('Invalid or expired refresh token.');
       }
 
-      const user = await this.prisma.userAccount.findUnique({
-        where: { id: decoded.sub },
-        include: {
-          roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
-          customerUsers: { include: { customer: true } }
-        }
-      });
+      const user = await this.repo.findUserById(decoded.sub);
 
       if (!user || !user.isActive || user.isLocked) {
         throw new UnauthorizedException('User account is no longer valid.');
       }
 
-      await this.prisma.userSession.update({
-        where: { id: session.id },
-        data: { revokedAt: new Date() }
-      });
+      await this.repo.revokeSession(session.id);
 
       const newSessionId = await this.generateSession(user.id, 1);
       const newRefreshSessionId = await this.generateSession(user.id, 7);
@@ -211,12 +176,7 @@ export class AuthService {
   }
 
   async getMe(userId: string) {
-    const user = await this.prisma.userAccount.findUnique({
-      where: { id: userId },
-      include: {
-        roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
-      },
-    });
+    const user = await this.repo.findUserById(userId);
 
     if (!user || !user.isActive || user.isLocked) {
       throw new UnauthorizedException('Invalid or expired session.');
@@ -234,63 +194,33 @@ export class AuthService {
   }
 
   async changePassword(userId: string, current: string, newPass: string, sessionId?: string) {
-    const user = await this.prisma.userAccount.findUnique({ where: { id: userId } });
+    const user = await this.repo.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found');
     
     const isMatch = await bcrypt.compare(current, user.passwordHash);
     if (!isMatch) throw new BadRequestException('Current password does not match', { description: 'VALIDATION_FAILED' });
 
     const hash = await hashPassword(newPass);
-    await this.prisma.userAccount.update({
-      where: { id: userId },
-      data: { passwordHash: hash, passwordChangedAt: new Date() }
-    });
+    await this.repo.updateUserAccount(userId, { passwordHash: hash, passwordChangedAt: new Date() });
 
     if (sessionId) {
-      await this.prisma.userSession.updateMany({
-        where: { userId, id: { not: sessionId } },
-        data: { revokedAt: new Date() }
-      });
+      await this.repo.revokeOtherUserSessions(userId, sessionId);
     }
   }
 
   async resetPassword(token: string, newPass: string) {
     const tokenHash = hashOpaqueToken(token);
-    const ticket = await this.prisma.passwordResetTicket.findUnique({
-      where: { tokenHash },
-    });
+    const ticket = await this.repo.findPasswordResetTicket(tokenHash);
     if (!ticket || ticket.usedAt || ticket.expiresAt < new Date()) {
       throw new BadRequestException('Invalid or expired password reset token.');
     }
     const passwordHash = await hashPassword(newPass);
-    await this.prisma.$transaction([
-      this.prisma.userAccount.update({
-        where: { id: ticket.userId },
-        data: {
-          passwordHash,
-          passwordChangedAt: new Date(),
-          failedLoginAttempts: 0,
-          isLocked: false,
-          status: 'ACTIVE',
-        },
-      }),
-      this.prisma.passwordResetTicket.update({
-        where: { id: ticket.id },
-        data: { usedAt: new Date() },
-      }),
-      this.prisma.passwordResetTicket.updateMany({
-        where: { userId: ticket.userId, usedAt: null, id: { not: ticket.id } },
-        data: { usedAt: new Date() },
-      }),
-    ]);
-    await this.prisma.userSession.updateMany({
-      where: { userId: ticket.userId },
-      data: { revokedAt: new Date() },
-    });
+    await this.repo.applyPasswordResetTransaction(ticket.userId, ticket.id, passwordHash);
+    await this.repo.revokeUserSessions(ticket.userId);
     return { success: true };
   }
 
   async getRoles() {
-    return this.prisma.role.findMany({ where: { isActive: true }, orderBy: { code: 'asc' } });
+    return this.repo.findActiveRoles();
   }
 }
