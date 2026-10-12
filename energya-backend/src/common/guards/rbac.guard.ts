@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Inject } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSION_KEY, PermissionRequirements } from '../decorators/require-permission.decorator.js';
 import { RequestActor } from '../interfaces/request-actor.interface.js';
@@ -6,7 +6,7 @@ import { hasPermission } from '../../shared/domain/rbac-engine.js';
 
 @Injectable()
 export class RbacGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPermission = this.reflector.getAllAndOverride<PermissionRequirements>(PERMISSION_KEY, [
@@ -28,6 +28,10 @@ export class RbacGuard implements CanActivate {
       return true;
     }
 
-    throw new ForbiddenException(`Insufficient permissions for ${requiredPermission.domain}:${requiredPermission.resource}:${requiredPermission.action}`);
+    const permString = `${requiredPermission.domain}:${requiredPermission.resource}:${requiredPermission.action}`;
+    throw new ForbiddenException({
+      error: `Not authorized for ${permString}.`,
+      code: 'UNAUTHORIZED'
+    });
   }
 }

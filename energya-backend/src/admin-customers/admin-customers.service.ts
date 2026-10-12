@@ -1,10 +1,44 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Inject } from '@nestjs/common';
 import { AdminCustomersRepository } from './admin-customers.repository.js';
 import { RequestActor } from '../common/interfaces/request-actor.interface.js';
+import { toSafeUser } from '../shared/domain/safe-user.js';
+
+export function toPublicCustomer(row: any) {
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    legalName: row.legalName ?? null,
+    countryCode: row.countryCode ?? null,
+    type: row.type,
+    status: row.status,
+    defaultCurrency: row.defaultCurrency,
+    defaultIncoterm: row.defaultIncoterm ?? null,
+    paymentTerms: row.paymentTerms ?? null,
+    deliveryTerms: row.deliveryTerms ?? null,
+    taxVatNumber: row.taxVatNumber ?? null,
+    remarks: row.remarks ?? null,
+    companyLogoUrl: row.companyLogoUrl ?? null,
+    companyTagline: row.companyTagline ?? null,
+    allowedQuotationCurrencies: row.allowedQuotationCurrencies,
+    customerGroupId: row.customerGroupId ?? null,
+    classificationId: row.classificationId ?? null,
+    segmentId: row.segmentId ?? null,
+    paymentTermId: row.paymentTermId ?? null,
+    paymentMethodId: row.paymentMethodId ?? null,
+    createdBy: row.createdBy ?? null,
+    updatedBy: row.updatedBy ?? null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    userCount: row._count?.users ?? undefined,
+    inquiryCount: row._count?.inquiries ?? undefined,
+    quotationCount: row._count?.quotations ?? undefined,
+  };
+}
 
 @Injectable()
 export class AdminCustomersService {
-  constructor(private readonly repo: AdminCustomersRepository) {}
+  constructor(@Inject(AdminCustomersRepository) private readonly repo: AdminCustomersRepository) {}
 
   async listCustomers(filter: any) {
     const where: any = {};
@@ -24,7 +58,7 @@ export class AdminCustomersService {
       this.repo.countCustomers(where),
       this.repo.findCustomers(where, skip, take),
     ]);
-    return { customers: rows, total, skip, take };
+    return { customers: rows.map(toPublicCustomer), total };
   }
 
   async exportMasterDataExcel(actor: RequestActor, filter: any) {
@@ -32,8 +66,7 @@ export class AdminCustomersService {
   }
 
   async listCustomerReferenceMasters() {
-    // We stub this for Phase 1 Parity as before
-    return { groups: [], classifications: [], segments: [], paymentTerms: [], paymentMethods: [] }; 
+    return this.repo.findCustomerReferenceMasters();
   }
 
   async getCustomerById(id: string) {
@@ -43,9 +76,17 @@ export class AdminCustomersService {
   }
 
   async createCustomer(actor: RequestActor, input: any) {
+    const code = String(input.code || '').trim().toUpperCase();
+    const name = String(input.name || '').trim();
+    if (!code || !name) {
+      throw new BadRequestException({
+        error: 'Customer code and name are required.',
+        code: 'VALIDATION_FAILED',
+      });
+    }
     return this.repo.createCustomer({
-      code: input.code.trim().toUpperCase(),
-      name: input.name.trim(),
+      code,
+      name,
       legalName: input.legalName,
       countryCode: input.countryCode,
       type: input.type || 'STANDARD',
@@ -81,7 +122,7 @@ export class AdminCustomersService {
   }
 
   async listCustomerAudit(id: string) {
-    return this.repo.findCustomerAuditLogs(id);
+    return { events: await this.repo.findCustomerAuditLogs(id) };
   }
 
   async listCustomerUsers(filter: any) {
@@ -94,26 +135,41 @@ export class AdminCustomersService {
       this.repo.countCustomerUsers(where),
       this.repo.findCustomerUsers(where, skip, take)
     ]);
-    return { assignments: rows, total, skip, take };
+    return {
+      total,
+      assignments: rows.map((link) => ({
+        id: link.id,
+        status: link.status,
+        assignedAt: link.assignedAt,
+        assignedBy: link.assignedBy,
+        customer: toPublicCustomer(link.customer),
+        user: toSafeUser({ ...link.userAccount, roles: link.userAccount?.roles || [], permissionCodes: [] }),
+      })),
+    };
   }
 
   async assignUserToCustomer(actor: RequestActor, input: any) {
-    const userId = input.userAccountId || input.userId;
-    if (!userId || !input.customerId) throw new BadRequestException('userId and customerId required');
-    // Using simple creation or update instead of upsert for simplicity since we don't have upsert explicitly in repo
-    const existing = await this.repo.findCustomerUsers({ userAccountId: userId, customerId: input.customerId }, 0, 1);
+    const customerId = input?.customerId;
+    const userId = input?.userAccountId || input?.userId;
+    const customer = await this.repo.findCustomerById(customerId);
+    if (!customer) throw new NotFoundException({ error: 'Customer not found.', code: 'NOT_FOUND' });
+    const user = await this.repo.findUserAccountById(userId);
+    if (!user) throw new NotFoundException({ error: 'User not found.', code: 'NOT_FOUND' });
+    const existing = await this.repo.findCustomerUsers({ userAccountId: user.id, customerId: customer.id }, 0, 1);
     if (existing.length > 0) {
       return this.repo.updateCustomerUser(existing[0].id, { status: 'ACTIVE', assignedBy: actor.id });
     }
     return this.repo.createCustomerUser({
-      user: { connect: { id: userId } },
-      customer: { connect: { id: input.customerId } },
+      user: { connect: { id: user.id } },
+      customer: { connect: { id: customer.id } },
       assignedBy: actor.id,
       status: 'ACTIVE'
     });
   }
 
   async updateCustomerUser(actor: RequestActor, id: string, status: string) {
+    const previous = await this.repo.findCustomerUserById(id);
+    if (!previous) throw new NotFoundException('Customer-user assignment not found.');
     return this.repo.updateCustomerUser(id, { status: status as any });
   }
 }

@@ -10,6 +10,8 @@ import {
   Body,
   UseGuards,
   Req,
+  Inject,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RbacGuard } from '../common/guards/rbac.guard.js';
@@ -31,7 +33,7 @@ import { PERMISSION_CATALOG } from '../shared/domain/permission-catalog.js';
 @Controller('api/admin')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class AdminIdentityController {
-  constructor(private readonly service: AdminIdentityService) {}
+  constructor(@Inject(AdminIdentityService) private readonly service: AdminIdentityService) {}
 
   @Get('users')
   @RequirePermission('ADMIN', 'USER', 'VIEW')
@@ -41,15 +43,30 @@ export class AdminIdentityController {
 
   @Post('users')
   @RequirePermission('ADMIN', 'USER', 'CREATE')
-  async createUser(@Body() body: CreateUserDto, @Req() req: Request) {
+  async createUser(@Body() body: any, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
-    return { user: await this.service.createUser(body, actor) };
+    const user = await this.service.createUser(
+      {
+        ...body,
+        username: String(body?.username || body?.email),
+        email: String(body?.email || body?.username),
+        fullName: String(body?.fullName || body?.username || body?.email),
+        password: String(body?.password),
+        userType: body?.userType,
+        department: body?.department,
+        status: body?.status,
+      },
+      actor
+    );
+    return { user };
   }
 
   @Get('users/:id')
   @RequirePermission('ADMIN', 'USER', 'VIEW')
   async getUserById(@Param('id') id: string) {
-    return { user: await this.service.getUserById(id) };
+    const user = await this.service.getUserById(id);
+    if (!user) throw new NotFoundException('User not found.');
+    return { user };
   }
 
   @Patch('users/:id')
@@ -116,7 +133,7 @@ export class AdminIdentityController {
   }
 
   @Post('roles')
-  @RequirePermission('ADMIN', 'ROLE', 'MANAGE')
+  @RequirePermission('ADMIN', 'ROLE', 'CREATE')
   async createRole(@Body() body: CreateRoleDto, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
     return { role: await this.service.createRole(body, actor) };
@@ -125,25 +142,27 @@ export class AdminIdentityController {
   @Get('roles/:id')
   @RequirePermission('ADMIN', 'ROLE', 'VIEW')
   async getRoleById(@Param('id') id: string) {
-    return { role: await this.service.getRoleDetail(id) };
+    const role = await this.service.getRoleDetail(id);
+    if (!role) throw new NotFoundException('Role not found.');
+    return { role };
   }
 
   @Patch('roles/:id')
-  @RequirePermission('ADMIN', 'ROLE', 'MANAGE')
+  @RequirePermission('ADMIN', 'ROLE', 'UPDATE')
   async updateRole(@Param('id') id: string, @Body() body: UpdateRoleDto, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
     return { role: await this.service.updateRole(id, body, actor) };
   }
 
   @Post('roles/:id/activate')
-  @RequirePermission('ADMIN', 'ROLE', 'MANAGE')
+  @RequirePermission('ADMIN', 'ROLE', 'UPDATE')
   async activateRole(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
     return { role: await this.service.setRoleActive(id, true, actor) };
   }
 
   @Post('roles/:id/deactivate')
-  @RequirePermission('ADMIN', 'ROLE', 'MANAGE')
+  @RequirePermission('ADMIN', 'ROLE', 'UPDATE')
   async deactivateRole(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
     return { role: await this.service.setRoleActive(id, false, actor) };
@@ -153,14 +172,16 @@ export class AdminIdentityController {
   @RequirePermission('ADMIN', 'ROLE', 'VIEW')
   async getRoleUsers(@Param('id') id: string) {
     const role = await this.service.getRoleDetail(id);
-    return { users: role?.users || [] };
+    if (!role) throw new NotFoundException('Role not found.');
+    return { users: role.users || [] };
   }
 
   @Get('roles/:id/permissions')
   @RequirePermission('ADMIN', 'ROLE', 'VIEW')
   async getRolePermissions(@Param('id') id: string) {
     const role = await this.service.getRoleDetail(id);
-    return { permissions: role?.permissions || [] };
+    if (!role) throw new NotFoundException('Role not found.');
+    return { permissions: role.permissions || [] };
   }
 
   @Put('roles/:id/permissions')

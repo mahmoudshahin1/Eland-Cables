@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AdminIdentityRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async findUserById(id: string) {
     return this.prisma.userAccount.findUnique({
       where: { id },
-      include: { roles: { include: { role: true } }, customerUsers: { include: { customer: true } } }
+      include: { roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } }, customerUsers: { include: { customer: true } } }
     });
   }
 
@@ -23,7 +23,7 @@ export class AdminIdentityRepository {
       skip,
       take,
       include: {
-        roles: { include: { role: true } },
+        roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
         customerUsers: { include: { customer: true } }
       },
       orderBy: { createdAt: 'desc' }
@@ -68,7 +68,21 @@ export class AdminIdentityRepository {
   }
 
   async findRoles() {
-    return this.prisma.role.findMany({ orderBy: { code: 'asc' } });
+    const roles = await this.prisma.role.findMany({
+      include: { _count: { select: { users: true, permissions: true } } },
+      orderBy: { code: 'asc' },
+    });
+    return roles.map((r) => ({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      description: r.description,
+      userType: r.userType,
+      isSystem: r.isSystem,
+      isActive: r.isActive,
+      userCount: r._count.users,
+      permissionCount: r._count.permissions,
+    }));
   }
 
   async findRoleById(id: string) {

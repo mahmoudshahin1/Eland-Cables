@@ -67,39 +67,78 @@ export class DomainExceptionFilter implements ExceptionFilter {
       const resBody = exception.getResponse();
 
       if (status === HttpStatus.UNAUTHORIZED) {
+        const customMsg = typeof resBody === 'object' && (resBody as any).message ? (resBody as any).message : exception.message;
+        const finalMsg = customMsg && customMsg !== 'Unauthorized' ? customMsg : 'Sign in is required.';
         return response.status(HttpStatus.UNAUTHORIZED).json({
-          error: 'Sign in is required.',
+          error: finalMsg,
           code: 'UNAUTHORIZED',
         });
       }
 
       if (status === HttpStatus.BAD_REQUEST) {
-        if (typeof resBody === 'object' && resBody !== null && Array.isArray((resBody as any).message)) {
-          // ValidationPipe errors
-          return response.status(HttpStatus.BAD_REQUEST).json({
-            error: 'Validation failed',
-            code: 'VALIDATION_FAILED',
-            details: (resBody as any).message,
-          });
+        if (typeof resBody === 'object' && resBody !== null) {
+          if (Array.isArray((resBody as any).message)) {
+            return response.status(HttpStatus.BAD_REQUEST).json({
+              error: 'Validation failed',
+              code: 'VALIDATION_FAILED',
+              details: (resBody as any).message,
+            });
+          }
+          if ((resBody as any).code && (resBody as any).error) {
+            return response.status(HttpStatus.BAD_REQUEST).json({
+              error: (resBody as any).error,
+              code: (resBody as any).code,
+            });
+          }
         }
+        const msg = typeof resBody === 'object' && typeof (resBody as any).message === 'string'
+          ? (resBody as any).message
+          : (typeof resBody === 'object' && (resBody as any).error ? (resBody as any).error : exception.message);
         return response.status(HttpStatus.BAD_REQUEST).json({
-          error: typeof resBody === 'object' && (resBody as any).message ? (resBody as any).message : exception.message,
-          code: 'BAD_REQUEST',
+          error: msg,
         });
       }
 
       if (status === HttpStatus.FORBIDDEN) {
+        const customObj = typeof resBody === 'object' && resBody !== null ? resBody as any : {};
+        const msg = customObj.message && typeof customObj.message === 'string'
+          ? customObj.message
+          : (customObj.error ? customObj.error : exception.message);
         return response.status(HttpStatus.FORBIDDEN).json({
-          error: typeof resBody === 'object' && (resBody as any).message ? (resBody as any).message : exception.message,
-          code: 'UNAUTHORIZED',
+          error: msg,
+          code: customObj.code ? customObj.code : 'UNAUTHORIZED',
+        });
+      }
+
+      if (status === HttpStatus.NOT_FOUND) {
+        const customObj = typeof resBody === 'object' && resBody !== null ? (resBody as any) : {};
+        const msg = customObj.message && typeof customObj.message === 'string'
+          ? customObj.message
+          : (customObj.error ? customObj.error : exception.message);
+        const formattedMsg = msg.endsWith('.') ? msg : `${msg}.`;
+
+        if (request.method === 'GET' && (formattedMsg === 'User not found.' || formattedMsg === 'Role not found.')) {
+          return response.status(HttpStatus.NOT_FOUND).json({ error: formattedMsg });
+        }
+        return response.status(HttpStatus.NOT_FOUND).json({
+          error: formattedMsg,
+          code: customObj.code || 'NOT_FOUND',
         });
       }
 
       return response.status(status).json(typeof resBody === 'object' ? resBody : { error: exception.message });
     }
 
-    // 5. Fallback for unhandled server errors (500)
+    // 5. Fallback for unhandled server errors (matches legacy sendErr for /api/admin and /api/auth)
     this.logger.error(`Unhandled Exception: ${err?.message || exception}`, err?.stack);
+    const reqPath = request.originalUrl || request.url || '';
+    if (reqPath.startsWith('/api/admin') || reqPath.startsWith('/api/auth')) {
+      const status = err?.http || (err?.code === 'NOT_FOUND' ? 404 : err?.code === 'CONFLICT' ? 409 : err?.code === 'UNAUTHORIZED' ? 403 : 400);
+      return response.status(status).json({
+        error: err?.message || 'Unexpected error',
+        code: err?.code || 'ERROR',
+      });
+    }
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       error: err?.message || 'Unexpected error',
     });

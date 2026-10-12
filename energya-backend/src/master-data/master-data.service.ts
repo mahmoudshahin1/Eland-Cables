@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 
 export interface PaginationQuery {
@@ -21,7 +21,7 @@ export interface RawMaterialFilterQuery extends PaginationQuery {
 
 @Injectable()
 export class MasterDataService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   /**
    * List cables with search, filters, and pagination

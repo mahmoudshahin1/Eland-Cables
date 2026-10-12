@@ -9,6 +9,7 @@ import {
   UseGuards,
   ForbiddenException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
@@ -17,18 +18,24 @@ import { LoginDto, RefreshTokenDto, ChangePasswordDto, ResetPasswordDto, LogoutD
 import { RequestActor } from '../common/interfaces/request-actor.interface.js';
 
 import { Throttle } from '@nestjs/throttler';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+  ) {
+    console.log('AuthController initialized. AuthService:', !!authService);
+  }
 
   @Throttle({ default: { limit: Number(process.env.LOGIN_RATE_MAX || 20), ttl: Number(process.env.LOGIN_RATE_WINDOW_MS || 60000) } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() body: LoginDto) {
+  async login(@Body() body: any) {
     const identifier = body.email || body.username || body.userName;
-    if (!identifier) {
-      throw new ForbiddenException('Email or username and password are required');
+    if (!identifier || !body.password) {
+      throw new BadRequestException('Email or username and password are required');
     }
     const auth = await this.authService.login(identifier, body.password);
     return { success: true, message: 'Authentication successful', ...auth };
@@ -40,18 +47,24 @@ export class AuthController {
     let sessionId: string | undefined;
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      const user = (req as any).user as RequestActor;
-      if (user) {
-        sessionId = user.sessionId;
-      }
+      const token = authHeader.slice(7).trim();
+      try {
+        const decoded: any = this.jwtService.decode(token);
+        if (decoded && decoded.sid) {
+          sessionId = decoded.sid;
+        }
+      } catch {}
     }
-    await this.authService.logout(sessionId, body.refreshToken);
+    await this.authService.logout(sessionId, body?.refreshToken);
     return { success: true, message: 'Signed out' };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
-  async refreshToken(@Body() body: RefreshTokenDto) {
+  async refreshToken(@Body() body: any) {
+    if (!body || !body.refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
     const auth = await this.authService.refreshToken(body.refreshToken);
     return { success: true, message: 'Token refreshed', ...auth };
   }
@@ -120,6 +133,14 @@ export class AuthController {
   @Get('roles')
   async getRoles() {
     const roles = await this.authService.getRoles();
-    return { success: true, roles, totalRoles: roles.length };
+    const mapped = roles.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      normalizedName: r.code,
+      description: r.description,
+      userType: r.userType,
+      isSystemRole: r.isSystem,
+    }));
+    return { success: true, roles: mapped, totalRoles: mapped.length };
   }
 }

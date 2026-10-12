@@ -22,7 +22,6 @@ export interface SafeUser {
   role: string;
   roles: string[];
   permissions: ModulePermissions;
-  permissionCodes?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,7 +71,6 @@ export function toSafeUser(user: {
     role: roleCodes[0] || '',
     roles: roleCodes,
     permissions: deriveLegacyPermissions(codes),
-    permissionCodes: codes,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

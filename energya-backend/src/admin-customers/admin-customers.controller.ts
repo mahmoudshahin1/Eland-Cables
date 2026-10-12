@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   Res,
+  Inject,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RbacGuard } from '../common/guards/rbac.guard.js';
@@ -22,7 +23,7 @@ import { CreateCustomerDto, UpdateCustomerDto, AssignCustomerUserDto, UpdateCust
 @Controller('api/admin')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class AdminCustomersController {
-  constructor(private readonly service: AdminCustomersService) {}
+  constructor(@Inject(AdminCustomersService) private readonly service: AdminCustomersService) {}
 
   @Get('customers')
   @RequirePermission('ADMIN', 'CUSTOMER', 'VIEW')

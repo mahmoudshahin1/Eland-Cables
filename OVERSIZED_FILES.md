@@ -7,4 +7,4 @@ The following files exceed the safe automated refactoring limits for AST extract
 - src/auth/auth.service.ts (10.4 KB)
 - src/master-data/master-data.service.ts (9.9 KB)
 
-dmin-customers.service.ts (5.1 KB) is within safe limits and can be refactored.
+- src/admin-customers/admin-customers.service.ts (5.1 KB) is within safe limits and can be refactored.

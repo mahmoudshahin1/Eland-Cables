@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
 import { AdminIdentityRepository } from './admin-identity.repository.js';
 import * as bcrypt from 'bcryptjs';
 import { RequestActor } from '../common/interfaces/request-actor.interface.js';
@@ -7,7 +7,7 @@ import { toSafeUser } from '../shared/domain/safe-user.js';
 
 @Injectable()
 export class AdminIdentityService {
-  constructor(private readonly repo: AdminIdentityRepository) {}
+  constructor(@Inject(AdminIdentityRepository) private readonly repo: AdminIdentityRepository) {}
 
   private actorHasRole(actor: RequestActor, code: string): boolean {
     return (actor.roles || []).includes(code) || actor.role === code;
@@ -64,13 +64,13 @@ export class AdminIdentityService {
 
   async getUserById(id: string) {
     const row = await this.repo.findUserById(id);
-    if (!row) throw new NotFoundException('User not found');
+    if (!row) return null;
     const codes = await this.loadPermissionCodes(row.id);
     return toSafeUser({ ...row, permissionCodes: codes });
   }
 
   async createUser(input: any, actor: RequestActor) {
-    const passwordHash = await bcrypt.hash(input.password, 12);
+    const passwordHash = await bcrypt.hash(input.password, 10);
     
     const user = await this.repo.createUser({
       username: input.username.trim(),
@@ -145,9 +145,8 @@ export class AdminIdentityService {
       throw new ForbiddenException('Only a SYSTEM_ADMINISTRATOR can assign that role.');
     }
     const user = await this.repo.findUserById(userId);
-    if (!user) throw new NotFoundException('User not found');
     const role = await this.repo.findRoleByCode(roleCode);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!user || !role) throw new NotFoundException('User or role not found.');
     const exists = await this.repo.findUserRole(userId, role.id);
     if (!exists) {
       await this.repo.createUserRole(userId, role.id, actor.id);
@@ -160,14 +159,14 @@ export class AdminIdentityService {
       throw new ForbiddenException('Only a SYSTEM_ADMINISTRATOR can remove that role.');
     }
     const role = await this.repo.findRoleByCode(roleCode);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) throw new NotFoundException('Role not found.');
     await this.repo.deleteUserRoles(userId, role.id);
     return this.getUserById(userId);
   }
 
   async issueAdminPasswordReset(id: string, actor: RequestActor) {
     const user = await this.repo.findUserById(id);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('User not found.');
     const token = randomOpaqueToken();
     const tokenHash = hashOpaqueToken(token);
     await this.repo.createPasswordResetTicket(id, tokenHash, new Date(Date.now() + 60 * 60 * 1000), actor.id);
@@ -205,20 +204,21 @@ export class AdminIdentityService {
   }
 
   async updateRole(id: string, input: any, actor: RequestActor) {
+    const previous = await this.repo.findRoleById(id);
+    if (!previous) throw new NotFoundException('Role not found.');
     return this.repo.updateRole(id, { description: input.description });
   }
 
   async setRoleActive(id: string, isActive: boolean, actor: RequestActor) {
-    if (!isActive) {
-      const role = await this.repo.findRoleById(id);
-      if (role?.code === 'SYSTEM_ADMINISTRATOR') throw new ForbiddenException('Cannot disable SYSTEM_ADMINISTRATOR role.');
-    }
+    const role = await this.repo.findRoleById(id);
+    if (!role) throw new NotFoundException('Role not found.');
+    if (!isActive && role.code === 'SYSTEM_ADMINISTRATOR') throw new ForbiddenException('Cannot disable SYSTEM_ADMINISTRATOR role.');
     return this.repo.updateRole(id, { isActive });
   }
 
   async setRolePermissions(id: string, list: string[], actor: RequestActor) {
     const role = await this.repo.findRoleById(id);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) throw new NotFoundException('Role not found.');
     if (role.code === 'SYSTEM_ADMINISTRATOR') throw new ForbiddenException('Cannot modify SYSTEM_ADMINISTRATOR role.');
 
     const permissions = await this.repo.findPermissions();

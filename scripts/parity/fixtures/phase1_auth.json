@@ -1,0 +1,2285 @@
+[
+  {
+    "id": "P1_AUTH_1_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/login",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_2_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/login",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_3_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/login",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_4_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_5_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_6_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_7_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/refresh-token",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_8_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/refresh-token",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_9_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/refresh-token",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_10_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_11_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_12_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_13_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/change-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_14_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/change-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_15_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/change-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_16_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_17_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_18_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_19_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_20_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_21_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_22_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/register",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_23_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/register",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_24_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/register",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_25_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_26_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_27_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_28_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/assign-role",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_29_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/assign-role",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_30_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/assign-role",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_31_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_32_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_33_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_34_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_35_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_36_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_37_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_38_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_39_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_40_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_41_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_42_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_43_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_44_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_45_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_46_NO_TOKEN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_47_LIMITED",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_48_ADMIN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_49_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_50_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_51_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_52_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_53_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_54_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_55_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/lock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_56_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/lock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_57_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/lock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_58_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/unlock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_59_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/unlock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_60_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/unlock",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_61_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_62_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_63_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/reset-password",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_64_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_65_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_66_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/users/1/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_67_NO_TOKEN",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/users/1/roles/ADMIN",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_68_LIMITED",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/users/1/roles/ADMIN",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_69_ADMIN",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/users/1/roles/ADMIN",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_70_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_71_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_72_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_73_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_74_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_75_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_76_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_77_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_78_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_79_NO_TOKEN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_80_LIMITED",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_81_ADMIN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/roles/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_82_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_83_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_84_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_85_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_86_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_87_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/roles/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_88_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_89_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_90_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_91_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_92_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_93_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_94_NO_TOKEN",
+    "phase": 1,
+    "method": "PUT",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_95_LIMITED",
+    "phase": 1,
+    "method": "PUT",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_96_ADMIN",
+    "phase": 1,
+    "method": "PUT",
+    "path": "/api/admin/roles/1/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_97_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_98_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_99_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_100_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions/matrix",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_101_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions/matrix",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_102_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/permissions/matrix",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_103_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/security",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_104_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/security",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_105_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/security",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_106_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_107_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_108_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_109_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/export",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_110_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/export",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_111_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/export",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_112_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-reference-masters",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_113_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-reference-masters",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_114_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-reference-masters",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_115_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_116_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_117_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_118_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1/audit",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_119_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1/audit",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_120_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1/audit",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_121_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_122_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_123_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_124_NO_TOKEN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_125_LIMITED",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_126_ADMIN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_127_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_128_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_129_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/activate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_130_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_131_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_132_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customers/1/deactivate",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_133_NO_TOKEN",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_134_LIMITED",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_135_ADMIN",
+    "phase": 1,
+    "method": "DELETE",
+    "path": "/api/admin/customers/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_136_NO_TOKEN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_137_LIMITED",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_138_ADMIN",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_139_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_140_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_141_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_142_NO_TOKEN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customer-users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_143_LIMITED",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customer-users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_144_ADMIN",
+    "phase": 1,
+    "method": "PATCH",
+    "path": "/api/admin/customer-users/1",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_145_NO_TOKEN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users/1/unassign",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {}
+  },
+  {
+    "id": "P1_AUTH_146_LIMITED",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users/1/unassign",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "limited@parity.test"
+    }
+  },
+  {
+    "id": "P1_AUTH_147_ADMIN",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/admin/customer-users/1/unassign",
+    "expectedStatus": 401,
+    "ignoreFields": [
+      "timestamp",
+      "traceId",
+      "id",
+      "correlationId"
+    ],
+    "headers": {
+      "x-parity-user": "admin@parity.test"
+    }
+  },
+  {
+    "id": "P1_SCENARIO_LOGIN_LOCK",
+    "phase": 1,
+    "method": "POST",
+    "path": "/api/auth/login",
+    "body": {
+      "email": "admin@parity.test",
+      "password": "wrong"
+    },
+    "headers": {}
+  },
+  {
+    "id": "P1_SCENARIO_CUSTOMER_A",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "headers": {
+      "x-parity-user": "custA@parity.test"
+    }
+  },
+  {
+    "id": "P1_SCENARIO_CUSTOMER_B",
+    "phase": 1,
+    "method": "GET",
+    "path": "/api/auth/me",
+    "headers": {
+      "x-parity-user": "custB@parity.test"
+    }
+  }
+]

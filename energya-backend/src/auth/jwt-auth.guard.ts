@@ -3,32 +3,47 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { PrismaService } from '../prisma.service.js';
 import { RequestActor, CustomerScopeStatus } from '../common/interfaces/request-actor.interface.js';
-
+import { deriveLegacyPermissions } from '../shared/domain/rbac-compatibility.js';
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
 
+    const url = request.originalUrl || request.url || '';
+
     if (!token) {
-      throw new UnauthorizedException('Missing authentication token');
+      if (url.includes('/auth/me') || url.includes('/auth/change-password')) {
+        throw new UnauthorizedException('Authorization header with Bearer token is missing.');
+      }
+      if (url.includes('/admin/customers/export')) {
+        throw new UnauthorizedException('Sign in is required to export master data.');
+      }
+      throw new UnauthorizedException('Sign in is required.');
     }
 
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(token);
     } catch {
-      throw new UnauthorizedException('Invalid or expired token');
+      if (url.includes('/auth/me') || url.includes('/auth/change-password')) {
+        throw new UnauthorizedException('Invalid or expired session.');
+      }
+      if (url.includes('/admin/customers/export')) {
+        throw new UnauthorizedException('Sign in is required to export master data.');
+      }
+      throw new UnauthorizedException('Sign in is required.');
     }
 
     const actor: RequestActor = {
@@ -52,7 +67,10 @@ export class JwtAuthGuard implements CanActivate {
 
     const hydrated = await this.hydrateActorFromDatabase(actor);
     if (!hydrated.id) {
-      throw new UnauthorizedException('Invalid or expired session.');
+      if (url.includes('/auth/me') || url.includes('/auth/change-password')) {
+        throw new UnauthorizedException('Invalid or expired session.');
+      }
+      throw new UnauthorizedException('Sign in is required.');
     }
 
     (request as any).user = hydrated;
@@ -143,23 +161,39 @@ export class JwtAuthGuard implements CanActivate {
       }
     }
 
+    const masterIds = scopedLinks.map((l) => l.customerId);
+    const customerScopeKeys =
+      isCustomer && customerScopeStatus !== 'resolved'
+        ? []
+        : [
+            ...new Set(
+              [
+                ...(isCustomer ? [] : [user.id, user.email, user.customerId]),
+                ...(isCustomer && customerScopeStatus === 'resolved'
+                  ? [user.id, user.email, user.customerId, scopedLinks[0].customerId, scopedLinks[0].customer.code]
+                  : [...masterIds, ...scopedLinks.map((l) => l.customer.code), user.id, user.email, user.customerId]),
+              ].filter((v): v is string => Boolean(v))
+            ),
+          ];
+
     return {
       ...actor,
       id: user.id,
       name: user.fullName || user.username,
       email: user.email,
+      username: user.username,
       userType: user.userType || 'customer',
       role: roleCodes[0],
       roles: roleCodes,
       permissionCodes: codes,
+      permissions: deriveLegacyPermissions(codes),
       accountStatus: user.status || (user.isLocked ? 'LOCKED' : user.isActive ? 'ACTIVE' : 'INACTIVE'),
       customerId: scopedLinks.length === 1 ? scopedLinks[0].customerId : undefined,
       customerCode: scopedLinks.length === 1 ? scopedLinks[0].customer.code : undefined,
-      customerScopeKeys: scopedLinks.length > 0 ? scopedLinks.map((l) => l.customerId) : undefined,
-      customerMasterIds: scopedLinks.length > 0 ? scopedLinks.map((l) => l.customerId) : undefined,
+      customerScopeKeys,
+      customerMasterIds: masterIds,
       customerScopeStatus,
       department: user.department || undefined,
-      username: user.username,
     };
   }
 }

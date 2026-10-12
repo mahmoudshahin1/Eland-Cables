@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import type { RequestUser } from '../auth/current-user.decorator.js';
@@ -17,7 +18,7 @@ export interface InquiryListQuery {
 
 @Injectable()
 export class InquiriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   /**
    * Resolve customer ID for an actor if they are a customer user

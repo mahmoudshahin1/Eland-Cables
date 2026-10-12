@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async createUserSession(data: Prisma.UserSessionUncheckedCreateInput) {
     return this.prisma.userSession.create({ data });
@@ -14,8 +14,8 @@ export class AuthRepository {
     return this.prisma.userAccount.findFirst({
       where: {
         OR: [
-          { email: identifier.toLowerCase() },
-          { username: identifier.toLowerCase() },
+          { email: { equals: identifier, mode: 'insensitive' } },
+          { username: { equals: identifier, mode: 'insensitive' } },
         ],
       },
       include: {
@@ -32,14 +32,14 @@ export class AuthRepository {
   async revokeUserSessions(userId: string) {
     return this.prisma.userSession.updateMany({
       where: { userId },
-      data: { isRevoked: true },
+      data: { revokedAt: new Date() },
     });
   }
 
   async revokeOtherUserSessions(userId: string, currentSessionId: string) {
     return this.prisma.userSession.updateMany({
       where: { userId, id: { not: currentSessionId } },
-      data: { isRevoked: true },
+      data: { revokedAt: new Date() },
     });
   }
 
@@ -58,9 +58,9 @@ export class AuthRepository {
   }
 
   async revokeSession(id: string) {
-    return this.prisma.userSession.update({
+    return this.prisma.userSession.updateMany({
       where: { id },
-      data: { isRevoked: true },
+      data: { revokedAt: new Date() },
     });
   }
 

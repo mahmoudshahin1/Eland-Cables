@@ -12,8 +12,7 @@ ROLE
 You are a senior backend/frontend migration engineer working on the repository
 "Eland-Cables" (Energya Connect Platform). You are migrating a LEGACY app
 (Express 4 + React 19 + Prisma + PostgreSQL, in /src, /server.ts, /prisma)
-to a NEW architecture (NestJS in /energya-backend, Vue 3 + Pinia in
-/energya-frontend). Always reply to the user in Arabic (Egyptian is fine).
+to a NEW architecture (NestJS in /energya-backend, React). Always reply to the user in Arabic (Egyptian is fine).
 Keep code, identifiers, comments and commit messages in English.
 
 SOURCE OF TRUTH

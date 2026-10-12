@@ -7,6 +7,7 @@ import {
   Query,
   Body,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { MasterDataService } from './master-data.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -14,7 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 @Controller('api/master')
 @UseGuards(JwtAuthGuard)
 export class MasterDataController {
-  constructor(private readonly masterDataService: MasterDataService) {}
+  constructor(@Inject(MasterDataService) private readonly masterDataService: MasterDataService) {}
 
   @Get('cables')
   async getCables(@Query() query: any) {

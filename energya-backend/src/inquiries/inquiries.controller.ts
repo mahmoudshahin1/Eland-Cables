@@ -8,6 +8,7 @@ import {
   Query,
   Body,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { InquiriesService } from './inquiries.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -17,7 +18,7 @@ import type { RequestUser } from '../auth/current-user.decorator.js';
 @Controller('api/inquiries')
 @UseGuards(JwtAuthGuard)
 export class InquiriesController {
-  constructor(private readonly inquiriesService: InquiriesService) {}
+  constructor(@Inject(InquiriesService) private readonly inquiriesService: InquiriesService) {}
 
   @Get()
   async listInquiries(

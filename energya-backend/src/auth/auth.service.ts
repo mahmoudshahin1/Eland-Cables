@@ -1,15 +1,16 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRepository } from './auth.repository.js';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { toSafeUser } from '../shared/domain/safe-user.js';
 import { hashPassword, hashOpaqueToken } from '../shared/domain/password-service.js';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly repo: AuthRepository,
-    private readonly jwtService: JwtService,
+    @Inject(AuthRepository) private readonly repo: AuthRepository,
+    @Inject(JwtService) private readonly jwtService: JwtService,
   ) {}
 
   private async generateSession(userId: string, expiresInDays = 1): Promise<string> {
@@ -18,7 +19,7 @@ export class AuthService {
     const session = await this.repo.createUserSession({
       userId,
       expiresAt,
-      refreshTokenHash: require('crypto').randomBytes(32).toString('hex'),
+      refreshTokenHash: crypto.randomBytes(32).toString('hex'),
     });
     return session.id;
   }
@@ -27,7 +28,7 @@ export class AuthService {
     const user = await this.repo.findUserByIdentifier(identifier);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials.');
+      throw new UnauthorizedException('Invalid email or password credentials.');
     }
 
     if (!user.isActive || user.isLocked) {
@@ -44,7 +45,7 @@ export class AuthService {
         isLocked: newAttempts >= threshold,
         status: newAttempts >= threshold ? 'LOCKED' : user.status
       });
-      throw new UnauthorizedException('Invalid credentials.');
+      throw new UnauthorizedException('Invalid email or password credentials.');
     }
 
     await this.repo.updateUserAccount(user.id, {
@@ -190,15 +191,40 @@ export class AuthService {
       )
     )];
 
-    return toSafeUser({ ...user, permissionCodes: codes });
+    const safeUser = toSafeUser({ ...user, permissionCodes: codes });
+
+    const activeLinks = user.customerUsers.filter(l => l.status === 'ACTIVE');
+    const customer = activeLinks[0]?.customer;
+    const customerMasterIds = activeLinks.map(l => l.customerId);
+
+    return {
+      ...safeUser,
+      companyName: customer?.name,
+      companyLegalName: customer?.legalName || undefined,
+      companyLogoUrl: customer?.companyLogoUrl || undefined,
+      companyTagline: customer?.companyTagline || undefined,
+      customerMasterIds,
+      customerCode: customer?.code || user.customerId || undefined,
+    };
   }
 
   async changePassword(userId: string, current: string, newPass: string, sessionId?: string) {
+    if (!current || !newPass) {
+      throw new BadRequestException({
+        error: 'Current password and new password are required',
+        code: 'VALIDATION_FAILED',
+      });
+    }
     const user = await this.repo.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found');
     
     const isMatch = await bcrypt.compare(current, user.passwordHash);
-    if (!isMatch) throw new BadRequestException('Current password does not match', { description: 'VALIDATION_FAILED' });
+    if (!isMatch) {
+      throw new BadRequestException({
+        error: 'Current password does not match',
+        code: 'VALIDATION_FAILED',
+      });
+    }
 
     const hash = await hashPassword(newPass);
     await this.repo.updateUserAccount(userId, { passwordHash: hash, passwordChangedAt: new Date() });
@@ -221,6 +247,10 @@ export class AuthService {
   }
 
   async getRoles() {
-    return this.repo.findActiveRoles();
+    try {
+      return await this.repo.findActiveRoles();
+    } catch {
+      return [];
+    }
   }
 }
