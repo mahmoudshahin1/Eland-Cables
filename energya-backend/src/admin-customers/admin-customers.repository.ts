@@ -6,6 +6,29 @@ import { Prisma } from '@prisma/client';
 export class AdminCustomersRepository {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
+  async writeAudit(params: {
+    actor?: any;
+    entity: string;
+    entityId: string;
+    action: string;
+    oldValue?: unknown;
+    newValue?: unknown;
+    message?: string;
+  }) {
+    return this.prisma.auditEvent.create({
+      data: {
+        actorId: params.actor?.id,
+        actorName: params.actor?.name || params.actor?.fullName || params.actor?.email,
+        entity: params.entity,
+        entityId: params.entityId,
+        action: params.action,
+        oldValue: params.oldValue as any,
+        newValue: params.newValue as any,
+        message: params.message,
+      },
+    });
+  }
+
   async countCustomers(where: Prisma.CustomerWhereInput) {
     return this.prisma.customer.count({ where });
   }
@@ -49,7 +72,10 @@ export class AdminCustomersRepository {
 
   async findUserAccountById(id: string) {
     if (!id) return null;
-    return this.prisma.userAccount.findUnique({ where: { id } });
+    return this.prisma.userAccount.findUnique({
+      where: { id },
+      include: { roles: { include: { role: true } } },
+    });
   }
 
   async updateCustomer(id: string, data: Prisma.CustomerUpdateInput) {
@@ -101,7 +127,10 @@ export class AdminCustomersRepository {
   }
 
   async findCustomerUserById(id: string) {
-    return this.prisma.customerUser.findUnique({ where: { id } });
+    return this.prisma.customerUser.findUnique({
+      where: { id },
+      include: { customer: true, userAccount: true },
+    });
   }
 
   async updateCustomerUser(id: string, data: Prisma.CustomerUserUpdateInput) {
@@ -110,6 +139,17 @@ export class AdminCustomersRepository {
 
   async deleteCustomerUser(id: string) {
     return this.prisma.customerUser.delete({ where: { id } });
+  }
+
+  async deleteCustomer(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.customerDeliveryCombination.deleteMany({ where: { customerId: id } });
+      await tx.customerAddress.deleteMany({ where: { customerId: id } });
+      await tx.customerContact.deleteMany({ where: { customerId: id } });
+      await tx.customerExternalMapping.deleteMany({ where: { customerId: id } });
+      await tx.customerUser.deleteMany({ where: { customerId: id } });
+      return tx.customer.delete({ where: { id } });
+    });
   }
 
   async findCustomerReferenceMasters() {

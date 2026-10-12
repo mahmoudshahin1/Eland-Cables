@@ -67,11 +67,18 @@ export class DomainExceptionFilter implements ExceptionFilter {
       const resBody = exception.getResponse();
 
       if (status === HttpStatus.UNAUTHORIZED) {
-        const customMsg = typeof resBody === 'object' && (resBody as any).message ? (resBody as any).message : exception.message;
-        const finalMsg = customMsg && customMsg !== 'Unauthorized' ? customMsg : 'Sign in is required.';
+        const customObj = typeof resBody === 'object' && resBody !== null ? (resBody as any) : {};
+        let finalMsg = 'Sign in is required.';
+        if (customObj.error && customObj.error !== 'Unauthorized' && customObj.error !== 'Unauthorized Exception') {
+          finalMsg = customObj.error;
+        } else if (customObj.message && customObj.message !== 'Unauthorized' && customObj.message !== 'Unauthorized Exception') {
+          finalMsg = customObj.message;
+        } else if (exception.message && exception.message !== 'Unauthorized' && exception.message !== 'Unauthorized Exception') {
+          finalMsg = exception.message;
+        }
         return response.status(HttpStatus.UNAUTHORIZED).json({
           error: finalMsg,
-          code: 'UNAUTHORIZED',
+          code: customObj.code || 'UNAUTHORIZED',
         });
       }
 

@@ -53,20 +53,32 @@ export function normalizePayload(obj, ignoreList = []) {
         if (typeof v === 'string' || typeof v === 'number') {
           o[k] = `<ID_${k}>`;
         }
-      } else if (typeof v === 'string' && (CUID_REGEX.test(v) || UUID_REGEX.test(v))) {
-        o[k] = '<CUID>';
-      } else if (['createdAt', 'updatedAt', 'lastLogin', 'lastLoginAt', 'expiresAt', 'revokedAt', 'checkedAt', 'passwordChangedAt', 'assignedAt'].includes(k)) {
+      } else if (['createdAt', 'updatedAt', 'lastLogin', 'lastLoginAt', 'expiresAt', 'revokedAt', 'checkedAt', 'passwordChangedAt', 'assignedAt', 'at', 'iat', 'exp'].includes(k)) {
         if (v !== null && v !== undefined) {
           o[k] = '<TIMESTAMP>';
+        }
+      } else if (['createdBy', 'updatedBy', 'assignedBy', 'actorId', 'userAccountId'].includes(k)) {
+        if (v !== null && v !== undefined) {
+          o[k] = '<USER_REF>';
+        }
+      } else if (k === 'actorName') {
+        if (v !== null && v !== undefined) {
+          o[k] = '<ACTOR_NAME>';
         }
       } else if (['traceId', 'correlationId'].includes(k)) {
         if (v !== null && v !== undefined) {
           o[k] = '<TRACE_ID>';
         }
-      } else if (k === 'sessionId') {
+      } else if (['sessionId'].includes(k)) {
         if (v !== null && v !== undefined) {
           o[k] = '<SESSION_ID>';
         }
+      } else if (['accessToken', 'refreshToken', 'token'].includes(k)) {
+        if (v !== null && v !== undefined) {
+          o[k] = '<TOKEN>';
+        }
+      } else if (typeof v === 'string' && (CUID_REGEX.test(v) || UUID_REGEX.test(v))) {
+        o[k] = '<CUID>';
       } else if (typeof v === 'object' && v !== null) {
         normalizeRecursive(v);
       }

@@ -112,13 +112,21 @@ export async function seedAuthDatabases() {
     'ADMIN:USER:VIEW', 'ADMIN:USER:CREATE', 'ADMIN:USER:UPDATE', 'ADMIN:USER:ACTIVATE', 'ADMIN:USER:DEACTIVATE', 'ADMIN:USER:LOCK', 'ADMIN:USER:RESET_PASSWORD',
     'ADMIN:ROLE:VIEW', 'ADMIN:ROLE:CREATE', 'ADMIN:ROLE:UPDATE', 'ADMIN:ROLE:MANAGE',
     'ADMIN:CUSTOMER:VIEW', 'ADMIN:CUSTOMER:CREATE', 'ADMIN:CUSTOMER:UPDATE', 'ADMIN:CUSTOMER:ACTIVATE', 'ADMIN:CUSTOMER:DEACTIVATE', 'ADMIN:CUSTOMER:MANAGE',
-    'ADMIN:CUSTOMER_USER:VIEW', 'ADMIN:CUSTOMER_USER:CREATE', 'ADMIN:CUSTOMER_USER:UPDATE', 'ADMIN:CUSTOMER_USER:ASSIGN', 'ADMIN:CUSTOMER_USER:MANAGE'
+    'ADMIN:CUSTOMER_USER:VIEW', 'ADMIN:CUSTOMER_USER:CREATE', 'ADMIN:CUSTOMER_USER:UPDATE', 'ADMIN:CUSTOMER_USER:ASSIGN', 'ADMIN:CUSTOMER_USER:MANAGE',
+    'ADMIN:PERMISSION:VIEW', 'ADMIN:SECURITY:VIEW'
   ];
   const viewerPerms = ['ADMIN:USER:VIEW', 'ADMIN:ROLE:VIEW', 'ADMIN:CUSTOMER:VIEW', 'ADMIN:CUSTOMER_USER:VIEW'];
 
-  // Clean dirty undefined users if any
-  await legacy.userAccount.deleteMany({ where: { OR: [{ username: 'undefined' }, { email: 'undefined' }] } });
-  await target.userAccount.deleteMany({ where: { OR: [{ username: 'undefined' }, { email: 'undefined' }] } });
+  // Ensure standard system roles exist on both DBs
+  const standardRoles = ['SYSTEM_ADMINISTRATOR', 'ADMIN', 'VIEWER', 'REPORT_VIEWER', 'CUSTOMER_USER'];
+  for (const db of [legacy, target]) {
+    for (const code of standardRoles) {
+      const exists = await db.role.findUnique({ where: { code } });
+      if (!exists) {
+        await db.role.create({ data: { code, name: code, isActive: true } });
+      }
+    }
+  }
 
   console.log('🌱 Seeding Legacy Auth Database...');
   await seedUser(legacy, 'admin@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);

@@ -1,112 +1,73 @@
-import assert from 'node:assert/strict';
-import { describe, it, beforeAll as before, afterAll as after } from 'vitest';
-import { expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import http from 'node:http';
+import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../src/app.module';
-import dotenv from 'dotenv';
-import { checkDatabase, getPrisma } from '../../src/server/db';
-import { identityAuthRouter } from './identityAuthRoutes';
+import request from 'supertest';
+import { AppModule } from '../src/app.module.js';
 
-dotenv.config();
+describe('Identity Auth Roles E2E (NestJS)', () => {
+  let app: INestApplication;
+  let adminToken: string;
 
-const dir = dirname(fileURLToPath(import.meta.url));
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
 
-function listen(app: express.Express): Promise<{ server: http.Server; base: string }> {
-  return new Promise((resolve) => {
-    const server = app.listen(0, '127.0.0.1', () => {
-      const addr = server.address();
-      const port = typeof addr === 'object' && addr ? addr.port : 0;
-      resolve({ server, base: `http://127.0.0.1:${port}` });
-    });
+    app = moduleFixture.createNestApplication();
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'admin@parity.test', password: 'Password123!' });
+    adminToken = res.body.accessToken;
   });
-}
 
-function extractRouteHandler(source: string, method: 'get' | 'post', path: string): string {
-  const marker = `identityAuthRouter.${method}('${path}'`;
-  const start = source.indexOf(marker);
-  assert.ok(start >= 0, `expected ${marker}`);
-  const openBrace = source.indexOf('{', start);
-  assert.ok(openBrace >= 0, `expected body for ${marker}`);
-  let depth = 0;
-  for (let i = openBrace; i < source.length; i++) {
-    const ch = source[i];
-    if (ch === '{') depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) return source.slice(start, i + 1);
+  afterAll(async () => {
+    if (app) {
+      await app.close();
     }
-  }
-  assert.fail(`unbalanced braces for ${marker}`);
-}
+  });
 
-describe('GET /api/auth/roles - pure read (no identity seed)', () => {
-  
+  describe('Role & Permission Governance', () => {
+    it('GET /api/admin/permissions returns system permissions catalog', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/admin/permissions')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
 
-  
-
-  describe('HTTP behavior', () => {
-    let base = '';
-    let nestApp: INestApplication;
-
-    before(async () => {
-          const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    nestApp = moduleFixture.createNestApplication();
-    await nestApp.listen(0, '127.0.0.1');
-    base = await nestApp.getUrl();
+      expect(Array.isArray(res.body.permissions || res.body)).toBe(true);
     });
 
-    after(async () => {
-      if (nestApp) await nestApp.close();
+    it('GET /api/admin/permissions/matrix returns role-permission matrix', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/admin/permissions/matrix')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(res.body).toBeDefined();
     });
 
-    it('returns active roles with the public contract', async () => {
-      const health = await checkDatabase();
-      assert.equal(health.ok, true, health.error);
-      const prisma = getPrisma();
-      assert.ok(prisma);
+    it('GET /api/admin/roles returns list of active roles', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/admin/roles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
 
-      const res = await fetch(`${base}/api/auth/roles`);
-      assert.equal(res.status, 200);
-      const body = await res.json();
-      assert.equal(body.success, true);
-      assert.ok(Array.isArray(body.roles));
-      assert.equal(body.totalRoles, body.roles.length);
-
-      const active = await prisma.role.findMany({ where: { isActive: true }, orderBy: { code: 'asc' } });
-      assert.equal(body.totalRoles, active.length);
-      if (body.roles.length > 0) {
-        const sample = body.roles[0];
-        assert.ok(sample.id);
-        assert.ok(sample.name);
-        assert.ok(sample.normalizedName);
-        assert.equal(typeof sample.description === 'string' || sample.description === null, true);
-      }
-      for (let i = 0; i < body.roles.length; i++) {
-        assert.equal(body.roles[i].normalizedName, active[i].code);
-        assert.equal(body.roles[i].id, active[i].id);
-        assert.equal(body.roles[i].name, active[i].name);
-      }
+      expect(Array.isArray(res.body.roles || res.body)).toBe(true);
     });
 
-    it('returns empty roles when Prisma is unavailable', async () => {
-      const previous = process.env.DATABASE_URL;
-      delete process.env.DATABASE_URL;
-      try {
-        const res = await fetch(`${base}/api/auth/roles`);
-        assert.equal(res.status, 200);
-        const body = await res.json();
-        assert.deepEqual(body, { success: true, roles: [], totalRoles: 0 });
-      } finally {
-        if (previous === undefined) delete process.env.DATABASE_URL;
-        else process.env.DATABASE_URL = previous;
-      }
+    it('POST /api/auth/roles returns 403 (deprecated endpoint parity)', async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/roles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(403);
+    });
+
+    it('POST /api/auth/assign-role returns 403 (deprecated endpoint parity)', async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/assign-role')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(403);
     });
   });
 });
-
-

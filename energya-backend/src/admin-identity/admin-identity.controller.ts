@@ -12,6 +12,8 @@ import {
   Req,
   Inject,
   NotFoundException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RbacGuard } from '../common/guards/rbac.guard.js';
@@ -55,6 +57,7 @@ export class AdminIdentityController {
         userType: body?.userType,
         department: body?.department,
         status: body?.status,
+        roleCodes: body?.roleCodes,
       },
       actor
     );
@@ -77,6 +80,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/activate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'USER', 'DEACTIVATE')
   async activateUser(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -84,6 +88,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/deactivate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'USER', 'DEACTIVATE')
   async deactivateUser(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -91,6 +96,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/lock')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'USER', 'LOCK')
   async lockUser(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -98,6 +104,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/unlock')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'USER', 'LOCK')
   async unlockUser(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -105,6 +112,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/reset-password')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'USER', 'RESET_PASSWORD')
   async resetPassword(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -112,6 +120,7 @@ export class AdminIdentityController {
   }
 
   @Post('users/:id/roles')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'ROLE', 'MANAGE')
   async assignRole(@Param('id') id: string, @Body() body: AssignRoleDto, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -155,6 +164,7 @@ export class AdminIdentityController {
   }
 
   @Post('roles/:id/activate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'ROLE', 'UPDATE')
   async activateRole(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -162,6 +172,7 @@ export class AdminIdentityController {
   }
 
   @Post('roles/:id/deactivate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'ROLE', 'UPDATE')
   async deactivateRole(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;

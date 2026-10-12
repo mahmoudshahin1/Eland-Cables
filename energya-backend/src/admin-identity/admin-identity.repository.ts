@@ -54,16 +54,16 @@ export class AdminIdentityRepository {
     return this.prisma.userRole.deleteMany({ where: { userId, roleId } });
   }
 
-  async createPasswordResetTicket(userId: string, tokenHash: string, expiresAt: Date, requestedByIp?: string) {
+  async createPasswordResetTicket(userId: string, tokenHash: string, expiresAt: Date, createdBy?: string) {
     return this.prisma.passwordResetTicket.create({
-      data: { userId, tokenHash, expiresAt, requestedByIp }
+      data: { userId, tokenHash, expiresAt, createdBy }
     });
   }
 
   async revokeUserSessions(userId: string) {
     return this.prisma.userSession.updateMany({
       where: { userId },
-      data: { isRevoked: true }
+      data: { revokedAt: new Date() }
     });
   }
 
@@ -86,10 +86,30 @@ export class AdminIdentityRepository {
   }
 
   async findRoleById(id: string) {
-    return this.prisma.role.findUnique({
-      where: { id },
-      include: { permissions: { include: { permission: true } } }
+    const role = await this.prisma.role.findFirst({
+      where: { OR: [{ id }, { code: id }] },
+      include: {
+        permissions: { include: { permission: true } },
+        users: { include: { user: true } },
+      },
     });
+    if (!role) return null;
+    return {
+      id: role.id,
+      code: role.code,
+      name: role.name,
+      description: role.description,
+      userType: role.userType,
+      isSystem: role.isSystem,
+      isActive: role.isActive,
+      permissions: role.permissions.map((p) => ({
+        module: p.permission.module,
+        resource: p.permission.resource,
+        action: p.permission.action,
+        description: p.permission.description,
+      })),
+      users: (role.users || []).map((u: any) => ({ id: u.user?.id, email: u.user?.email, fullName: u.user?.fullName })),
+    };
   }
 
   async createRole(data: Prisma.RoleCreateInput) {
@@ -108,7 +128,6 @@ export class AdminIdentityRepository {
           data: permissionIds.map(pId => ({
             roleId,
             permissionId: pId,
-            assignedBy
           }))
         });
       }
@@ -120,10 +139,12 @@ export class AdminIdentityRepository {
   }
 
   async findPermissions() {
-    return this.prisma.permission.findMany({ orderBy: { code: 'asc' } });
+    return this.prisma.permission.findMany({
+      orderBy: [{ module: 'asc' }, { resource: 'asc' }, { action: 'asc' }]
+    });
   }
 
   async countSessions() {
-    return this.prisma.userSession.count({ where: { isRevoked: false } });
+    return this.prisma.userSession.count({ where: { revokedAt: null } });
   }
 }

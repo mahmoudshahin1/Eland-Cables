@@ -11,6 +11,8 @@ import {
   Req,
   Res,
   Inject,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RbacGuard } from '../common/guards/rbac.guard.js';
@@ -74,6 +76,7 @@ export class AdminCustomersController {
   }
 
   @Post('customers/:id/activate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'CUSTOMER', 'ACTIVATE')
   async activateCustomer(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -81,6 +84,7 @@ export class AdminCustomersController {
   }
 
   @Post('customers/:id/deactivate')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'CUSTOMER', 'ACTIVATE')
   async deactivateCustomer(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;
@@ -115,6 +119,7 @@ export class AdminCustomersController {
   }
 
   @Post('customer-users/:id/unassign')
+  @HttpCode(HttpStatus.OK)
   @RequirePermission('ADMIN', 'CUSTOMER_USER', 'UPDATE')
   async unassignCustomerUser(@Param('id') id: string, @Req() req: Request) {
     const actor = (req as any).user as RequestActor;

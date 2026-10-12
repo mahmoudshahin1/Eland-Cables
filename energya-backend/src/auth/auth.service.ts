@@ -4,7 +4,8 @@ import { AuthRepository } from './auth.repository.js';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { toSafeUser } from '../shared/domain/safe-user.js';
-import { hashPassword, hashOpaqueToken } from '../shared/domain/password-service.js';
+import { hashPassword, hashOpaqueToken, randomOpaqueToken } from '../shared/domain/password-service.js';
+import { deriveLegacyPermissions } from '../shared/domain/rbac-compatibility.js';
 
 @Injectable()
 export class AuthService {
@@ -28,11 +29,14 @@ export class AuthService {
     const user = await this.repo.findUserByIdentifier(identifier);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password credentials.');
+      throw new UnauthorizedException({ error: 'Invalid email or password credentials.', code: 'UNAUTHORIZED' });
     }
 
-    if (!user.isActive || user.isLocked) {
-      throw new UnauthorizedException('Account is inactive or locked.');
+    if (!user.isActive || user.status === 'INACTIVE') {
+      throw new UnauthorizedException({ error: 'Account is inactive.', code: 'UNAUTHORIZED' });
+    }
+    if (user.isLocked || user.status === 'LOCKED') {
+      throw new UnauthorizedException({ error: 'Account is locked.', code: 'UNAUTHORIZED' });
     }
 
     const isMatch = await bcrypt.compare(pass, user.passwordHash);
@@ -45,7 +49,7 @@ export class AuthService {
         isLocked: newAttempts >= threshold,
         status: newAttempts >= threshold ? 'LOCKED' : user.status
       });
-      throw new UnauthorizedException('Invalid email or password credentials.');
+      throw new UnauthorizedException({ error: 'Invalid email or password credentials.', code: 'UNAUTHORIZED' });
     }
 
     await this.repo.updateUserAccount(user.id, {
@@ -53,9 +57,92 @@ export class AuthService {
       lastLoginAt: new Date(),
     });
 
-    const sessionId = await this.generateSession(user.id, 1);
-    const refreshSessionId = await this.generateSession(user.id, 7);
+    const refreshToken = randomOpaqueToken();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    const session = await this.repo.createUserSession({
+      userId: user.id,
+      refreshTokenHash: hashOpaqueToken(refreshToken),
+      expiresAt,
+    });
     
+    const roleCodes = user.roles.map(ur => ur.role.code);
+    const codes = [...new Set(
+      user.roles.flatMap((ur) =>
+        ur.role.isActive
+          ? ur.role.permissions.filter((rp) => rp.permission.isActive).map((rp) => `${rp.permission.module}:${rp.permission.resource}:${rp.permission.action}`.toUpperCase())
+          : []
+      )
+    )];
+
+    const payload = { 
+      sub: user.id, 
+      sid: session.id,
+      name: user.fullName || user.username,
+      email: user.email,
+      username: user.username,
+      userType: user.userType || 'internal',
+      role: roleCodes[0],
+      roles: roleCodes,
+      department: user.department || null,
+      permissions: deriveLegacyPermissions(codes),
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+    const decodedClaims = this.jwtService.decode(accessToken);
+    const safeUser = toSafeUser({ ...user, permissionCodes: codes });
+    const activeLinks = (user.customerUsers || []).filter((l: any) => l.status === 'ACTIVE');
+    (safeUser as any).customerMasterIds = activeLinks.map((l: any) => l.customerId);
+
+    return {
+      accessToken,
+      tokenType: 'Bearer',
+      expiresInSeconds: 3600,
+      refreshToken,
+      user: safeUser,
+      claims: decodedClaims,
+    };
+  }
+
+  async logout(sessionId?: string, refreshToken?: string) {
+    if (sessionId) {
+      await this.repo.revokeSession(sessionId);
+    }
+    if (refreshToken) {
+      const hash = hashOpaqueToken(refreshToken);
+      await this.repo.revokeSessionByHash(hash);
+    }
+  }
+
+  async refreshToken(refreshToken: string) {
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
+    const hash = hashOpaqueToken(refreshToken);
+    const session = await this.repo.findSessionByTokenHash(hash);
+    
+    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+      throw new UnauthorizedException('Invalid or expired refresh token.');
+    }
+
+    const user = await this.repo.findUserById(session.userId);
+
+    if (!user || !user.isActive || user.isLocked) {
+      await this.repo.revokeSession(session.id);
+      throw new UnauthorizedException('Account is not permitted to refresh a session.');
+    }
+
+    await this.repo.revokeSession(session.id);
+
+    const newRefreshToken = randomOpaqueToken();
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+    const newSession = await this.repo.createUserSession({
+      userId: user.id,
+      refreshTokenHash: hashOpaqueToken(newRefreshToken),
+      expiresAt: newExpiresAt,
+    });
+
     const roleCodes = user.roles.map(ur => ur.role.code);
     const codes = [...new Set(
       user.roles.flatMap((ur) =>
@@ -72,108 +159,31 @@ export class AuthService {
 
     const payload = { 
       sub: user.id, 
-      id: user.id,
+      sid: newSession.id,
       name: user.fullName || user.username,
       email: user.email,
       username: user.username,
-      userType: user.userType || 'customer',
+      userType: user.userType || 'internal',
       role: roleCodes[0],
       roles: roleCodes,
-      permissionCodes: codes,
-      customerId,
-      customerCode,
-      customerScopeKeys: scopeKeys,
-      customerMasterIds: scopeKeys,
-      sid: sessionId,
-      department: user.department,
-      accountStatus: user.status || 'ACTIVE'
+      department: user.department || null,
+      permissions: deriveLegacyPermissions(codes),
     };
 
-    const refreshPayload = { ...payload, sid: refreshSessionId };
-
-    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
+    const accessToken = await this.jwtService.signAsync(payload);
+    const decodedClaims = this.jwtService.decode(accessToken);
+    const safeUser = toSafeUser({ ...user, permissionCodes: codes });
+    const activeLinks = (user.customerUsers || []).filter((l: any) => l.status === 'ACTIVE');
+    (safeUser as any).customerMasterIds = activeLinks.map((l: any) => l.customerId);
 
     return {
-      accessToken: await this.jwtService.signAsync(payload),
-      refreshToken: await this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
-      user: toSafeUser({ ...user, permissionCodes: codes }),
+      accessToken,
+      tokenType: 'Bearer',
+      expiresInSeconds: 3600,
+      refreshToken: newRefreshToken,
+      user: safeUser,
+      claims: decodedClaims,
     };
-  }
-
-  async logout(sessionId?: string, refreshToken?: string) {
-    if (sessionId) {
-      await this.repo.revokeSession(sessionId);
-    }
-    if (refreshToken) {
-      try {
-        const decoded = await this.jwtService.verifyAsync(refreshToken, { ignoreExpiration: true });
-        if (decoded.sid) {
-          await this.repo.revokeSession(decoded.sid);
-        }
-      } catch {}
-    }
-  }
-
-  async refreshToken(refreshToken: string) {
-    try {
-      const decoded = await this.jwtService.verifyAsync(refreshToken);
-      const session = await this.repo.findSessionById(decoded.sid);
-      
-      if (!session || session.revokedAt || session.expiresAt < new Date()) {
-        throw new UnauthorizedException('Invalid or expired refresh token.');
-      }
-
-      const user = await this.repo.findUserById(decoded.sub);
-
-      if (!user || !user.isActive || user.isLocked) {
-        throw new UnauthorizedException('User account is no longer valid.');
-      }
-
-      await this.repo.revokeSession(session.id);
-
-      const newSessionId = await this.generateSession(user.id, 1);
-      const newRefreshSessionId = await this.generateSession(user.id, 7);
-
-      const roleCodes = user.roles.map(ur => ur.role.code);
-      const codes = [...new Set(
-        user.roles.flatMap((ur) =>
-          ur.role.isActive
-            ? ur.role.permissions.filter((rp) => rp.permission.isActive).map((rp) => `${rp.permission.module}:${rp.permission.resource}:${rp.permission.action}`.toUpperCase())
-            : []
-        )
-      )];
-
-      const links = user.customerUsers.filter(l => l.status === 'ACTIVE');
-      const customerId = links.length === 1 ? links[0].customerId : undefined;
-      const customerCode = links.length === 1 ? links[0].customer.code : undefined;
-      const scopeKeys = links.length > 0 ? links.map(l => l.customerId) : undefined;
-
-      const payload = { 
-        sub: user.id, 
-        id: user.id,
-        name: user.fullName || user.username,
-        email: user.email,
-        username: user.username,
-        userType: user.userType || 'customer',
-        role: roleCodes[0],
-        roles: roleCodes,
-        permissionCodes: codes,
-        customerId,
-        customerCode,
-        customerScopeKeys: scopeKeys,
-        customerMasterIds: scopeKeys,
-        sid: newSessionId,
-        department: user.department,
-        accountStatus: user.status || 'ACTIVE'
-      };
-
-      return {
-        accessToken: await this.jwtService.signAsync(payload, { expiresIn: '1d' }),
-        refreshToken: await this.jwtService.signAsync({ ...payload, sid: newRefreshSessionId }, { expiresIn: '7d' }),
-      };
-    } catch {
-      throw new UnauthorizedException('Invalid or expired refresh token.');
-    }
   }
 
   async getMe(userId: string) {
@@ -215,6 +225,12 @@ export class AuthService {
         code: 'VALIDATION_FAILED',
       });
     }
+    if (current === newPass) {
+      throw new BadRequestException({
+        error: 'New password must be different from the current password.',
+        code: 'VALIDATION_FAILED',
+      });
+    }
     const user = await this.repo.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found');
     
@@ -238,12 +254,15 @@ export class AuthService {
     const tokenHash = hashOpaqueToken(token);
     const ticket = await this.repo.findPasswordResetTicket(tokenHash);
     if (!ticket || ticket.usedAt || ticket.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired password reset token.');
+      throw new BadRequestException({
+        error: 'Invalid or expired password reset token.',
+        code: 'VALIDATION_FAILED',
+      });
     }
     const passwordHash = await hashPassword(newPass);
     await this.repo.applyPasswordResetTransaction(ticket.userId, ticket.id, passwordHash);
     await this.repo.revokeUserSessions(ticket.userId);
-    return { success: true };
+    return { success: true, message: 'Password updated. You may now sign in.' };
   }
 
   async getRoles() {

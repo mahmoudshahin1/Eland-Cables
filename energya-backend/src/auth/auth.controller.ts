@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
+import { LoginRateLimitGuard } from './login-rate-limit.guard.js';
 import type { Request } from 'express';
 import { LoginDto, RefreshTokenDto, ChangePasswordDto, ResetPasswordDto, LogoutDto } from './dto/auth.dto.js';
 import { RequestActor } from '../common/interfaces/request-actor.interface.js';
@@ -30,6 +31,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: Number(process.env.LOGIN_RATE_MAX || 20), ttl: Number(process.env.LOGIN_RATE_WINDOW_MS || 60000) } })
+  @UseGuards(LoginRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: any) {

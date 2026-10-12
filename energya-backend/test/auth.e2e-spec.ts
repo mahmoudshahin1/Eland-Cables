@@ -24,7 +24,7 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ email: 'bad-email@example.com', password: 'wrong' })
-        .expect(403);
+        .expect(401);
     });
 
     it('/api/auth/register (POST) - disabled self-registration returns 403', () => {

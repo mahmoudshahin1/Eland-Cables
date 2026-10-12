@@ -47,6 +47,10 @@ export class AuthRepository {
     return this.prisma.userSession.findUnique({ where: { id } });
   }
 
+  async findSessionByTokenHash(refreshTokenHash: string) {
+    return this.prisma.userSession.findUnique({ where: { refreshTokenHash } });
+  }
+
   async findUserById(id: string) {
     return this.prisma.userAccount.findUnique({
       where: { id },
@@ -60,6 +64,13 @@ export class AuthRepository {
   async revokeSession(id: string) {
     return this.prisma.userSession.updateMany({
       where: { id },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  async revokeSessionByHash(refreshTokenHash: string) {
+    return this.prisma.userSession.updateMany({
+      where: { refreshTokenHash, revokedAt: null },
       data: { revokedAt: new Date() },
     });
   }

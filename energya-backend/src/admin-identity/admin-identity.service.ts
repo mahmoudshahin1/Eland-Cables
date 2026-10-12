@@ -116,28 +116,38 @@ export class AdminIdentityService {
     if (input.userType !== undefined) data.userType = input.userType;
     if (input.customerId !== undefined) data.customerId = input.customerId;
 
-    const user = await this.repo.updateUser(id, data);
-    const codes = await this.loadPermissionCodes(id);
-    return toSafeUser({ ...user, permissionCodes: codes });
+    await this.repo.updateUser(id, data);
+    return this.getUserById(id);
   }
 
   async setUserActive(id: string, isActive: boolean, actor: RequestActor) {
     const user = await this.repo.findUserById(id);
     if (!user) throw new NotFoundException('User not found');
-    const updated = await this.repo.updateUser(id, { isActive, status: isActive ? 'ACTIVE' : 'INACTIVE' });
+    await this.repo.updateUser(id, { isActive, status: isActive ? 'ACTIVE' : 'INACTIVE' });
     if (!isActive) {
       await this.repo.revokeUserSessions(id);
     }
-    const codes = await this.loadPermissionCodes(id);
-    return toSafeUser({ ...updated, permissionCodes: codes });
+    return this.getUserById(id);
   }
 
   async setUserLocked(id: string, isLocked: boolean, actor: RequestActor) {
     const user = await this.repo.findUserById(id);
     if (!user) throw new NotFoundException('User not found');
-    const updated = await this.repo.updateUser(id, { isLocked, status: isLocked ? 'LOCKED' : (user.isActive ? 'ACTIVE' : 'INACTIVE'), failedLoginAttempts: 0 });
-    const codes = await this.loadPermissionCodes(id);
-    return toSafeUser({ ...updated, permissionCodes: codes });
+    await this.repo.updateUser(id, { isLocked, status: isLocked ? 'LOCKED' : (user.isActive ? 'ACTIVE' : 'INACTIVE'), failedLoginAttempts: 0 });
+    return this.getUserById(id);
+  }
+
+  async issueAdminPasswordReset(id: string, actor: RequestActor) {
+    const user = await this.repo.findUserById(id);
+    if (!user) throw new NotFoundException('User not found.');
+    const token = randomOpaqueToken();
+    await this.repo.createPasswordResetTicket(id, hashOpaqueToken(token), new Date(Date.now() + 60 * 60 * 1000));
+    const includeToken = process.env.ADMIN_RESET_TOKEN_IN_RESPONSE === 'true' && process.env.NODE_ENV !== 'production';
+    return {
+      resetIssued: true,
+      expiresInMinutes: 60,
+      ...(includeToken ? { resetToken: token } : {}),
+    };
   }
 
   async assignRole(userId: string, roleCode: string, actor: RequestActor) {
@@ -195,25 +205,30 @@ export class AdminIdentityService {
   }
 
   async createRole(input: any, actor: RequestActor) {
-    return this.repo.createRole({
-      code: input.code.trim().toUpperCase(),
-      name: input.name || input.code.trim().toUpperCase(),
+    const role = await this.repo.createRole({
+      code: input.code.trim().toUpperCase().replace(/\s+/g, '_'),
+      name: input.name ? input.name.trim() : input.code.trim().toUpperCase(),
       description: input.description,
-      isActive: input.isActive ?? true,
+      userType: input.userType || 'internal',
+      isSystem: false,
+      isActive: true,
     });
+    return this.getRoleDetail(role.id);
   }
 
   async updateRole(id: string, input: any, actor: RequestActor) {
     const previous = await this.repo.findRoleById(id);
     if (!previous) throw new NotFoundException('Role not found.');
-    return this.repo.updateRole(id, { description: input.description });
+    await this.repo.updateRole(id, { name: input.name ?? previous.name, description: input.description ?? previous.description });
+    return this.getRoleDetail(id);
   }
 
   async setRoleActive(id: string, isActive: boolean, actor: RequestActor) {
     const role = await this.repo.findRoleById(id);
     if (!role) throw new NotFoundException('Role not found.');
     if (!isActive && role.code === 'SYSTEM_ADMINISTRATOR') throw new ForbiddenException('Cannot disable SYSTEM_ADMINISTRATOR role.');
-    return this.repo.updateRole(id, { isActive });
+    await this.repo.updateRole(id, { isActive });
+    return this.getRoleDetail(id);
   }
 
   async setRolePermissions(id: string, list: string[], actor: RequestActor) {
@@ -222,14 +237,20 @@ export class AdminIdentityService {
     if (role.code === 'SYSTEM_ADMINISTRATOR') throw new ForbiddenException('Cannot modify SYSTEM_ADMINISTRATOR role.');
 
     const permissions = await this.repo.findPermissions();
-    const permIds = list
-      .map(code => {
-        const [module, resource, action] = code.split(':');
-        return permissions.find(p => p.module === module && p.resource === resource && p.action === action)?.id;
-      })
-      .filter(Boolean) as string[];
+    const permIds: string[] = [];
+    for (const item of list) {
+      const module = typeof item === 'string' ? item.split(':')[0] : (item as any)?.module;
+      const resource = typeof item === 'string' ? item.split(':')[1] : (item as any)?.resource;
+      const action = typeof item === 'string' ? item.split(':')[2] : (item as any)?.action;
+      const found = permissions.find(p => p.module === module && p.resource === resource && p.action === action);
+      if (!found) {
+        throw new BadRequestException({ error: 'One or more permissions are not in the controlled catalog.', code: 'VALIDATION_FAILED' });
+      }
+      permIds.push(found.id);
+    }
 
-    return this.repo.updateRolePermissionsTransaction(id, permIds, actor.id);
+    await this.repo.updateRolePermissionsTransaction(id, permIds, actor.id);
+    return this.getRoleDetail(id);
   }
 
   async securitySummary() {
