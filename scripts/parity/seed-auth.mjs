@@ -16,12 +16,21 @@ async function seedUser(prisma, email, type, roles, permissions, scopes) {
         passwordHash: hash,
         userType: type,
         isActive: true,
+        isLocked: false,
+        failedLoginAttempts: 0,
+        status: 'ACTIVE',
       }
     });
   } else {
     await prisma.userAccount.update({
       where: { email },
-      data: { passwordHash: hash, isActive: true }
+      data: {
+        passwordHash: hash,
+        isActive: true,
+        isLocked: false,
+        failedLoginAttempts: 0,
+        status: 'ACTIVE',
+      }
     });
   }
 
@@ -95,7 +104,7 @@ async function seedUser(prisma, email, type, roles, permissions, scopes) {
   return user;
 }
 
-async function main() {
+export async function seedAuthDatabases() {
   const legacy = new LegacyPrisma({ datasources: { db: { url: process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public' } } });
   const target = new TargetPrisma({ datasources: { db: { url: process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public' } } });
 
@@ -111,7 +120,7 @@ async function main() {
   await legacy.userAccount.deleteMany({ where: { OR: [{ username: 'undefined' }, { email: 'undefined' }] } });
   await target.userAccount.deleteMany({ where: { OR: [{ username: 'undefined' }, { email: 'undefined' }] } });
 
-  console.log('Seeding Legacy...');
+  console.log('🌱 Seeding Legacy Auth Database...');
   await seedUser(legacy, 'admin@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(legacy, 'ehab.maher@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(legacy, 'admin@parity.test', 'internal', ['ADMIN'], allAdminPerms, null);
@@ -119,7 +128,7 @@ async function main() {
   await seedUser(legacy, 'custA@parity.test', 'customer', [], null, ['CUST_A']);
   await seedUser(legacy, 'custB@parity.test', 'customer', [], null, ['CUST_B']);
 
-  console.log('Seeding Target...');
+  console.log('🌱 Seeding Target Auth Database...');
   await seedUser(target, 'admin@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(target, 'ehab.maher@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(target, 'admin@parity.test', 'internal', ['ADMIN'], allAdminPerms, null);
@@ -127,7 +136,7 @@ async function main() {
   await seedUser(target, 'custA@parity.test', 'customer', [], null, ['CUST_A']);
   await seedUser(target, 'custB@parity.test', 'customer', [], null, ['CUST_B']);
 
-  console.log('Syncing user profile metadata from Legacy to Target...');
+  console.log('🔄 Syncing user profile metadata from Legacy to Target...');
   const allLegacyUsers = await legacy.userAccount.findMany();
   for (const lu of allLegacyUsers) {
     const tu = await target.userAccount.findUnique({ where: { email: lu.email } });
@@ -149,8 +158,14 @@ async function main() {
     }
   }
 
-  console.log('Done seeding!');
-  process.exit(0);
+  await legacy.$disconnect();
+  await target.$disconnect();
+  console.log('✅ Done seeding auth databases!');
 }
 
-main().catch(console.error);
+if (process.argv[1]?.endsWith('seed-auth.mjs')) {
+  seedAuthDatabases().then(() => process.exit(0)).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

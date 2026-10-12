@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { seedAuthDatabases } from './seed-auth.mjs';
 
 const legacyBase = process.env.LEGACY_URL || 'http://127.0.0.1:3847';
 const targetBase = process.env.TARGET_URL || 'http://127.0.0.1:3000';
@@ -245,6 +246,11 @@ export async function runParity(phaseFilter = null) {
     if (!isGetA && isGetB) return 1;
     return 0;
   });
+
+  console.log(`\n======================================================`);
+  console.log(` 🔄 Automated Seed Reset: Synchronizing databases...`);
+  console.log(`======================================================`);
+  await seedAuthDatabases();
 
   console.log(`\n======================================================`);
   console.log(` 🔑 Fetching Authentication Tokens...`);
