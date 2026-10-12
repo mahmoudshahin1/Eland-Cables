@@ -28,7 +28,7 @@ export const NORMALIZED_FIELDS = [
   'correlationId'
 ];
 
-function normalizePayload(obj, ignoreList = []) {
+export function normalizePayload(obj, ignoreList = []) {
   if (!obj || typeof obj !== 'object') return obj;
   const clone = JSON.parse(JSON.stringify(obj));
 
@@ -87,12 +87,12 @@ function normalizePayload(obj, ignoreList = []) {
   return clone;
 }
 
-function getItemKey(item) {
+export function getItemKey(item) {
   if (!item || typeof item !== 'object') return String(item);
   return String(item.code || item.email || item.username || item.name || item.id || JSON.stringify(item));
 }
 
-function deepEqual(a, b) {
+export function deepEqual(a, b) {
   if (a === b) return true;
   if (typeof a !== typeof b) return false;
   if (typeof a !== 'object' || a === null || b === null) return false;

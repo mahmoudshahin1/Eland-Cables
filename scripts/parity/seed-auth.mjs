@@ -140,6 +140,10 @@ async function main() {
           jobTitle: lu.jobTitle,
           mobile: lu.mobile,
           employeeNumber: lu.employeeNumber,
+          failedLoginAttempts: lu.failedLoginAttempts,
+          isLocked: lu.isLocked,
+          status: lu.status,
+          isActive: lu.isActive,
         }
       });
     }
