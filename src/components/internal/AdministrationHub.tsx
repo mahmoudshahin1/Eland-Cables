@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { readAccessToken } from '../../auth/tokenStorage';
 import {
   ShieldCheck,
   Users,
@@ -57,7 +58,7 @@ function authHeaders(token: string | null) {
 
 export const AdministrationHub: React.FC = () => {
   const { jwtToken } = useAuth();
-  const token = jwtToken || (typeof localStorage !== 'undefined' ? localStorage.getItem('jwt_access_token') : null);
+  const token = jwtToken || readAccessToken();
   const [adminLang, setAdminLang] = useState<'en' | 'ar'>('en');
   const [tab, setTab] = useState<AdminTab>('overview');
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +106,8 @@ export const AdministrationHub: React.FC = () => {
 
   const api = useCallback(
     async (path: string, init?: RequestInit) => {
-      const res = await fetch(path, { ...init, headers: { ...authHeaders(token), ...(init?.headers || {}) } });
+      const activeToken = token || readAccessToken();
+      const res = await fetch(path, { ...init, headers: { ...authHeaders(activeToken), ...(init?.headers || {}) } });
       const text = await res.text();
       let data: any = {};
       try {
@@ -120,11 +122,13 @@ export const AdministrationHub: React.FC = () => {
   );
 
   const loadSummary = useCallback(async () => {
+    if (!token) return;
     const data = await api('/api/admin/security');
     setSummary(data.summary);
-  }, [api]);
+  }, [api, token]);
 
   const loadUsers = useCallback(async () => {
+    if (!token) return;
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (status !== 'all') params.set('status', status);
@@ -137,28 +141,31 @@ export const AdministrationHub: React.FC = () => {
     const data = await api(`/api/admin/users?${params.toString()}`);
     setUsers(data.users || []);
     setTotalUsers(data.total || 0);
-  }, [api, q, status, roleFilter, deptFilter, customerFilter, sort, skip]);
+  }, [api, token, q, status, roleFilter, deptFilter, customerFilter, sort, skip]);
 
   const loadRoles = useCallback(async () => {
+    if (!token) return;
     const data = await api('/api/admin/roles');
     setRoles(data.roles || []);
-  }, [api]);
+  }, [api, token]);
 
   const loadCatalog = useCallback(async () => {
+    if (!token) return;
     const data = await api('/api/admin/permissions/matrix');
     setCatalog(data.permissions || []);
     setCanAssign(Boolean(data.canAssign));
-  }, [api]);
+  }, [api, token]);
 
   const loadRoleDetail = useCallback(
     async (id: string) => {
+      if (!token) return;
       const data = await api(`/api/admin/roles/${id}`);
       setRoleDetail(data.role);
       setAllowed(
         new Set((data.role.permissions || []).map((p: PermissionRow) => `${p.module}:${p.resource}:${p.action}`))
       );
     },
-    [api]
+    [api, token]
   );
 
   const refreshAll = useCallback(async () => {
@@ -182,8 +189,9 @@ export const AdministrationHub: React.FC = () => {
   }, [token, refreshAll]);
 
   useEffect(() => {
+    if (!token) return;
     loadUsers().catch((err) => setError(err.message));
-  }, [loadUsers]);
+  }, [token, loadUsers]);
 
   useEffect(() => {
     if (selectedRole) loadRoleDetail(selectedRole).catch((err) => setError(err.message));

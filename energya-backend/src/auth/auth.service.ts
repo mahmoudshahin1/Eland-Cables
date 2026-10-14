@@ -52,10 +52,13 @@ export class AuthService {
       throw new UnauthorizedException({ error: 'Invalid email or password credentials.', code: 'UNAUTHORIZED' });
     }
 
+    const loginNow = new Date();
     await this.repo.updateUserAccount(user.id, {
       failedLoginAttempts: 0,
-      lastLoginAt: new Date(),
+      lastLoginAt: loginNow,
     });
+    user.lastLoginAt = loginNow;
+    user.failedLoginAttempts = 0;
 
     const refreshToken = randomOpaqueToken();
     const expiresAt = new Date();

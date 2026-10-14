@@ -108,6 +108,104 @@ export async function seedAuthDatabases() {
   const legacy = new LegacyPrisma({ datasources: { db: { url: process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public' } } });
   const target = new TargetPrisma({ datasources: { db: { url: process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public' } } });
 
+  console.log('🧹 Cleaning ephemeral test records on both DBs...');
+  const standardUserEmails = [
+    'admin@energya.com',
+    'ehab.maher@energya.com',
+    'sales@energya.com',
+    'm.ahmed@energya.com',
+    'technical@energya.com',
+    'k.salem@energya.com',
+    'n.nabil@energya.com',
+    'david.smith@elandcables.com',
+    'standard.test@energya.local',
+    'admin@parity.test',
+    'limited@parity.test',
+    'custA@parity.test',
+    'custB@parity.test'
+  ];
+
+  const standardRoleCodes = [
+    'SYSTEM_ADMINISTRATOR',
+    'ADMIN',
+    'VIEWER',
+    'REPORT_VIEWER',
+    'CUSTOMER_USER',
+    'TECHNICAL_OFFICE_ENGINEER',
+    'TECHNICAL_OFFICE_MANAGER',
+    'SALES_REPRESENTATIVE',
+    'SALES_MANAGER',
+    'PROCUREMENT_USER',
+    'PROCUREMENT_MANAGER',
+    'FINANCE_USER',
+    'FINANCE_MANAGER',
+    'COSTING_USER',
+    'COSTING_MANAGER',
+    'AUDITOR'
+  ];
+
+  const standardCustomerCodes = [
+    'C-ELAND',
+    'TEST-STANDARD-001',
+    'CUST_A',
+    'CUST_B'
+  ];
+
+  for (const db of [legacy, target]) {
+    // 1. Delete ephemeral sessions and audit events
+    await db.userSession.deleteMany({});
+    if (db.auditEvent) await db.auditEvent.deleteMany({});
+
+    // 2. Delete non-standard user accounts and their relations
+    const nonStdUsers = await db.userAccount.findMany({
+      where: { email: { notIn: standardUserEmails } }
+    });
+    for (const u of nonStdUsers) {
+      if (db.customerUser) await db.customerUser.deleteMany({ where: { userAccountId: u.id } });
+      if (db.userRole) await db.userRole.deleteMany({ where: { userId: u.id } });
+      if (db.passwordResetTicket) await db.passwordResetTicket.deleteMany({ where: { userId: u.id } });
+      if (db.auditEvent) await db.auditEvent.deleteMany({ where: { actorId: u.id } }).catch(() => {});
+      await db.userAccount.delete({ where: { id: u.id } });
+    }
+
+    // 3. Delete non-standard roles
+    const nonStdRoles = await db.role.findMany({
+      where: { code: { notIn: standardRoleCodes } }
+    });
+    for (const r of nonStdRoles) {
+      await db.rolePermission.deleteMany({ where: { roleId: r.id } });
+      await db.userRole.deleteMany({ where: { roleId: r.id } });
+      await db.role.delete({ where: { id: r.id } });
+    }
+
+    // 4. Delete non-standard customers
+    const nonStdCusts = await db.customer.findMany({
+      where: { code: { notIn: standardCustomerCodes } }
+    });
+    for (const c of nonStdCusts) {
+      await db.customerUser.deleteMany({ where: { customerId: c.id } });
+      await db.customer.delete({ where: { id: c.id } });
+    }
+
+    // 5. Delete non-standard customerUser links
+    const allowedCusts = await db.customer.findMany({
+      where: { code: { in: standardCustomerCodes } }
+    });
+    const allowedCustIds = allowedCusts.map(c => c.id);
+    const allowedUsers = await db.userAccount.findMany({
+      where: { email: { in: standardUserEmails } }
+    });
+    const allowedUserIds = allowedUsers.map(u => u.id);
+    await db.customerUser.deleteMany({
+      where: {
+        OR: [
+          { customerId: { notIn: allowedCustIds } },
+          { userAccountId: { notIn: allowedUserIds } }
+        ]
+      }
+    });
+  }
+
   const allAdminPerms = [
     'ADMIN:USER:VIEW', 'ADMIN:USER:CREATE', 'ADMIN:USER:UPDATE', 'ADMIN:USER:ACTIVATE', 'ADMIN:USER:DEACTIVATE', 'ADMIN:USER:LOCK', 'ADMIN:USER:RESET_PASSWORD',
     'ADMIN:ROLE:VIEW', 'ADMIN:ROLE:CREATE', 'ADMIN:ROLE:UPDATE', 'ADMIN:ROLE:MANAGE',
@@ -118,9 +216,8 @@ export async function seedAuthDatabases() {
   const viewerPerms = ['ADMIN:USER:VIEW', 'ADMIN:ROLE:VIEW', 'ADMIN:CUSTOMER:VIEW', 'ADMIN:CUSTOMER_USER:VIEW'];
 
   // Ensure standard system roles exist on both DBs
-  const standardRoles = ['SYSTEM_ADMINISTRATOR', 'ADMIN', 'VIEWER', 'REPORT_VIEWER', 'CUSTOMER_USER'];
   for (const db of [legacy, target]) {
-    for (const code of standardRoles) {
+    for (const code of standardRoleCodes) {
       const exists = await db.role.findUnique({ where: { code } });
       if (!exists) {
         await db.role.create({ data: { code, name: code, isActive: true } });

@@ -1,0 +1,436 @@
+{
+  "date": "2026-10-14T20:53:56.343Z",
+  "testedRole": "SYSTEM_ADMINISTRATOR",
+  "user": "admin@energya.com",
+  "screenResults": [
+    {
+      "screen": "Login",
+      "endpoint": "POST /api/auth/login",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Submit credentials in React Login form (/login), verify token returned and redirect to authenticated portal"
+    },
+    {
+      "screen": "Users Management",
+      "endpoint": "GET /api/admin/users",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Click Users tab in Administration Hub, verify table renders user accounts list"
+    },
+    {
+      "screen": "Roles Management",
+      "endpoint": "GET /api/admin/roles",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Click Roles tab, verify roles table renders including SYSTEM_ADMINISTRATOR"
+    },
+    {
+      "screen": "Customers Management",
+      "endpoint": "GET /api/admin/customers",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Click Customers tab, verify customer accounts table renders"
+    },
+    {
+      "screen": "Customer Users (Assignments)",
+      "endpoint": "GET /api/admin/customer-users",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Click Customer Users sub-tab, verify customer-to-user assignments load"
+    },
+    {
+      "screen": "Change Password",
+      "endpoint": "POST /api/auth/change-password",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Submit valid current and new password on /internal/profile, verify 200 response"
+    },
+    {
+      "screen": "Logout",
+      "endpoint": "POST /api/auth/logout",
+      "status": 200,
+      "outcome": "PASS",
+      "methodology": "Click logout in header, verify session invalidated and redirected to /login"
+    }
+  ],
+  "networkTraces": [
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/httpClient.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityMapping.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/drumPlanApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/login",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/platform/dashboard/kpis",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/platform/dashboard/kpis",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v2/workflows/my-tasks",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v2/workflows/my-tasks",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/security",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/permissions/matrix",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/permissions/matrix",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/security",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/customers?",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/customers?",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/customer-reference-masters",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/customer-reference-masters",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/customer-users?",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/httpClient.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityMapping.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/drumPlanApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/me",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/me",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/change-password",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/httpClient.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityMapping.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/drumPlanApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/refresh-token",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/refresh-token",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/me",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/me",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/login",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/platform/dashboard/kpis",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/admin/platform/dashboard/kpis",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v2/workflows/my-tasks",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v2/workflows/my-tasks",
+      "status": 401,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/httpClient.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityMapping.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/cableAuthorityApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "GET",
+      "url": "/src/api/drumPlanApi.ts",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/logout",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/roles",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    }
+  ]
+}

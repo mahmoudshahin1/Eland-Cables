@@ -46,8 +46,8 @@ export class AdminIdentityService {
       where.isLocked = false;
     }
     
-    const take = Math.min(filter.take || 50, 100);
-    const skip = filter.skip || 0;
+    const take = Math.min(Number(filter.take) > 0 ? Number(filter.take) : 50, 100);
+    const skip = Number(filter.skip) >= 0 ? Number(filter.skip) : 0;
     
     const [total, rows] = await Promise.all([
       this.repo.countUsers(where),
@@ -134,6 +134,9 @@ export class AdminIdentityService {
     const user = await this.repo.findUserById(id);
     if (!user) throw new NotFoundException('User not found');
     await this.repo.updateUser(id, { isLocked, status: isLocked ? 'LOCKED' : (user.isActive ? 'ACTIVE' : 'INACTIVE'), failedLoginAttempts: 0 });
+    if (isLocked) {
+      await this.repo.revokeUserSessions(id);
+    }
     return this.getUserById(id);
   }
 
@@ -151,6 +154,9 @@ export class AdminIdentityService {
   }
 
   async assignRole(userId: string, roleCode: string, actor: RequestActor) {
+    if (actor.id && actor.id === userId) {
+      throw new ForbiddenException('You cannot assign roles to your own account.');
+    }
     if (roleCode === 'SYSTEM_ADMINISTRATOR' && !this.actorHasRole(actor, 'SYSTEM_ADMINISTRATOR')) {
       throw new ForbiddenException('Only a SYSTEM_ADMINISTRATOR can assign that role.');
     }
@@ -165,6 +171,9 @@ export class AdminIdentityService {
   }
 
   async removeRole(userId: string, roleCode: string, actor: RequestActor) {
+    if (actor.id && actor.id === userId) {
+      throw new ForbiddenException('You cannot remove roles from your own account.');
+    }
     if (roleCode === 'SYSTEM_ADMINISTRATOR' && !this.actorHasRole(actor, 'SYSTEM_ADMINISTRATOR')) {
       throw new ForbiddenException('Only a SYSTEM_ADMINISTRATOR can remove that role.');
     }
@@ -254,6 +263,6 @@ export class AdminIdentityService {
   }
 
   async securitySummary() {
-    return { status: 'healthy', checkedAt: new Date() };
+    return this.repo.securitySummary();
   }
 }

@@ -147,4 +147,36 @@ export class AdminIdentityRepository {
   async countSessions() {
     return this.prisma.userSession.count({ where: { revokedAt: null } });
   }
+
+  async securitySummary() {
+    const [active, locked, inactive, roles, permissions, recentLogins, failedLogins, adminActions] = await Promise.all([
+      this.prisma.userAccount.count({ where: { isActive: true, isLocked: false } }),
+      this.prisma.userAccount.count({ where: { isLocked: true } }),
+      this.prisma.userAccount.count({ where: { isActive: false } }),
+      this.prisma.role.count(),
+      this.prisma.permission.count(),
+      this.prisma.userAccount.findMany({
+        where: { lastLoginAt: { not: null } },
+        orderBy: { lastLoginAt: 'desc' },
+        take: 8,
+        select: { id: true, email: true, fullName: true, lastLoginAt: true },
+      }),
+      this.prisma.auditEvent.count({ where: { action: 'LOGIN_FAILURE' } }),
+      this.prisma.auditEvent.findMany({
+        where: { action: { in: ['CREATE_USER', 'UPDATE_USER', 'ASSIGN_ROLE', 'LOCK_USER', 'RESET_PASSWORD', 'CREATE_ROLE'] } },
+        orderBy: { at: 'desc' },
+        take: 15,
+      }),
+    ]);
+    return {
+      activeUsers: active,
+      lockedUsers: locked,
+      inactiveUsers: inactive,
+      roleCount: roles,
+      permissionCount: permissions,
+      recentLogins,
+      failedLoginAttempts: failedLogins,
+      recentAdminActions: adminActions,
+    };
+  }
 }

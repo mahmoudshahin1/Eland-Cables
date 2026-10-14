@@ -73,7 +73,7 @@ export function normalizePayload(obj, ignoreList = []) {
         if (v !== null && v !== undefined) {
           o[k] = '<SESSION_ID>';
         }
-      } else if (['accessToken', 'refreshToken', 'token'].includes(k)) {
+      } else if (['accessToken', 'refreshToken', 'token', 'resetToken'].includes(k)) {
         if (v !== null && v !== undefined) {
           o[k] = '<TOKEN>';
         }

@@ -2,6 +2,7 @@ import { seedAuthDatabases } from './seed-auth.mjs';
 import { normalizePayload, deepEqual } from './parityHarness.mjs';
 import { PrismaClient as LegacyPrisma } from '../../node_modules/@prisma/client/index.js';
 import { PrismaClient as TargetPrisma } from '../../energya-backend/node_modules/@prisma/client/index.js';
+import bcrypt from 'bcryptjs';
 
 const legacyBase = process.env.LEGACY_URL || 'http://127.0.0.1:3847';
 const targetBase = process.env.TARGET_URL || 'http://127.0.0.1:3000';
@@ -118,21 +119,128 @@ export async function runFullSequentialParity() {
   });
   assertParity('Refresh Token with Invalid/Expired Token (401)', expRef);
 
-  // Change Password
-  const cpRes = await fetchBoth('/api/auth/change-password', {
+  // 1. Change Password Validation Failure (Same Password, 400)
+  const cpValRes = await fetchBoth('/api/auth/change-password', {
     method: 'POST',
     legacyToken: adminLegToken,
     targetToken: adminTgtToken,
     body: { currentPassword: 'Password123!', newPassword: 'Password123!' }
   });
-  assertParity('Change Password with Valid Credentials (200)', cpRes);
+  assertParity('Change Password Validation Failure - Same Password (400)', cpValRes);
 
-  // Reset Password with Invalid/Expired Token
+  // 2. Successful Change Password (200) + Re-login verification
+  const cpUserEmail = `chgpw_user@parity.test`;
+  await legacyPrisma.userAccount.deleteMany({ where: { email: cpUserEmail } });
+  await targetPrisma.userAccount.deleteMany({ where: { email: cpUserEmail } });
+  const cpHash = await bcrypt.hash('Password123!', 10);
+  await legacyPrisma.userAccount.create({ data: { email: cpUserEmail, username: cpUserEmail, fullName: 'Change Pw User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+  await targetPrisma.userAccount.create({ data: { email: cpUserEmail, username: cpUserEmail, fullName: 'Change Pw User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+
+  const cpLogin1 = await fetch(`${legacyBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: cpUserEmail, password: 'Password123!' }) });
+  const cpLogin2 = await fetch(`${targetBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: cpUserEmail, password: 'Password123!' }) });
+  const cpToken1 = (await cpLogin1.json()).accessToken;
+  const cpToken2 = (await cpLogin2.json()).accessToken;
+
+  const cpSuccessRes = await fetchBoth('/api/auth/change-password', {
+    method: 'POST',
+    legacyToken: cpToken1,
+    targetToken: cpToken2,
+    body: { currentPassword: 'Password123!', newPassword: 'NewChangedPass123!' }
+  });
+  assertParity('Successful Change Password with Valid Credentials (200)', cpSuccessRes);
+
+  // Login with old password fails (401)
+  const oldLoginRes = await fetchBoth('/api/auth/login', {
+    method: 'POST',
+    body: { email: cpUserEmail, password: 'Password123!' }
+  });
+  assertParity('Login with old password after change fails (401)', oldLoginRes);
+
+  // Login with new password succeeds (200)
+  const newLoginRes = await fetchBoth('/api/auth/login', {
+    method: 'POST',
+    body: { email: cpUserEmail, password: 'NewChangedPass123!' }
+  });
+  assertParity('Login with new password after change succeeds (200)', newLoginRes);
+
+  // 3. Reset Password with Invalid/Expired Token (400)
   const rpRes = await fetchBoth('/api/auth/reset-password', {
     method: 'POST',
     body: { token: 'rst_nonexistent_token_123', newPassword: 'NewPassword123!' }
   });
   assertParity('Reset Password with Invalid Token (400)', rpRes);
+
+  // 4. Successful Reset Password via Admin Ticket + Replay Rejection + Re-login
+  const rstEmail = `reset_user@parity.test`;
+  await legacyPrisma.userAccount.deleteMany({ where: { email: rstEmail } });
+  await targetPrisma.userAccount.deleteMany({ where: { email: rstEmail } });
+  const rstUserLeg = await legacyPrisma.userAccount.create({ data: { email: rstEmail, username: rstEmail, fullName: 'Reset User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+  const rstUserTgt = await targetPrisma.userAccount.create({ data: { email: rstEmail, username: rstEmail, fullName: 'Reset User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+
+  const issueResLeg = await fetch(`${legacyBase}/api/admin/users/${rstUserLeg.id}/reset-password`, { method: 'POST', headers: { Authorization: `Bearer ${adminLegToken}` } });
+  const issueResTgt = await fetch(`${targetBase}/api/admin/users/${rstUserTgt.id}/reset-password`, { method: 'POST', headers: { Authorization: `Bearer ${adminTgtToken}` } });
+  const issueDataLeg = await issueResLeg.json();
+  const issueDataTgt = await issueResTgt.json();
+
+  const consumeResLeg = await fetch(`${legacyBase}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: issueDataLeg.resetToken, newPassword: 'ResetNewPass123!' }) });
+  const consumeResTgt = await fetch(`${targetBase}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: issueDataTgt.resetToken, newPassword: 'ResetNewPass123!' }) });
+  const consumeDataLeg = await consumeResLeg.json();
+  const consumeDataTgt = await consumeResTgt.json();
+  assertParity('Successful Password Reset Ticket Consumption (200)', {
+    method: 'POST',
+    status1: consumeResLeg.status,
+    status2: consumeResTgt.status,
+    data1: consumeDataLeg,
+    data2: consumeDataTgt,
+    statusMatch: consumeResLeg.status === consumeResTgt.status,
+    bodyMatch: deepEqual(normalizePayload(consumeDataLeg), normalizePayload(consumeDataTgt))
+  });
+
+  // Replay consumed ticket a second time (must fail 400)
+  const replayResLeg = await fetch(`${legacyBase}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: issueDataLeg.resetToken, newPassword: 'ResetNewPass123!' }) });
+  const replayResTgt = await fetch(`${targetBase}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: issueDataTgt.resetToken, newPassword: 'ResetNewPass123!' }) });
+  const replayDataLeg = await replayResLeg.json();
+  const replayDataTgt = await replayResTgt.json();
+  assertParity('Replay Consumed Reset Ticket Fails (400)', {
+    method: 'POST',
+    status1: replayResLeg.status,
+    status2: replayResTgt.status,
+    data1: replayDataLeg,
+    data2: replayDataTgt,
+    statusMatch: replayResLeg.status === replayResTgt.status,
+    bodyMatch: deepEqual(normalizePayload(replayDataLeg), normalizePayload(replayDataTgt))
+  });
+
+  // Login with new password after reset
+  const rstLoginRes = await fetchBoth('/api/auth/login', {
+    method: 'POST',
+    body: { email: rstEmail, password: 'ResetNewPass123!' }
+  });
+  assertParity('Login with new password after reset succeeds (200)', rstLoginRes);
+
+  // 5. Lock User and Replay Prior Access Token (Must return 401 on both)
+  const lockJwtEmail = `lock_replay_jwt@parity.test`;
+  await legacyPrisma.userAccount.deleteMany({ where: { email: lockJwtEmail } });
+  await targetPrisma.userAccount.deleteMany({ where: { email: lockJwtEmail } });
+  const lockUserLeg = await legacyPrisma.userAccount.create({ data: { email: lockJwtEmail, username: lockJwtEmail, fullName: 'Lock JWT User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+  const lockUserTgt = await targetPrisma.userAccount.create({ data: { email: lockJwtEmail, username: lockJwtEmail, fullName: 'Lock JWT User', passwordHash: cpHash, userType: 'internal', status: 'ACTIVE', isActive: true } });
+
+  const lockLogin1 = await fetch(`${legacyBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: lockJwtEmail, password: 'Password123!' }) });
+  const lockLogin2 = await fetch(`${targetBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: lockJwtEmail, password: 'Password123!' }) });
+  const lockAccess1 = (await lockLogin1.json()).accessToken;
+  const lockAccess2 = (await lockLogin2.json()).accessToken;
+
+  // Lock user from admin
+  await fetch(`${legacyBase}/api/admin/users/${lockUserLeg.id}/lock`, { method: 'POST', headers: { Authorization: `Bearer ${adminLegToken}` } });
+  await fetch(`${targetBase}/api/admin/users/${lockUserTgt.id}/lock`, { method: 'POST', headers: { Authorization: `Bearer ${adminTgtToken}` } });
+
+  // Replay prior access token on /me
+  const replayMeRes = await fetchBoth('/api/auth/me', {
+    method: 'GET',
+    legacyToken: lockAccess1,
+    targetToken: lockAccess2
+  });
+  assertParity('Replay access token of locked user returns 401', replayMeRes);
 
   // Customer A attempting to access Customer B / Admin data (Tenant Isolation)
   const caLogin = { email: 'custA@parity.test', password: 'Password123!' };
