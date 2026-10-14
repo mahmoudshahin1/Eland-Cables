@@ -107,20 +107,16 @@ describe('Increment 12B.2.1 - Security Hardening & Tenant Isolation E2E (NestJS)
   });
 
   describe('Legacy Security Hardening Test Suite (TEST 1 to 18)', () => {
-    it('TEST 1-4: Customer Inquiry Scoping & Multi-Tenancy (Explicitly Deferred to Phase 4)', () => {
-      // NOTE: Inquiries endpoints (/api/inquiries) and inquiry data isolation belong to
-      // Phase 4 (Commercial & Inquiries Monolith Migration). Confirmed as explicitly deferred to Phase 4.
-      expect(true).toBe(true);
-    });
+    it.todo('TEST 1-4: Customer Inquiry Scoping & Multi-Tenancy (مؤجلة لـ Phase 4)');
 
     it('TEST 5-6: Customer A cannot modify assignments or assign itself to B (403)', async () => {
-      if (customerAId) {
-        await request(app.getHttpServer())
-          .patch(`/api/admin/customers/${customerAId}`)
-          .set('Authorization', `Bearer ${customerAToken}`)
-          .send({ name: 'Hacked Customer Name' })
-          .expect(403);
-      }
+      expect(customerAId).toBeDefined();
+      expect(customerAId).not.toBe('');
+      await request(app.getHttpServer())
+        .patch(`/api/admin/customers/${customerAId}`)
+        .set('Authorization', `Bearer ${customerAToken}`)
+        .send({ name: 'Hacked Customer Name' })
+        .expect(403);
 
       await request(app.getHttpServer())
         .post('/api/admin/customer-users')
@@ -144,32 +140,35 @@ describe('Increment 12B.2.1 - Security Hardening & Tenant Isolation E2E (NestJS)
         },
       });
 
-      if (customerAId && customerBId) {
-        await prisma.customerUser.createMany({
-          data: [
-            { customerId: customerAId, userAccountId: multiUser.id, status: 'ACTIVE', assignedBy: 'test' },
-            { customerId: customerBId, userAccountId: multiUser.id, status: 'ACTIVE', assignedBy: 'test' },
-          ],
-        });
+      expect(customerAId).toBeDefined();
+      expect(customerBId).toBeDefined();
+      expect(customerAId).not.toBe('');
+      expect(customerBId).not.toBe('');
 
-        const login = await request(app.getHttpServer())
-          .post('/api/auth/login')
-          .send({ email: multiUserEmail, password: 'Password123!' })
-          .expect(200);
+      await prisma.customerUser.createMany({
+        data: [
+          { customerId: customerAId, userAccountId: multiUser.id, status: 'ACTIVE', assignedBy: 'test' },
+          { customerId: customerBId, userAccountId: multiUser.id, status: 'ACTIVE', assignedBy: 'test' },
+        ],
+      });
 
-        const meRes = await request(app.getHttpServer())
-          .get('/api/auth/me')
-          .set('Authorization', `Bearer ${login.body.accessToken}`)
-          .expect(200);
+      const login = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: multiUserEmail, password: 'Password123!' })
+        .expect(200);
 
-        // Multiple customer scope keys are attached, no single customer guessing
-        expect(meRes.body.claims?.customerCode).toBeUndefined();
-        const masterIds = meRes.body.user?.customerMasterIds || meRes.body.customerMasterIds || [];
-        expect(masterIds.length).toBe(2);
+      const meRes = await request(app.getHttpServer())
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${login.body.accessToken}`)
+        .expect(200);
 
-        await prisma.customerUser.deleteMany({ where: { userAccountId: multiUser.id } });
-        await prisma.userAccount.delete({ where: { id: multiUser.id } }).catch(() => undefined);
-      }
+      // Multiple customer scope keys are attached, no single customer guessing
+      expect(meRes.body.claims?.customerCode).toBeUndefined();
+      const masterIds = meRes.body.user?.customerMasterIds || meRes.body.customerMasterIds || [];
+      expect(masterIds.length).toBe(2);
+
+      await prisma.customerUser.deleteMany({ where: { userAccountId: multiUser.id } });
+      await prisma.userAccount.delete({ where: { id: multiUser.id } }).catch(() => undefined);
     });
 
     it('TEST 8-9 and JWT replay: logout revokes access JWT immediately', async () => {
@@ -417,38 +416,39 @@ describe('Increment 12B.2.1 - Security Hardening & Tenant Isolation E2E (NestJS)
         },
       });
 
-      if (customerAId) {
-        // 1. Assign to Customer A
-        const assignRes = await request(app.getHttpServer())
-          .post('/api/admin/customer-users')
-          .set('Authorization', `Bearer ${adminToken}`)
-          .send({ customerId: customerAId, userAccountId: user.id })
-          .expect(201);
+      expect(customerAId).toBeDefined();
+      expect(customerAId).not.toBe('');
 
-        const assignment = assignRes.body.assignment || assignRes.body;
-        const assignmentId = assignment.id;
-        expect(assignmentId).toBeDefined();
-        expect(assignment.status).toBe('ACTIVE');
+      // 1. Assign to Customer A
+      const assignRes = await request(app.getHttpServer())
+        .post('/api/admin/customer-users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ customerId: customerAId, userAccountId: user.id })
+        .expect(201);
 
-        // 2. Update status to INACTIVE
-        const patchRes = await request(app.getHttpServer())
-          .patch(`/api/admin/customer-users/${assignmentId}`)
-          .set('Authorization', `Bearer ${adminToken}`)
-          .send({ status: 'INACTIVE' })
-          .expect(200);
+      const assignment = assignRes.body.assignment || assignRes.body;
+      const assignmentId = assignment.id;
+      expect(assignmentId).toBeDefined();
+      expect(assignment.status).toBe('ACTIVE');
 
-        const updated = patchRes.body.assignment || patchRes.body;
-        expect(updated.status).toBe('INACTIVE');
+      // 2. Update status to INACTIVE
+      const patchRes = await request(app.getHttpServer())
+        .patch(`/api/admin/customer-users/${assignmentId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'INACTIVE' })
+        .expect(200);
 
-        // 3. Unassign
-        await request(app.getHttpServer())
-          .post(`/api/admin/customer-users/${assignmentId}/unassign`)
-          .set('Authorization', `Bearer ${adminToken}`)
-          .expect(200);
+      const updated = patchRes.body.assignment || patchRes.body;
+      expect(updated.status).toBe('INACTIVE');
 
-        await prisma.customerUser.deleteMany({ where: { userAccountId: user.id } });
-        await prisma.userAccount.delete({ where: { id: user.id } }).catch(() => undefined);
-      }
+      // 3. Unassign
+      await request(app.getHttpServer())
+        .post(`/api/admin/customer-users/${assignmentId}/unassign`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      await prisma.customerUser.deleteMany({ where: { userAccountId: user.id } });
+      await prisma.userAccount.delete({ where: { id: user.id } }).catch(() => undefined);
     });
   });
 

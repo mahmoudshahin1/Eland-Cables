@@ -8,13 +8,16 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { PrismaService } from '../prisma.service.js';
+import { AuthRepository } from './auth.repository.js';
 import { RequestActor, CustomerScopeStatus } from '../common/interfaces/request-actor.interface.js';
 import { deriveLegacyPermissions } from '../shared/domain/rbac-compatibility.js';
+
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AuthRepository) private readonly authRepo: AuthRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -85,13 +88,7 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private async sessionIsActive(sessionId: string | undefined, userId: string | undefined): Promise<boolean> {
-    if (!sessionId || !userId) return false;
-    const session = await this.prisma.userSession.findUnique({ where: { id: sessionId } });
-    if (!session) return false;
-    if (session.userId !== userId) return false;
-    if (session.revokedAt) return false;
-    if (session.expiresAt < new Date()) return false;
-    return true;
+    return this.authRepo.sessionIsActive(sessionId, userId);
   }
 
   private async hydrateActorFromDatabase(actor: RequestActor): Promise<RequestActor> {

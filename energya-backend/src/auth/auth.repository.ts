@@ -47,6 +47,16 @@ export class AuthRepository {
     return this.prisma.userSession.findUnique({ where: { id } });
   }
 
+  async sessionIsActive(sessionId: string | undefined, userId: string | undefined): Promise<boolean> {
+    if (!sessionId || !userId) return false;
+    const session = await this.prisma.userSession.findUnique({ where: { id: sessionId } });
+    if (!session) return false;
+    if (session.userId !== userId) return false;
+    if (session.revokedAt) return false;
+    if (session.expiresAt < new Date()) return false;
+    return true;
+  }
+
   async findSessionByTokenHash(refreshTokenHash: string) {
     return this.prisma.userSession.findUnique({ where: { refreshTokenHash } });
   }

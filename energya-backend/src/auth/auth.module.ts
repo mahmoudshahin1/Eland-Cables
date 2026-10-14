@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { AuthRepository } from './auth.repository.js';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service.js';
@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller.js';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service.js';
 
+@Global()
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -29,6 +30,6 @@ import { PrismaService } from '../prisma.service.js';
   ],
   providers: [AuthService, PrismaService, AuthRepository],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, AuthRepository],
 })
 export class AuthModule {}

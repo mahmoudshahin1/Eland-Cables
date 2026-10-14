@@ -1,6 +1,6 @@
 # Migration Status (حالة الترحيل)
 
-Last updated: 2026-10-07  
+Last updated: 2026-10-15  
 Active Branch: `migration/phase-1`  
 Source of Truth Schema: `/prisma/schema.prisma`
 
@@ -11,10 +11,10 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | Phase | Module | Endpoints (done/total) | G1 (Contract) | G2 (Tests) | G3 (UI) | G4 (Quality) | G5 (Docs) | Notes |
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
-| **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | مكتملة: Parity بنسبة 100% (150/150)، واختبارات G2 (27/27)، وUI مربوطة |
-| Phase 2 | Master Data & Metals | 0 / 130 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
+| **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مقبولة مبدئيًا، بانتظار اعتماد المستخدم**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
+| Phase 2 | Master Data & Metals | 0 / 130 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تنقسم إلى 2a (قراءة)، 2b (استيراد/تصدير ومعادن)، 2c (حوكمة) |
 | Phase 3 | Cable Authority & Configurator | 0 / 16 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
-| Phase 4 | Commercial (Inquiries & Quotations) | 0 / 182 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
+| Phase 4 | Commercial (Inquiries & Quotations) | 0 / 182 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
 | Phase 5 | Costing & Pricing Engine | 0 / 109 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | أعلى مخاطرة - Golden tests رقمية |
 | Phase 6 | Container Study & Logistics | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | Phase 7 | Workflows & Commitments | 0 / 39 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
@@ -23,32 +23,23 @@ Source of Truth Schema: `/prisma/schema.prisma`
 
 ---
 
-## 2. إنجازات المرحلة 0 (Phase 0 Definition of Done)
+## 2. بنود مؤجلة رسمياً إلى المرحلة الرابعة (Deferred to Phase 4)
 
-1. **حصر الـ Endpoints:** تم إنشاء سكربت آلي وتوليد [`ENDPOINT_INVENTORY.md`](./ENDPOINT_INVENTORY.md) بإجمالي **585 endpoint** مصنفة وموزعة على المراحل. *(ملاحظة: زاد العدد عن 529 المذكورة في الخطة المبدئية بسبب اكتشاف مسارات داخلية (Internal) واختبارية (Test) ومسارات لم تكن موثقة في الخطة وتم إدراجها بالكامل في الحصر الآلي).*
-2. **خط الأساس للاختبارات (Baseline Tests):** تشغيل جميع الاختبارات المسجلة (202 ملف اختبار) وحفظ النتائج في [`BASELINE_TESTS.md`](./BASELINE_TESTS.md).
-3. **تنظيف NestJS وحذف الـ Mock Data:**
-   - حذف الـ demo login والـ fallback من `AuthService`.
-   - حذف `sampleInquiries` من `InquiriesService`.
-   - حذف `sampleCables` من `MasterDataService`.
-   - تعديل `PrismaService` ليفشل صراحة (Fail Loudly) عند انقطاع الاتصال بقاعدة البيانات ومنع أي fallback وهمي في الذاكرة.
-4. **الأمان والتحقق (Security Hardening):**
-   - تثبيت `helmet`، `class-validator`، `class-transformer`، `@nestjs/throttler`.
-   - تفعيل `ConfigModule` مع فحص إلزامي صارم لـ `DATABASE_URL` و`JWT_SECRET` (32 حرف على الأقل).
-   - تفعيل Global `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`).
-   - تفعيل Global `DomainExceptionFilter` يطابق بنية أخطاء Express القديمة بدقة.
-5. **توحيد الـ Prisma Schema:**
-   - حذف مجلد `energya-backend/prisma` بالكامل.
-   - توجيه NestJS إلى المرجع الوحيد الموحد `../prisma/schema.prisma`.
-6. **Parity Harness:**
-   - إنشاء [`../../scripts/parity/parityHarness.mjs`](../../scripts/parity/parityHarness.mjs) وملف fixtures لـ Phase 0.
-7. **ربط واجهة React القديمة (dev:legacy-ui):**
-   - إضافة سكربت `dev:legacy-ui` في `package.json`.
-   - تهيئة Vite Proxy لتوجيه طلبات `/api` إلى NestJS (`:3000`).
+- **TEST 1-4: Customer Inquiry Scoping & Multi-Tenancy (عزل استفسارات العملاء):**  
+  تم تسجيل الحالات الأربع كـ `it.todo(...)` داخل جناح اختبارات `increment12b2_1.securityHardening.e2e-spec.ts`. هذه الحالات تختبر عزل بيانات الاستفسارات على مسار `/api/inquiries`، وقد أُجّلت صراحة إلى Phase 4 (Commercial & Inquiries) لارتباطها بالـ Inquiries Controller و Inquiries Service والـ Scoping المنفصل للاستفسارات.
 
 ---
 
-## 3. إنجازات المرحلة 1 (Phase 1 Code Completion)
+## 3. سجل تعديلات الكود القديم والواجهة (Legacy Modifications Log)
+
+| الملف المعدل | طبيعة التعديل | السبب والضرورة |
+|---|---|---|
+| `src/components/internal/AdministrationHub.tsx` | حارس `token` ودوال `useEffect` وتمرير `readAccessToken()` ديناميكياً | منع حدوث استدعاءات غير مصرح بها (`401`) عند التحميل الأولي للواجهة قبل اكتمال استعادة الجلسة في `AuthContext`، وضمان تمرير التوكن الحي مع كافة طلبات إدارة المستخدمين والأدوار. |
+| `vite.config.ts` | تصحيح الـ Regex لمسار البروكسي: `^/api/(auth\|admin/(users\|roles\|...))(\\?\|/\|$)` | إضافة دعم للـ Query Parameters (`?`). في السابق كان النمط `($\|/)` يسقط أي استدعاء يحوي معاملات استعلام (مثل `/api/admin/users?sort=createdAt`) ليتجه إلى خادم Express القديم بدلاً من NestJS. |
+
+---
+
+## 4. إنجازات المرحلة 1 (Phase 1 Code Completion)
 
 1. **نقل وتطوير الـ 49 Endpoint المستهدفة بالكامل:**
    - **AuthModule (12 endpoints):** `login`, `logout`, `refresh-token`, `me`, `change-password`, `reset-password`, `forgot-password`, `register`, `roles`, `assign-role`, `users`.
@@ -60,18 +51,12 @@ Source of Truth Schema: `/prisma/schema.prisma`
    - نقل `rbac-compatibility.ts` واشتقاق `deriveLegacyPermissions` لضمان توافق شاشات الواجهة القديمة.
    - نقل `rbac-engine.ts` وتطبيقه داخل `RbacGuard` مع Decorator `@RequirePermission()`.
    - نقل `safe-user.ts` لضمان تطابق كائن المستخدم المرجع (`user`) مع ما تنتظره الواجهة.
-3. **اختبارات E2E:**
-   - إنشاء أجنحة اختبارات شاملة لجميع الـ Controllers: `auth.e2e-spec.ts`, `admin-identity.e2e-spec.ts`, `admin-customers.e2e-spec.ts`.
-4. **الجودة والـ Build:**
-   - نجاح البناء `npm run build` بنسبة 100% بدون أي أخطاء TypeScript وبدون أي mock data.
-
----
-
-## 4. اختلافات مقصودة عن القديم (Intentional differences)
-- تم إضافة مهلة افتراضية (`--test-timeout=5000`) في `scripts/runRegisteredTests.mjs` حتى لا تتجمد فحوصات التكامل عند غياب الاتصال بقاعدة البيانات.
-- تم ضبط `AppController` في NestJS على مسار `/api/platform/health` و`/api/platform/status` لتتطابق بنيتها مع Express.
-
----
-
-## 5. العوائق والمسائل المفتوحة (Open Issues & Blockers)
-- قاعدة بيانات PostgreSQL المحلية غير مشغلة حالياً (بيئة ويندوز لا تحتوي على Docker Desktop مثبت). سنحتاج تشغيل PostgreSQL محلياً أو الاتصال بقاعدة بيانات تطويرية قبل بدء اختبارات التكامل لـ Phase 1.
+3. **فصل الاستعلامات إلى طبقة الـ Repository:**
+   - نقل استعلام التحقق من فاعلية الجلسة `sessionIsActive` بالكامل من `JwtAuthGuard` إلى `AuthRepository`.
+4. **اختبارات G2:**
+   - **Unit Tests:** 27 اختباراً ناجحاً عبر 3 ملفات.
+   - **E2E Tests:** 70 اختباراً حقيقياً ناجحاً عبر 7 ملفات (مطابقة تامة لـ 28 اختبار هوية قديمة و18 حالة أمان وعزل).
+5. **شاشات G3:**
+   - توثيق 7 شاشات رئيسية برمز استجابة 200 OK عبر اختبار متصفح آلي (Playwright على MS Edge).
+6. **الجودة والـ Build:**
+   - نجاح البناء `npm run build` بنسبة 100% بدون أي أخطاء TypeScript وبدون أي mock data، وخلو كامل لـ `package-lock.json` من أي مراجع لـ `npmmirror`.
