@@ -347,7 +347,7 @@ masterDataRouter.get('/cables/:materialNumber/attachments/:attachmentId', async 
     const row = await getCableMasterAttachmentContent(req.params.materialNumber, req.params.attachmentId);
     res.setHeader('Content-Type', row.mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${row.fileName.replace(/"/g, '')}"`);
-    res.send(row.content);
+    res.send(Buffer.from(row.content));
   } catch (err: any) {
     if (err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message });
     pgError(res, err);

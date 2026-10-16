@@ -4,10 +4,13 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Security Headers matching legacy httpSecurity.ts
   app.use(

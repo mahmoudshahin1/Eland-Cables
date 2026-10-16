@@ -1,10 +1,24 @@
 import { Module } from '@nestjs/common';
-import { MasterDataService } from './master-data.service.js';
-import { MasterDataController } from './master-data.controller.js';
+import { CablesSubModule } from './cables/cables.module.js';
+import { RawMaterialsSubModule } from './raw-materials/raw-materials.module.js';
+import { BomsSubModule } from './boms/boms.module.js';
+import { DrumsSubModule } from './drums/drums.module.js';
+import { ReferenceSubModule } from './reference/reference.module.js';
 
 @Module({
-  controllers: [MasterDataController],
-  providers: [MasterDataService],
-  exports: [MasterDataService],
+  imports: [
+    CablesSubModule,
+    RawMaterialsSubModule,
+    BomsSubModule,
+    DrumsSubModule,
+    ReferenceSubModule,
+  ],
+  exports: [
+    CablesSubModule,
+    RawMaterialsSubModule,
+    BomsSubModule,
+    DrumsSubModule,
+    ReferenceSubModule,
+  ],
 })
 export class MasterDataModule {}
