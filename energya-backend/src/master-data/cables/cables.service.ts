@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CablesRepository } from './cables.repository.js';
+import { CustomerCatalogRepository } from './customer-catalog.repository.js';
 import { RequestActor } from '../../common/interfaces/request-actor.interface.js';
 
 @Injectable()
 export class CablesService {
-  constructor(@Inject(CablesRepository) private readonly cablesRepository: CablesRepository) {}
+  constructor(
+    @Inject(CablesRepository) private readonly cablesRepository: CablesRepository,
+    @Inject(CustomerCatalogRepository) private readonly customerCatalogRepository: CustomerCatalogRepository,
+  ) {}
 
   async listOrSearchCables(
     query: {
@@ -69,7 +73,7 @@ export class CablesService {
   }
 
   async listCustomerProducts(query: any, user: RequestActor) {
-    const result = await this.cablesRepository.listCustomerProducts(query);
+    const result = await this.customerCatalogRepository.listCustomerProducts(query);
     return {
       ...result,
       actorKind: user.userType === 'customer' ? 'customer' : 'internal',
@@ -78,6 +82,7 @@ export class CablesService {
   }
 
   async listCustomerProductFacets() {
-    return this.cablesRepository.listCustomerProductFacets();
+    return this.customerCatalogRepository.listCustomerProductFacets();
   }
 }
+

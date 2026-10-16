@@ -1,16 +1,41 @@
 import { PrismaClient as LegacyPrisma } from '../../node_modules/@prisma/client/index.js';
 import { PrismaClient as TargetPrisma } from '../../energya-backend/node_modules/@prisma/client/index.js';
 
+function assertSafeDatabaseUrl(rawUrl, allowedDbNames) {
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    const isLocal = host === '127.0.0.1' || host === 'localhost' || host === '::1';
+    if (!isLocal) {
+      throw new Error(`TRUNCATE CASCADE guard: Refusing to run on non-local host "${host}". Must be 127.0.0.1 or localhost.`);
+    }
+    const dbName = parsed.pathname.replace(/^\//, '').split('?')[0];
+    if (!allowedDbNames.includes(dbName)) {
+      throw new Error(`TRUNCATE CASCADE guard: Refusing to run on database "${dbName}". Allowed names: ${allowedDbNames.join(', ')}`);
+    }
+  } catch (err) {
+    throw new Error(`Safety guard rejected connection string: ${err.message}`);
+  }
+}
+
 export async function seedMasterDataDatabases() {
+  const legacyUrl = process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public';
+  const targetUrl = process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public';
+
+  // Strict safety check before any DB instantiation or TRUNCATE execution
+  assertSafeDatabaseUrl(legacyUrl, ['energya_legacy']);
+  assertSafeDatabaseUrl(targetUrl, ['energya_nest']);
+
   const source = new LegacyPrisma({
     datasources: { db: { url: process.env.DATABASE_URL_SOURCE || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_connect?schema=public' } }
   });
   const legacy = new LegacyPrisma({
-    datasources: { db: { url: process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public' } }
+    datasources: { db: { url: legacyUrl } }
   });
   const target = new TargetPrisma({
-    datasources: { db: { url: process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public' } }
+    datasources: { db: { url: targetUrl } }
   });
+
 
   console.log('📦 Reading master dataset from energya_connect...');
   const [

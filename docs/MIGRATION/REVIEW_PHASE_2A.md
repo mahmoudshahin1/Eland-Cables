@@ -20,7 +20,7 @@
 ## 2. مخرجات تشغيل الاختبارات الحرفية (Verbatim Test Outputs)
 
 ### أ. المخرج الحرفي لاختبارات الوحدة `npm test` داخل `energya-backend`:
-(108 اختبارات ناجحة عبر 6 ملفات اختبار بدون أي إخفاق)
+(114 اختباراً ناجحاً عبر 7 ملفات اختبار بدون أي إخفاق)
 
 ```text
 > energya-backend@0.0.1 test
@@ -30,19 +30,21 @@ The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths r
 
  RUN  v4.1.11 H:/Eland-Cables/energya-backend
 
- ✓ test/master-data/drumCapacityCalculator.spec.ts (14 tests) 21ms
+ ✓ test/master-data/rawMaterialClassification.spec.ts (6 tests) 20ms
+ ✓ test/master-data/drumCapacityCalculator.spec.ts (14 tests) 26ms
  ✓ test/master-data/customerCableCatalog.domain.spec.ts (7 tests) 120ms
- ✓ test/master-data/drumOptimizationService.spec.ts (60 tests) 111ms
- ✓ src/common/filters/domain-exception.filter.spec.ts (7 tests) 14ms
- ✓ test/rbac.spec.ts (19 tests) 16ms
- ✓ src/app.controller.spec.ts (1 test) 2277ms
-       ✓ should return health status matching modular-monolith contract  2275ms
+ ✓ test/master-data/drumOptimizationService.spec.ts (60 tests) 140ms
+ ✓ test/rbac.spec.ts (19 tests) 13ms
+ ✓ src/common/filters/domain-exception.filter.spec.ts (7 tests) 11ms
+ ✓ src/app.controller.spec.ts (1 test) 2073ms
+       ✓ should return health status matching modular-monolith contract  2070ms
 
- Test Files  6 passed (6)
-      Tests  108 passed (108)
-   Start at  11:26:01
-   Duration  9.59s (transform 18.01s, setup 0ms, import 28.84s, tests 2.56s, environment 1ms)
+ Test Files  7 passed (7)
+      Tests  114 passed (114)
+   Start at  14:44:03
+   Duration  8.53s (transform 7.04s, setup 0ms, import 20.57s, tests 2.40s, environment 2ms)
 ```
+
 
 ---
 
@@ -137,14 +139,14 @@ AuthController initialized. AuthService: true
 ---
 
 ### د. المخرج الحرفي لجناح مطابقة الـ Parity الكامل (`run-phase2a-parity.mjs`):
-(34 فحصاً ناجحاً من أصل 34 بنسبة نجاح 100% تشمل القوائم الكاملة، الصلاحيات، وتحميل/رفع 5MB بايت ببايت)
+(95 فحصاً ناجحاً من أصل 95 بنسبة نجاح 100% تغطي كافة الـ 36 مساراً ومصفوفة الشخصيات الخمس والفلاتر و5MB ثنائية واختبارات الكسر المتعمد)
 
 ```text
-======================================================
- 🚀 Starting Phase 2a Master Data Parity Verification
-======================================================
+========================================================================
+ 🚀 Starting Expanded Phase 2a Parity: All 36 Endpoints & 5 Personas
+========================================================================
 
-1️⃣ Ensuring Clean Datasets on both Databases...
+1️⃣ Ensuring Clean Datasets on both Databases (Master + Auth)...
 📦 Reading master dataset from energya_connect...
 Source records fetched:
 - CableParameter: 60
@@ -155,88 +157,131 @@ Source records fetched:
 - BomDuplicateObservation: 81
 
 🚀 Seeding legacy (energya_legacy)...
-  Truncating master tables in legacy (energya_legacy)...
-  Inserting 60 CableParameter rows...
-  Inserting 74 RawMaterial rows...
-  Inserting 105 DrumMaster rows...
-  Inserting 432 CableMaster rows...
-  Inserting 4822 CableBomLine rows...
-  Inserting 81 BomDuplicateObservation rows...
   ✅ Verified legacy (energya_legacy): Cables=432, RawMaterials=74, BOMs=4822, Drums=105, Params=60
 
 🚀 Seeding target (energya_nest)...
-  Truncating master tables in target (energya_nest)...
-  Inserting 60 CableParameter rows...
-  Inserting 74 RawMaterial rows...
-  Inserting 105 DrumMaster rows...
-  Inserting 432 CableMaster rows...
-  Inserting 4822 CableBomLine rows...
-  Inserting 81 BomDuplicateObservation rows...
   ✅ Verified target (energya_nest): Cables=432, RawMaterials=74, BOMs=4822, Drums=105, Params=60
-
-✨ Master data seeding complete across both databases without touching auth tables!
-🧹 Cleaning ephemeral test records on both DBs...
-🌱 Seeding Legacy Auth Database...
-🌱 Seeding Target Auth Database...
-🔄 Syncing user profile metadata from Legacy to Target...
-✅ Done seeding auth databases!
 
 2️⃣ Verifying server runtimes...
 ✅ Both Legacy (3847) and NestJS (3000) servers are healthy!
 
 3️⃣ Authenticating Personas on both servers...
 
-4️⃣ Full Dataset & Catalog Parity Verification...
-  ✅ [GET] GET /api/master/cables (Full 432 Cables List) (Status: 200 vs 200, Body: MATCH)
-     Confirmed count: Legacy=432, Nest=432
-  ✅ [GET] GET /api/master/cables/10009487 (Single Cable) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/master/raw-materials (Full 74 Raw Materials List) (Status: 200 vs 200, Body: MATCH)
-     Confirmed count: Legacy=74, Nest=74
-  ✅ [GET] GET /api/master/boms (Full 4,822 BOM Lines List) (Status: 200 vs 200, Body: MATCH)
-     Confirmed count: Legacy=4822, Nest=4822
-  ✅ [GET] GET /api/master/drums (Full 105 Drums List) (Status: 200 vs 200, Body: MATCH)
-     Confirmed count: Legacy=105, Nest=105
-  ✅ [GET] GET /api/master/drums/EWD630-0 (Single Drum) (Status: 200 vs 200, Body: MATCH)
-  ✅ [POST] POST /api/master/drums/capacity (Drum Capacity Calculation) (Status: 200 vs 200, Body: MATCH)
-  ✅ [POST] POST /api/master/drums/candidates (Candidates Evaluation) (Status: 200 vs 200, Body: MATCH)
-  ✅ [POST] POST /api/master/drums/optimize (Drum Plan Optimization) (Status: 200 vs 200, Body: MATCH)
-  ✅ [POST] POST /api/master/drums/validate (Plan Validation) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/master/reference (Full 60 Reference Parameters) (Status: 200 vs 200, Body: MATCH)
-     Confirmed count: Legacy=60, Nest=60
-  ✅ [GET] GET /api/master/keys (Reference Keys) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/master/uniqueness (Cable Uniqueness Report) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/platform/db (Platform DB Health Check) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/master/sot-status (Source of Truth Status) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/master/cables/:mat/attachments (List Attachments Unauthenticated - SEC-MD-02) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/v2/cables/products (Customer Product Catalog) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] GET /api/v2/cables/products/facets (Customer Product Facets) (Status: 200 vs 200, Body: MATCH)
+4️⃣ SECTION A: Testing Core 36 Endpoints (/master + /platform)...
+ --- /api/master/* Endpoints (19) ---
+  ✅ [GET] 1. GET /api/master/cables (Full 432 list) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 2. GET /api/master/cables/:mat (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 3. GET /api/master/cables/:mat/attachments (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 4. POST /api/master/cables/:mat/attachments (Status: 201 vs 201, Body: MATCH)
+  ✅ [GET] 5. GET /api/master/cables/:mat/attachments/:id (Status: 200 vs 200, Body: MATCH)
+  ✅ [DELETE] 6. DELETE /api/master/cables/:mat/attachments/:id (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 7. GET /api/master/raw-materials (Full 74 list) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 8. GET /api/master/boms (Full 4,822 list) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 9. GET /api/master/drums (Full 105 list) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 10. GET /api/master/drums/:code (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 11. POST /api/master/drums/capacity (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 12. POST /api/master/drums/candidates (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 13. POST /api/master/drums/optimize (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 14. POST /api/master/drums/validate (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 15. GET /api/master/reference (Full 60 params) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 16. GET /api/master/keys (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 17. GET /api/master/uniqueness (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 18. GET /api/master/sot-status (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 19. GET /api/master/db (Master DB status) (Status: 200 vs 200, Body: MATCH)
 
-5️⃣ Permissions Matrix & Persona Parity Verification...
-  ✅ [GET] Anonymous Access GET /api/master/cables (401 Unauthorized) (Status: 401 vs 401, Body: MATCH)
-  ✅ [GET] Anonymous Access GET /api/master/raw-materials (401 Unauthorized) (Status: 401 vs 401, Body: MATCH)
-  ✅ [GET] Anonymous Access GET /api/master/boms (401 Unauthorized) (Status: 401 vs 401, Body: MATCH)
-  ✅ [GET] Customer Access GET /api/master/cables (200 OK Parity) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] Customer Access GET /api/master/raw-materials (SEC-MD-01 200 OK: 74 RMs) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] Customer Access GET /api/master/boms (SEC-MD-01 200 OK: 4,822 BOMs) (Status: 200 vs 200, Body: MATCH)
+ --- /api/platform/* Aliases (17) ---
+  ✅ [GET] 20. GET /api/platform/cables (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 21. GET /api/platform/cables/:mat (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 22. GET /api/platform/cables/:mat/attachments (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 23. POST /api/platform/cables/:mat/attachments (Status: 201 vs 201, Body: MATCH)
+  ✅ [GET] 24. GET /api/platform/cables/:mat/attachments/:id (Status: 200 vs 200, Body: MATCH)
+  ✅ [DELETE] 25. DELETE /api/platform/cables/:mat/attachments/:id (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 26. GET /api/platform/raw-materials (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 27. GET /api/platform/boms (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 28. GET /api/platform/drums (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 29. POST /api/platform/drums/capacity (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 30. POST /api/platform/drums/candidates (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 31. POST /api/platform/drums/optimize (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] 32. POST /api/platform/drums/validate (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 33. GET /api/platform/reference (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 34. GET /api/platform/keys (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 35. GET /api/platform/uniqueness (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] 36. GET /api/platform/db (Platform DB status) (Status: 200 vs 200, Body: MATCH)
+
+5️⃣ SECTION B: Permissions & Personas Matrix Parity...
+  ✅ [GET] Anonymous -> GET /api/master/cables (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/cables (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/raw-materials (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/raw-materials (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/boms (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/boms (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/drums (401) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/reference (401 Unauthorized) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/reference (401 Unauthorized) (Status: 401 vs 401, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/db (200 Public) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/db (200 Public) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/master/cables/:mat/attachments (200 Public SEC-MD-02) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Anonymous -> GET /api/platform/cables/:mat/attachments (200 Public SEC-MD-02) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/master/cables (200 SEC-MD-01) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/platform/cables (200 SEC-MD-01) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/master/raw-materials (200 SEC-MD-01: 74 RMs) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/platform/raw-materials (200 SEC-MD-01) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/master/boms (200 SEC-MD-01: 4,822 BOM lines) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/platform/boms (200 SEC-MD-01) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Customer -> GET /api/master/drums (200) (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] Customer -> POST /api/master/cables/:mat/attachments (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
+  ✅ [POST] Customer -> POST /api/platform/cables/:mat/attachments (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
   ✅ Customer Response Costing Exclusion Check (Costing fields stripped: true)
-  ✅ [GET] Limited Internal (0 of 7 permissions) GET /api/master/cables (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
-  ✅ [GET] Limited Internal (0 of 7 permissions) GET /api/master/raw-materials (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
-  ✅ [POST] Customer POST /api/master/cables/:mat/attachments (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
-  ✅ [POST] Limited Internal (VIEW only) POST /api/master/cables/:mat/attachments (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/master/cables (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/platform/cables (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/master/raw-materials (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/platform/raw-materials (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/master/boms (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/platform/boms (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Limited Internal (0 of 7) -> GET /api/master/drums (403 Forbidden) (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] Limited Internal (0 of 7) -> POST /api/master/drums/optimize (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
+  ✅ [POST] Limited Internal (0 of 7) -> POST /api/master/cables/:mat/attachments (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
+  ✅ [GET] Granular Internal (1 of 7) -> GET /api/master/cables (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Granular Internal (1 of 7) -> GET /api/platform/cables (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Granular Internal (1 of 7) -> GET /api/master/raw-materials (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Granular Internal (1 of 7) -> GET /api/master/boms (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Granular Internal (1 of 7) -> GET /api/master/drums (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] Granular Internal (1 of 7 VIEW only) -> POST attachment (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
+  ✅ [GET] Writer Internal -> GET /api/master/cables (200 OK) (Status: 200 vs 200, Body: MATCH)
+  ✅ [POST] Writer Internal -> POST /api/master/cables/:mat/attachments (201 Created) (Status: 201 vs 201, Body: MATCH)
+  ✅ [DELETE] Writer Internal -> DELETE /api/master/cables/:mat/attachments/:id (200 OK) (Status: 200 vs 200, Body: MATCH)
 
-6️⃣ 5MB Binary Attachment Upload/Download Byte Parity (Requirement 4)...
-  ✅ [POST] POST /api/master/cables/10009487/attachments (5MB Binary Upload 201 Created) (Status: 201 vs 201, Body: MATCH)
-  ✅ GET /api/master/cables/10009487/attachments/:id (5MB Binary Download Byte Parity: 100% IDENTICAL, Size: 5242880 bytes)
-  ✅ [DELETE] Customer DELETE /api/master/cables/:mat/attachments/:id (403 Forbidden) (Status: 403 vs 403, Body: MATCH)
-  ✅ [DELETE] Admin DELETE /api/master/cables/:mat/attachments/:id (Delete Attachment 200 OK) (Status: 200 vs 200, Body: MATCH)
+6️⃣ SECTION C: Filters, Pagination & Sorting Matrix Parity...
+  ✅ [GET] Filter Matrix: Query search (?q=Cu) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Family LV (?family=LV) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Family MV (?family=MV) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Voltage 6/10 (?voltage=6/10) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Conductor Copper (?conductor=Copper) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Cores 1 (?cores=1) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Diameter 25 (?diameter=25) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Pagination Page 1 Size 10 (?page=1&pageSize=10) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Pagination Page 2 Size 15 (?page=2&pageSize=15) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Pagination Page 3 Size 25 (?page=3&pageSize=25) (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] Filter Matrix: Combined Filter (?family=LV&cores=1&page=1&pageSize=10) (Status: 200 vs 200, Body: MATCH)
 
-7️⃣ Negative Parity Test Verification...
-  ✅ Negative Parity Test (Discrepancy correctly detected and rejected: true)
+ --- Customer Cable Catalog v2 (Phase 3 Early Routes) ---
+  ✅ [GET] GET /api/v2/cables/products?page=1&pageSize=10 (Status: 200 vs 200, Body: MATCH)
+  ✅ [GET] GET /api/v2/cables/products/facets (Status: 200 vs 200, Body: MATCH)
 
-======================================================
- 🏁 Phase 2a Parity Summary: 34/34 passed.
-======================================================
+7️⃣ SECTION D: 5MB Binary Upload & Byte-for-Byte Download Parity...
+  ✅ [POST] POST /api/master/cables/:mat/attachments (5MB Upload 201 Created) (Status: 201 vs 201, Body: MATCH)
+  ✅ GET 5MB Binary Download Byte Parity (Byte Match: 100% IDENTICAL, Size: 5242880 bytes)
+
+8️⃣ SECTION E: Intentional Negative Parity Tests (Proving Drift Detection)...
+  ✅ Intentional Negative Test 1: Status mismatch (200 vs 500) detected as failure.
+  ✅ Intentional Negative Test 2: Payload tamper detected as discrepancy.
+  ✅ Intentional Negative Test 3: Missing key in target payload detected as discrepancy.
+
+========================================================================
+ 🏁 Expanded Parity Summary: Exactly 95/95 checks PASSED (100%).
+========================================================================
 ```
+
 
 ---
 

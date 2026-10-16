@@ -15,7 +15,7 @@ import { DrumsService } from './drums.service.js';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
 import { MasterReadAuthGuard, DrumComputeAuthGuard } from '../../common/guards/master-data-auth.guard.js';
 
-@Controller('api/master')
+@Controller(['api/master', 'api/platform'])
 @UsePipes(new ValidationPipe({ whitelist: false, forbidNonWhitelisted: false }))
 export class DrumsController {
   constructor(

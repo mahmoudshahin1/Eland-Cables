@@ -19,7 +19,7 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
       proxy: {
-        '^/api/(auth|admin/(users|roles|permissions|security|customers|customer-users|customer-reference-masters))(\\?|/|$)': {
+        '^/api/(auth|admin/(users|roles|permissions|security|customers|customer-users|customer-reference-masters)|(master|platform)/(cables|raw-materials|boms|drums|reference|keys|uniqueness|sot-status|db)|v2/cables/products)(\\?|/|$)': {
           target: process.env.BACKEND_URL || 'http://127.0.0.1:3000',
           changeOrigin: true,
           secure: false,

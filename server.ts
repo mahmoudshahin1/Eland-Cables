@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
@@ -76,6 +76,8 @@ app.get('/api/platform/status', async (_req, res) => {
 });
 
 app.use('/api/platform', platformDbRouter);
+app.use('/api/platform', masterDataRouter);
+app.use('/api/master', platformDbRouter);
 app.use('/api/master', masterDataRouter);
 app.use('/api/master', marketMetalImportRouter);
 app.use('/api/master', masterDataCutoverRouter);

@@ -12,7 +12,7 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
 import { MasterReadAuthGuard } from '../../common/guards/master-data-auth.guard.js';
 import { RequestActor } from '../../common/interfaces/request-actor.interface.js';
 
-@Controller('api/master')
+@Controller(['api/master', 'api/platform'])
 export class CablesController {
   constructor(@Inject(CablesService) private readonly cablesService: CablesService) {}
 

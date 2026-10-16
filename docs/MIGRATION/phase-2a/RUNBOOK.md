@@ -106,9 +106,10 @@ npm run dev:legacy-ui
 | المستخدم | البريد الإلكتروني | كلمة المرور | الدور والصلاحيات |
 |---|---|---|---|
 | **مدير النظام (Admin)** | `admin@energya.com` | `Password123!` | كافة الصلاحيات (`SYSTEM_ADMINISTRATOR`) |
-| **العميل (Customer)** | `custA@parity.test` | `Password123!` | مستخدم عميل مرتبط بشركة معتمدة |
+| **مستخدم كاتب (Writer)** | `writer@parity.test` | `Password123!` | صلاحيات كتابة وتعديل (`CABLE_MASTER:CREATE`, `UPDATE`) |
+| **مستخدم بصلاحية مفردة (Granular)** | `granular@parity.test` | `Password123!` | صلاحية قراءة واحدة فقط من الـ7 (`CABLE_MASTER:VIEW`) |
 | **داخلي محدود (Limited)** | `limited@parity.test` | `Password123!` | مستخدم داخلي بدون أي صلاحيات ماستر داتا (0 من 7) |
-| **مستخدم القراءة (Viewer)**| `viewer@parity.test` | `Password123!` | صلاحية قراءة الماستر داتا فقط (VIEW) بدون كتابة |
+| **العميل (Customer)** | `custA@parity.test` | `Password123!` | مستخدم عميل مرتبط بشركة معتمدة (يقرأ الكتالوج والخامات وBOM بموجب SEC-MD-01) |
 
 ---
 
@@ -119,29 +120,31 @@ npm run dev:legacy-ui
 npm run verify:domain
 ```
 
-### ب) اختبارات الوحدة (Unit Tests):
+### ب) اختبارات الوحدة (Unit Tests - 114 tests):
 ```bash
 cd energya-backend
 npm test
 cd ..
 ```
 
-### ج) اختبارات التكامل وE2E:
+### ج) اختبارات التكامل وE2E (83 passed, 11 todo):
 ```bash
 cd energya-backend
 npm run test:e2e
 cd ..
 ```
 
-### د) جناح مطابقة الـ Parity الكامل (34 فحصاً آلياً):
+### د) جناح مطابقة الـ Parity الكامل (95 فحصاً آلياً شاملاً كافة الـ 36 مساراً ومصفوفة الصلاحيات الخمس):
 ```bash
 npm run test:parity:phase2a
 ```
 
-### هـ) التحقق البصري من شاشات G3 بالـ Playwright:
+### هـ) التحقق البصري وسجل الشبكة لشاشات G3 بالـ Playwright عبر منفذ Vite (:5173):
 ```bash
 node scripts/parity/verify-g3-phase2a-ui.mjs
 ```
+*(يتحقق السكربت من ترويسة `X-Served-By: nest` لكافة طلبات الماستر داتا، ويحفظ لقطات الشاشة الثلاث، ويسجل كافة الطلبات الـ 103 في `docs/MIGRATION/phase-2a/network_log.json`).*
+
 
 ---
 

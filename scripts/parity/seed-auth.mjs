@@ -121,9 +121,12 @@ export async function seedAuthDatabases() {
     'standard.test@energya.local',
     'admin@parity.test',
     'limited@parity.test',
+    'granular@parity.test',
+    'writer@parity.test',
     'custA@parity.test',
     'custB@parity.test'
   ];
+
 
   const standardRoleCodes = [
     'SYSTEM_ADMINISTRATOR',
@@ -225,11 +228,16 @@ export async function seedAuthDatabases() {
     }
   }
 
+  const granularPerms = ['CABLE:CABLE_MASTER:VIEW'];
+  const writerPerms = ['CABLE:CABLE_MASTER:VIEW', 'CABLE:CABLE_MASTER:CREATE', 'CABLE:CABLE_MASTER:UPDATE'];
+
   console.log('🌱 Seeding Legacy Auth Database...');
   await seedUser(legacy, 'admin@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(legacy, 'ehab.maher@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(legacy, 'admin@parity.test', 'internal', ['ADMIN'], allAdminPerms, null);
   await seedUser(legacy, 'limited@parity.test', 'internal', ['VIEWER'], viewerPerms, null);
+  await seedUser(legacy, 'granular@parity.test', 'internal', ['TECHNICAL_OFFICE_ENGINEER'], granularPerms, null);
+  await seedUser(legacy, 'writer@parity.test', 'internal', ['TECHNICAL_OFFICE_MANAGER'], writerPerms, null);
   await seedUser(legacy, 'custA@parity.test', 'customer', [], null, ['CUST_A']);
   await seedUser(legacy, 'custB@parity.test', 'customer', [], null, ['CUST_B']);
 
@@ -238,8 +246,11 @@ export async function seedAuthDatabases() {
   await seedUser(target, 'ehab.maher@energya.com', 'internal', ['SYSTEM_ADMINISTRATOR'], allAdminPerms, null);
   await seedUser(target, 'admin@parity.test', 'internal', ['ADMIN'], allAdminPerms, null);
   await seedUser(target, 'limited@parity.test', 'internal', ['VIEWER'], viewerPerms, null);
+  await seedUser(target, 'granular@parity.test', 'internal', ['TECHNICAL_OFFICE_ENGINEER'], granularPerms, null);
+  await seedUser(target, 'writer@parity.test', 'internal', ['TECHNICAL_OFFICE_MANAGER'], writerPerms, null);
   await seedUser(target, 'custA@parity.test', 'customer', [], null, ['CUST_A']);
   await seedUser(target, 'custB@parity.test', 'customer', [], null, ['CUST_B']);
+
 
   console.log('🔄 Syncing user profile metadata from Legacy to Target...');
   const allLegacyUsers = await legacy.userAccount.findMany();

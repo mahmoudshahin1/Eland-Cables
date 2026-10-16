@@ -12,7 +12,8 @@ Source of Truth Schema: `/prisma/schema.prisma`
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومعتمدة**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| **Phase 2a** | **Master Data Read & Drums** | **36 / 36** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة 100%**: Parity كامل (34/34 فحص)، 432 كابل، 74 خامة، 4,822 BOM، 105 براميل، 60 معيار، ملف 5MB بايت ببايت، و3 لقطات Playwright |
+| **Phase 2a** | **Master Data Read & Drums** | **36 / 36** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة 100%**: Parity موسع (95/95 فحصاً مطابقاً 100%)، 36 مساراً (/master و/platform)، 5 شخصيات، فلاتر وترقيم، ملف 5MB بايت ببايت، واختبارات كسر متعمد، وPlaywright على 5173 عبر Vite proxy مع X-Served-By: nest (55/103 طلب من Nest)، وحزمة الإغلاق الأربعة في phase-2a/ جاهزة للمراجعة |
+
 | Phase 2b | Master Data CRUD, Imports, Metals | 0 / 52 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | بانتظار الاعتماد للبدء (ممنوع البدء قبل قرار المستخدم) |
 | Phase 2c | Governance & Workflow Engines | 0 / 42 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | بانتظار الاعتماد للبدء (ممنوع البدء قبل قرار المستخدم) |
 | Phase 3 | Cable Authority & Configurator | 0 / 16 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
