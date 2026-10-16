@@ -62,6 +62,7 @@ NON-NEGOTIABLE RULES
     git reset --hard, force push, deleting directories) without explicit approval.
 14. Work on a git branch per phase (migration/phase-N). Small, focused commits
     with clear messages. Never push to main.
+15. Phase Closing Protocol: At the end of every Phase or sub-phase, read and strictly execute docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md (producing the 4-file closing bundle in docs/MIGRATION/phase-<N>/). NEVER start a new Phase without the user's explicit phrase: "تمت المراجعة والـ UAT، ابدأ Phase <N+1>".
 
 GATES (a module is DONE only when all pass, with evidence)
 G1 Contract: parity harness (scripts/parity) shows 0 differences for all

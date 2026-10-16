@@ -82,10 +82,6 @@ export class AdminCustomersRepository {
     return this.prisma.customer.update({ where: { id }, data });
   }
 
-  async deleteCustomer(id: string) {
-    return this.prisma.customer.delete({ where: { id } });
-  }
-
   async findCustomerAuditLogs(id: string) {
     const customer = await this.prisma.customer.findFirst({
       where: { OR: [{ id }, { code: id }] },

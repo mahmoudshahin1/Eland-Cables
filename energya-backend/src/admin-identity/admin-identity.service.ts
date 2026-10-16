@@ -140,19 +140,6 @@ export class AdminIdentityService {
     return this.getUserById(id);
   }
 
-  async issueAdminPasswordReset(id: string, actor: RequestActor) {
-    const user = await this.repo.findUserById(id);
-    if (!user) throw new NotFoundException('User not found.');
-    const token = randomOpaqueToken();
-    await this.repo.createPasswordResetTicket(id, hashOpaqueToken(token), new Date(Date.now() + 60 * 60 * 1000));
-    const includeToken = process.env.ADMIN_RESET_TOKEN_IN_RESPONSE === 'true' && process.env.NODE_ENV !== 'production';
-    return {
-      resetIssued: true,
-      expiresInMinutes: 60,
-      ...(includeToken ? { resetToken: token } : {}),
-    };
-  }
-
   async assignRole(userId: string, roleCode: string, actor: RequestActor) {
     if (actor.id && actor.id === userId) {
       throw new ForbiddenException('You cannot assign roles to your own account.');
