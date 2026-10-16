@@ -1,7 +1,7 @@
 # Migration Status (حالة الترحيل)
 
-Last updated: 2026-10-15  
-Active Branch: `migration/phase-1`  
+Last updated: 2026-10-16  
+Active Branch: `migration/phase-2`  
 Source of Truth Schema: `/prisma/schema.prisma`
 
 ---
@@ -11,15 +11,35 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | Phase | Module | Endpoints (done/total) | G1 (Contract) | G2 (Tests) | G3 (UI) | G4 (Quality) | G5 (Docs) | Notes |
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
-| **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مقبولة مبدئيًا، بانتظار اعتماد المستخدم**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| Phase 2 | Master Data & Metals | 0 / 130 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تنقسم إلى 2a (قراءة)، 2b (استيراد/تصدير ومعادن)، 2c (حوكمة) |
+| **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومقبولة مبدئيًا**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
+| **Phase 2** | **Master Data & Metals** | **0 / 130** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | **جاري التنفيذ**: مقسمة إلى 2a (36 مسار قراءة وبراميل)، 2b (52 مسار تعديل واستيراد/تصدير ومعادن)، 2c (42 مسار حوكمة) |
 | Phase 3 | Cable Authority & Configurator | 0 / 16 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | Phase 4 | Commercial (Inquiries & Quotations) | 0 / 182 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
 | Phase 5 | Costing & Pricing Engine | 0 / 109 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | أعلى مخاطرة - Golden tests رقمية |
-| Phase 6 | Container Study & Logistics | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
+| Phase 6 | Container Study & Logistics | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | يعيد استخدام منطق البراميل من `shared/domain` |
 | Phase 7 | Workflows & Commitments | 0 / 39 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | Phase 8 | Integrations (D365, Advaris, AI) | 0 / 4 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | **الإجمالي** | **الكلي** | **51 / 585** | - | - | - | - | - | |
+
+---
+
+## 2. السجل الأمني المكتشف (Security Findings Log)
+
+| الرمز | المسارات المعنية | نوع الثغرة / الخلل في القديم | حالة الـ Parity في 2a | التوصية والقرار |
+|---|---|---|:---:|---|
+| **SEC-MD-01** | `GET /api/master/boms`<br>`GET /api/master/raw-materials` | تسريب كامل للخلطات التصنيعية (4,822 سطر BOM) وكافة الخامات (74 خامة) لأي مستخدم من نوع `customer` بسبب غياب عزل العميل وسماح `assertCanViewMasterDataCatalog` الفوري للعميل. | منقولة 1:1 لضمان تطابق الـ Parity | موثقة رسمياً. يُقترح تشديدها مستقبلاً بحظر وصول العميل (403) وقصر اطلاعه على كالوج الكابلات المنقى فقط. (بانتظار قرار المستخدم). |
+| **SEC-MD-02** | `GET /api/master/cables/:mat/attachments`<br>`GET .../:attachmentId` | مسارات قراءة وتحميل المرفقات الهندسية والملفات الثنائية متاحة للجميع بدون أي توكن مصادقة (Public No Auth) مع تخزين الملفات كـ Bytes. | منقولة 1:1 لضمان تطابق الـ Parity | موثقة رسمياً. إثبات عملي بدون توكن استرجع الملفات كاملاً. يُقترح فرض المصادقة مستقبلاً. (بانتظار قرار المستخدم). |
+
+---
+
+## 3. سجل نسخ الـ Domain والتحقق من التزامن (Domain Copies Registry)
+
+لتفادي انحراف المنطق بين واجهة React ومخدم NestJS:
+- **الملف 1**: `src/domain/drumOptimizationService.ts` ↔ `energya-backend/src/shared/domain/drumOptimizationService.ts`
+- **الملف 2**: `src/domain/drumCapacityCalculator.ts` ↔ `energya-backend/src/shared/domain/drumCapacityCalculator.ts`
+- **آلية التحقق**: سكريبت `scripts/parity/verify-domain-sync.mjs` يفحص تطابق SHA256 للنسختين ويفشل عند وجود أي اختلاف، ومربوط ضمن `npm run verify`.
+- **ملاحظة**: الملفات المنقولة كبيرة ومحمية من التضخم أو التعديل الأحادي.
+
 
 ---
 
