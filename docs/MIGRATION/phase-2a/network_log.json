@@ -1,929 +1,4356 @@
-[
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:54.487Z",
-    "url": "http://localhost:5173/src/api/httpClient.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:54.513Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:54.513Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityMapping.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:54.604Z",
-    "url": "http://localhost:5173/src/api/drumPlanApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.061Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.072Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.319Z",
-    "url": "http://localhost:5173/api/auth/login",
-    "status": 200,
-    "method": "POST",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.759Z",
-    "url": "http://localhost:5173/api/v2/inquiries?pageSize=50",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.829Z",
-    "url": "http://localhost:5173/api/v2/inquiries?pageSize=1&status=QUOTED",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.829Z",
-    "url": "http://localhost:5173/api/sales-orders",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.831Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.831Z",
-    "url": "http://localhost:5173/api/v2/inquiries?pageSize=50",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.831Z",
-    "url": "http://localhost:5173/api/v2/inquiries?pageSize=1&status=QUOTED",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.832Z",
-    "url": "http://localhost:5173/api/sales-orders",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:55.832Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:58.820Z",
-    "url": "http://localhost:5173/src/api/httpClient.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.040Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityMapping.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.041Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.132Z",
-    "url": "http://localhost:5173/src/api/drumPlanApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.433Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.441Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.569Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.726Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.818Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.819Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.915Z",
-    "url": "http://localhost:5173/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:42:59.926Z",
-    "url": "http://localhost:5173/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:00.090Z",
-    "url": "http://localhost:5173/api/v2/cables/products/facets",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:00.091Z",
-    "url": "http://localhost:5173/api/v2/cables/products/facets",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:02.977Z",
-    "url": "http://localhost:5173/src/api/httpClient.ts",
-    "status": 304,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.048Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityApi.ts",
-    "status": 304,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.048Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityMapping.ts",
-    "status": 304,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.095Z",
-    "url": "http://localhost:5173/src/api/drumPlanApi.ts",
-    "status": 304,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.247Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.275Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.276Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.278Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.435Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.436Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.437Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Customer",
-    "timestamp": "2026-10-16T11:43:03.536Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.399Z",
-    "url": "http://localhost:5173/src/api/httpClient.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.434Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.434Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityMapping.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.510Z",
-    "url": "http://localhost:5173/src/api/drumPlanApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.770Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:07.774Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.111Z",
-    "url": "http://localhost:5173/api/auth/login",
-    "status": 200,
-    "method": "POST",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.590Z",
-    "url": "http://localhost:5173/api/admin/platform/dashboard/kpis",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.590Z",
-    "url": "http://localhost:5173/api/v2/workflows/my-tasks",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.591Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.592Z",
-    "url": "http://localhost:5173/api/admin/platform/dashboard/kpis",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.593Z",
-    "url": "http://localhost:5173/api/v2/workflows/my-tasks",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:08.593Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:11.639Z",
-    "url": "http://localhost:5173/src/api/httpClient.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:11.720Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:11.720Z",
-    "url": "http://localhost:5173/src/api/cableAuthorityMapping.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:11.810Z",
-    "url": "http://localhost:5173/src/api/drumPlanApi.ts",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.077Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.083Z",
-    "url": "http://localhost:5173/api/auth/roles",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.145Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.149Z",
-    "url": "http://localhost:5173/api/auth/me",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.515Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.540Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.541Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.542Z",
-    "url": "http://localhost:5173/api/notifications",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.571Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.577Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.588Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.633Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.663Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.683Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:12.877Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.155Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.248Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.489Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.490Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.491Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.538Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.582Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.589Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.703Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.735Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:13.934Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.090Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.114Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.114Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.136Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.470Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.505Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.543Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.660Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:14.701Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:15.004Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:15.430Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:15.431Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:15.432Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:15.433Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:16.046Z",
-    "url": "http://localhost:5173/api/master/imports",
-    "status": 401,
-    "method": "GET",
-    "servedBy": "legacy/express",
-    "isNest": false
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:16.048Z",
-    "url": "http://localhost:5173/api/master/boms",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:16.216Z",
-    "url": "http://localhost:5173/api/master/drums",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:16.217Z",
-    "url": "http://localhost:5173/api/master/raw-materials",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  },
-  {
-    "session": "Admin",
-    "timestamp": "2026-10-16T11:43:16.218Z",
-    "url": "http://localhost:5173/api/master/cables",
-    "status": 200,
-    "method": "GET",
-    "servedBy": "nest",
-    "isNest": true
-  }
-]
+{
+  "generatedAt": "2026-10-17T19:34:33.041Z",
+  "ui": "http://localhost:5173",
+  "total": 483,
+  "nest": 375,
+  "failures": [],
+  "requests": [
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=1&status=QUOTED",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/sales-orders",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/sales-orders",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=1&status=QUOTED",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=50",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=50",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/v2/cables/products/facets",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Cable Catalog",
+      "method": "GET",
+      "path": "/api/v2/cables/products/facets",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "customer",
+      "screen": "Customer Drum Optimizer",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null,
+      "expectedNest": false
+    },
+    {
+      "session": "admin",
+      "screen": "Internal Master Data Hub",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest",
+      "expectedNest": true
+    }
+  ]
+}

@@ -2,7 +2,17 @@
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
 **Scope:** Phase 2a real mounted routes: 19. The 17 `/api/platform/*` aliases were removed on 2026-10-17.  
 **Date:** 2026-10-16, corrected 2026-10-17  
-**Status:** ⬜ **Not accepted.** G1 evidence is `parity_results.json` (`passed=159`, `failed=0`, `total=159`, `generatedAt=2026-10-17T14:48:38.283Z`). The verbatim blocks below are the 2026-10-16 run and are not the current close evidence. G3 has not been re-run after the proxy change.  
+**Status:** ⬜ **Not accepted.** G1–G4 passed on 2026-10-17. G5 is open because this file’s older verbatim blocks and the Runbook were not regenerated from a clean clone. User UAT is 9/9.
+
+## 0. Current evidence (2026-10-17)
+
+- G1: `parity_results.json` `passed=159` `failed=0` `total=159` `generatedAt=2026-10-17T14:48:38.283Z`. Not re-run after UAT because the harness truncates the parity databases.
+- G2 unit: `npm test` in `energya-backend` — Test Files 7 passed (7), Tests 114 passed (114), Duration 52.64s, start 22:29:09.
+- G2 e2e: `npm run test:e2e` — Test Files 10 passed (10), Tests 83 passed | 11 todo (94), Duration 73.34s, start 22:30:30.
+- G3: `node scripts/parity/verify-g3-phase2a-ui.mjs` — API requests 483, served by Nest 375, failures 0, `network_log.json` `generatedAt=2026-10-17T19:34:33.041Z`.
+- G4: `npm run build` exit 0. `npm run lint` exit 0 with warnings only. `npm run verify:domain` — 11 copies, all SYNC OK.
+
+The sections below are the 2026-10-16 run and are not the current close evidence.  
 **Protocol:** Conforms strictly to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.1)
 
 ---
