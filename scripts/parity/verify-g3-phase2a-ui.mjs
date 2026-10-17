@@ -1,132 +1,127 @@
+// G3 for Phase 2a: drive the React UI through the Vite proxy (:5173) and assert that
+//  - every request the proxy table routes to Nest carries X-Served-By: nest, and no other request does;
+//  - no API request returns 5xx, and no signed-in request returns 401/403;
+//  - each screen triggers at least one Nest-served request.
+// Hybrid mode prerequisite: legacy and Nest must share the same DATABASE_URL and JWT_SECRET,
+// otherwise a session issued by one server is rejected by the other (see phase-2a/RUNBOOK.md).
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import { isNestRoute } from './nestRoutes.mjs';
 
-const artifactsDir = 'C:/Users/mahmo/.gemini/antigravity-ide/brain/b63e1d4f-f891-4794-bac9-406597961722';
-const screenshotsDir = 'H:/Eland-Cables/docs/MIGRATION/screenshots';
-const bundleDir = 'H:/Eland-Cables/docs/MIGRATION/phase-2a';
+const UI = process.env.UI_URL || 'http://localhost:5173';
+const PASSWORD = process.env.PARITY_PASSWORD || 'Password123!';
+const screenshotsDir = 'docs/MIGRATION/screenshots';
+const bundleDir = 'docs/MIGRATION/phase-2a';
 
-fs.mkdirSync(screenshotsDir, { recursive: true });
-fs.mkdirSync(bundleDir, { recursive: true });
+const SESSIONS = [
+  {
+    name: 'customer',
+    email: 'custA@parity.test',
+    screens: [
+      { name: 'Customer Cable Catalog', url: '/customer/products', shot: 'phase2a_customer_cable_catalog.png' },
+      { name: 'Customer Drum Optimizer', url: '/customer/drum-optimizer', shot: 'phase2a_customer_drum_optimizer.png' },
+    ],
+  },
+  {
+    name: 'admin',
+    email: 'admin@energya.com',
+    screens: [{ name: 'Internal Master Data Hub', url: '/internal/master-data', shot: 'phase2a_internal_master_data_hub.png' }],
+  },
+];
 
-async function runG3Phase2aUI() {
-  console.log('🚀 Starting G3 UI Verification for Phase 2a via Vite Proxy (http://localhost:5173)...');
-  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+const networkLog = [];
+const failures = [];
 
-  const networkLog = [];
-  const results = [];
+function attachNetworkLogger(page, session, getScreen) {
+  page.on('response', (response) => {
+    const url = new URL(response.url());
+    if (!url.pathname.startsWith('/api/')) return;
+    const method = response.request().method();
+    const servedBy = response.headers()['x-served-by'] || null;
+    const entry = {
+      session,
+      screen: getScreen(),
+      method,
+      path: url.pathname + url.search,
+      status: response.status(),
+      servedBy,
+      expectedNest: isNestRoute(method, url.pathname),
+    };
+    networkLog.push(entry);
+    console.log(`  ${entry.method} ${entry.path} -> ${entry.status} (${servedBy || 'legacy'})`);
+  });
+}
 
-  function attachNetworkLogger(page, sessionName) {
-    page.on('response', async (response) => {
-      const url = response.url();
-      if (url.includes('/api/')) {
-        const headers = response.headers();
-        const servedBy = headers['x-served-by'] || headers['X-Served-By'] || 'legacy/express';
-        const status = response.status();
-        const entry = {
-          session: sessionName,
-          timestamp: new Date().toISOString(),
-          url,
-          status,
-          method: response.request().method(),
-          servedBy,
-          isNest: servedBy === 'nest',
-        };
-        networkLog.push(entry);
-        console.log(`  🌐 [API] ${entry.method} ${url} -> Status ${status} | X-Served-By: ${servedBy}`);
-      }
-    });
+function assertNetwork() {
+  for (const e of networkLog) {
+    const label = `[${e.session}/${e.screen}] ${e.method} ${e.path}`;
+    if (e.expectedNest && e.servedBy !== 'nest') failures.push(`${label}: migrated route not served by Nest`);
+    if (!e.expectedNest && e.servedBy === 'nest') failures.push(`${label}: unmigrated route served by Nest`);
+    if (e.status >= 500) failures.push(`${label}: ${e.status}`);
+    const isLogin = e.path.startsWith('/api/auth/login');
+    if (!isLogin && (e.status === 401 || e.status === 403)) failures.push(`${label}: ${e.status} for a signed-in session`);
   }
+  for (const session of SESSIONS) {
+    for (const screen of session.screens) {
+      const nest = networkLog.filter((e) => e.session === session.name && e.screen === screen.name && e.servedBy === 'nest');
+      if (nest.length === 0) failures.push(`[${session.name}/${screen.name}]: no Nest-served request`);
+    }
+  }
+}
 
+async function runSession(browser, session) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  let current = 'login';
+  attachNetworkLogger(page, session.name, () => current);
+
+  console.log(`\nLogin as ${session.email}`);
+  await page.goto(`${UI}/login`, { waitUntil: 'domcontentloaded' });
+  await page.fill('input[type="email"], input[name="email"], input[placeholder*="email" i]', session.email);
+  await page.fill('input[type="password"], input[name="password"], input[placeholder*="password" i]', PASSWORD);
+  const loginResponse = page.waitForResponse((r) => r.url().includes('/api/auth/login'), { timeout: 30_000 });
+  await page.click('button[type="submit"]');
+  const login = await loginResponse;
+  if (login.status() !== 200) failures.push(`[${session.name}] login returned ${login.status()}`);
+  await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {});
+
+  for (const screen of session.screens) {
+    current = screen.name;
+    console.log(`Screen: ${screen.name} (${screen.url})`);
+    await page.goto(`${UI}${screen.url}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {});
+    await page.screenshot({ path: path.join(screenshotsDir, screen.shot), fullPage: true });
+  }
+  await context.close();
+}
+
+async function main() {
+  fs.mkdirSync(screenshotsDir, { recursive: true });
+  fs.mkdirSync(bundleDir, { recursive: true });
+  const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
-    // -------------------------------------------------------------------------
-    // Session 1: Customer (Catalog & Drum Optimizer) via Vite (:5173)
-    // -------------------------------------------------------------------------
-    const customerContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    const custPage = await customerContext.newPage();
-    attachNetworkLogger(custPage, 'Customer');
-
-    console.log('\n1️⃣ Logging in as Customer (custA@parity.test) via http://localhost:5173/login ...');
-    await custPage.goto('http://localhost:5173/login', { waitUntil: 'domcontentloaded' });
-    await custPage.fill('input[type="email"], input[name="email"], input[placeholder*="email" i]', 'custA@parity.test');
-    await custPage.fill('input[type="password"], input[name="password"], input[placeholder*="password" i]', 'Password123!');
-    await custPage.click('button[type="submit"]');
-    await custPage.waitForTimeout(3000);
-
-    console.log('2️⃣ Navigating to Customer Cable Catalog (/customer/products)...');
-    await custPage.goto('http://localhost:5173/customer/products', { waitUntil: 'domcontentloaded' });
-    await custPage.waitForTimeout(3000);
-
-    const catalogPath = path.join(screenshotsDir, 'phase2a_customer_cable_catalog.png');
-    const catalogArtifactPath = path.join(artifactsDir, 'phase2a_customer_cable_catalog.png');
-    await custPage.screenshot({ path: catalogPath, fullPage: true });
-    fs.copyFileSync(catalogPath, catalogArtifactPath);
-    console.log('  📸 Screenshot captured: phase2a_customer_cable_catalog.png');
-    results.push({ screen: 'Customer Cable Catalog', path: catalogPath, ok: true });
-
-    console.log('3️⃣ Navigating to Customer Drum Optimizer (/customer/drum-optimizer)...');
-    await custPage.goto('http://localhost:5173/customer/drum-optimizer', { waitUntil: 'domcontentloaded' });
-    await custPage.waitForTimeout(3000);
-
-    const drumPath = path.join(screenshotsDir, 'phase2a_customer_drum_optimizer.png');
-    const drumArtifactPath = path.join(artifactsDir, 'phase2a_customer_drum_optimizer.png');
-    await custPage.screenshot({ path: drumPath, fullPage: true });
-    fs.copyFileSync(drumPath, drumArtifactPath);
-    console.log('  📸 Screenshot captured: phase2a_customer_drum_optimizer.png');
-    results.push({ screen: 'Customer Drum Optimizer', path: drumPath, ok: true });
-
-    await customerContext.close();
-
-    // -------------------------------------------------------------------------
-    // Session 2: Internal Admin (Master Data Hub) via Vite (:5173)
-    // -------------------------------------------------------------------------
-    const adminContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    const adminPage = await adminContext.newPage();
-    attachNetworkLogger(adminPage, 'Admin');
-
-    console.log('\n4️⃣ Logging in as Admin (admin@energya.com) via http://localhost:5173/login ...');
-    await adminPage.goto('http://localhost:5173/login', { waitUntil: 'domcontentloaded' });
-    await adminPage.fill('input[type="email"], input[name="email"], input[placeholder*="email" i]', 'admin@energya.com');
-    await adminPage.fill('input[type="password"], input[name="password"], input[placeholder*="password" i]', 'Password123!');
-    await adminPage.click('button[type="submit"]');
-    await adminPage.waitForTimeout(3000);
-
-    console.log('5️⃣ Navigating to Internal Master Data Hub (/internal/master-data)...');
-    await adminPage.goto('http://localhost:5173/internal/master-data', { waitUntil: 'domcontentloaded' });
-
-    await adminPage.waitForTimeout(3000);
-
-    const masterDataPath = path.join(screenshotsDir, 'phase2a_internal_master_data_hub.png');
-    const masterDataArtifactPath = path.join(artifactsDir, 'phase2a_internal_master_data_hub.png');
-    await adminPage.screenshot({ path: masterDataPath, fullPage: true });
-    fs.copyFileSync(masterDataPath, masterDataArtifactPath);
-    console.log('  📸 Screenshot captured: phase2a_internal_master_data_hub.png');
-    results.push({ screen: 'Internal Master Data Hub', path: masterDataPath, ok: true });
-
-    await adminContext.close();
-
-    // Save Network Log
-    const networkLogPath = path.join(bundleDir, 'network_log.json');
-    fs.writeFileSync(networkLogPath, JSON.stringify(networkLog, null, 2), 'utf-8');
-    console.log(`\n📄 Network log saved to: ${networkLogPath} (${networkLog.length} API requests recorded)`);
-
-    const nestRequests = networkLog.filter((n) => n.servedBy === 'nest');
-    console.log(`✅ Requests served by NestJS (X-Served-By: nest): ${nestRequests.length} / ${networkLog.length}`);
-
-    console.log('\n✨ G3 Playwright UI Verification completed successfully! All 3 screenshots and network log verified.\n');
-  } catch (err) {
-    console.error('❌ G3 Verification error:', err);
-    throw err;
+    for (const session of SESSIONS) await runSession(browser, session);
   } finally {
     await browser.close();
   }
 
-  return { results, networkLog };
+  assertNetwork();
+  const nestCount = networkLog.filter((e) => e.servedBy === 'nest').length;
+  fs.writeFileSync(
+    path.join(bundleDir, 'network_log.json'),
+    JSON.stringify({ generatedAt: new Date().toISOString(), ui: UI, total: networkLog.length, nest: nestCount, failures, requests: networkLog }, null, 2)
+  );
+  console.log(`\nAPI requests: ${networkLog.length}, served by Nest: ${nestCount}`);
+  if (failures.length) {
+    console.error(`G3 FAILED with ${failures.length} problem(s):`);
+    for (const f of failures) console.error(`  - ${f}`);
+    process.exit(1);
+  }
+  console.log('G3 passed.');
 }
 
-runG3Phase2aUI()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

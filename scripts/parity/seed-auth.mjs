@@ -105,8 +105,8 @@ async function seedUser(prisma, email, type, roles, permissions, scopes) {
 }
 
 export async function seedAuthDatabases() {
-  const legacy = new LegacyPrisma({ datasources: { db: { url: process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public' } } });
-  const target = new TargetPrisma({ datasources: { db: { url: process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public' } } });
+  const legacy = new LegacyPrisma({ datasources: { db: { url: process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public&connect_timeout=60' } } });
+  const target = new TargetPrisma({ datasources: { db: { url: process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public&connect_timeout=60' } } });
 
   console.log('🧹 Cleaning ephemeral test records on both DBs...');
   const standardUserEmails = [

@@ -1,609 +1,497 @@
 # Energya Connect: جرد الـ Endpoints الكامل (Endpoint Inventory)
 
 > تم إنشاء هذا الجرد آلياً من فحص `server.ts` وجميع ملفات `src/server/*Routes.ts`.
-> إجمالي الـ Endpoints المحصورة: **585** endpoint.
+> إجمالي الـ Endpoints المحصورة: **472** endpoint.
+> المخدومة من NestJS حسب `scripts/parity/nestRoutes.mjs`: **70** endpoint.
 
 ## 1. توزيع الـ Endpoints حسب المراحل (Phases)
 
-| Phase | الوصف | عدد الـ Endpoints | النسبة | المستهدف في NestJS |
-|---|---|---|---|---|
-| Phase 0 | الأساس والأمان وفحص الصحة | **2** | 0.3% | `platform-health / common` |
-| Phase 1 | الهوية والمصادقة والصلاحيات والعملاء | **49** | 8.4% | `auth, admin-identity, admin-customers, common/rbac` |
-| Phase 2 | البيانات الأساسية والمعادن والاستيراد | **130** | 22.2% | `master-data, market-metal, master-data-export` |
-| Phase 3 | هيئة الكابلات والبحث والمكتب الفني | **16** | 2.7% | `cable-authority, technical-office` |
-| Phase 4 | الطلبات التجارية والتسعير وعروض الأسعار | **182** | 31.1% | `inquiries, quotations, commercial-pricing` |
-| Phase 5 | التكاليف وحسابات الكابلات (Costing) | **109** | 18.6% | `costing, admin-costing, platform-admin` |
-| Phase 6 | دراسة الحاويات والشحن والعرض المالي | **54** | 9.2% | `container-study, shipping, financial-offer` |
-| Phase 7 | سير العمل والإشعارات وخدمة العملاء والارتباطات | **39** | 6.7% | `workflows, notifications, customer-service, commitments` |
-| Phase 8 | الذكاء الاصطناعي والتكاملات الخارجية والمساعدات | **4** | 0.7% | `ai-assistant, d365, advaris, core-platform` |
-| **الإجمالي** | **جميع المراحل** | **585** | **100%** | - |
+| Phase | الوصف | عدد الـ Endpoints | النسبة | على NestJS | المستهدف في NestJS |
+|---|---|---|---|---|---|
+| Phase 0 | الأساس والأمان وفحص الصحة | **2** | 0.4% | 0 | `platform-health / common` |
+| Phase 1 | الهوية والمصادقة والصلاحيات والعملاء | **49** | 10.4% | 49 | `auth, admin-identity, admin-customers, common/rbac` |
+| Phase 2 | البيانات الأساسية والمعادن والاستيراد | **74** | 15.7% | 19 | `master-data, market-metal, master-data-export` |
+| Phase 3 | هيئة الكابلات والبحث والمكتب الفني | **11** | 2.3% | 2 | `cable-authority, technical-office` |
+| Phase 4 | الطلبات التجارية والتسعير وعروض الأسعار | **116** | 24.6% | 0 | `inquiries, quotations, commercial-pricing` |
+| Phase 5 | التكاليف وحسابات الكابلات (Costing) | **109** | 23.1% | 0 | `costing, admin-costing, platform-admin` |
+| Phase 6 | دراسة الحاويات والشحن والعرض المالي | **54** | 11.4% | 0 | `container-study, shipping, financial-offer` |
+| Phase 7 | سير العمل والإشعارات وخدمة العملاء والارتباطات | **54** | 11.4% | 0 | `workflows, notifications, customer-service, commitments` |
+| Phase 8 | الذكاء الاصطناعي والتكاملات الخارجية والمساعدات | **3** | 0.6% | 0 | `ai-assistant, d365, advaris, core-platform` |
+| **الإجمالي** | **جميع المراحل** | **472** | **100%** | **70** | - |
 
 ## 2. جدول الـ Endpoints المفصل
 
-| # | Method | Path | Legacy Handler File:Line | Target Phase | Target NestJS Module | Middlewares / Guards |
-|---|---|---|---|---|---|---|
-| 1 | `GET` | `*` | [server.ts:157](../../server.ts#L157) | Phase 8 | `core-platform` | - |
-| 2 | `GET` | `/api/admin/costing/approval-queue` | [src/server/costingAdminRoutes.ts:1663](../../src/server/costingAdminRoutes.ts#L1663) | Phase 5 | `costing` | - |
-| 3 | `GET` | `/api/admin/costing/audit` | [src/server/costingAdminRoutes.ts:1645](../../src/server/costingAdminRoutes.ts#L1645) | Phase 5 | `costing` | - |
-| 4 | `GET` | `/api/admin/costing/bom-scrap` | [src/server/costingAdminRoutes.ts:1238](../../src/server/costingAdminRoutes.ts#L1238) | Phase 5 | `costing` | - |
-| 5 | `PUT` | `/api/admin/costing/bom-scrap` | [src/server/costingAdminRoutes.ts:1257](../../src/server/costingAdminRoutes.ts#L1257) | Phase 5 | `costing` | - |
-| 6 | `GET` | `/api/admin/costing/bom-scrap/cables` | [src/server/costingAdminRoutes.ts:1163](../../src/server/costingAdminRoutes.ts#L1163) | Phase 5 | `costing` | - |
-| 7 | `POST` | `/api/admin/costing/bom-scrap/import/commit` | [src/server/costingAdminRoutes.ts:1219](../../src/server/costingAdminRoutes.ts#L1219) | Phase 5 | `costing` | - |
-| 8 | `POST` | `/api/admin/costing/bom-scrap/import/preview` | [src/server/costingAdminRoutes.ts:1200](../../src/server/costingAdminRoutes.ts#L1200) | Phase 5 | `costing` | - |
-| 9 | `GET` | `/api/admin/costing/bom-scrap/template` | [src/server/costingAdminRoutes.ts:1179](../../src/server/costingAdminRoutes.ts#L1179) | Phase 5 | `costing` | - |
-| 10 | `POST` | `/api/admin/costing/bulk-import/commit` | [src/server/costingAdminRoutes.ts:640](../../src/server/costingAdminRoutes.ts#L640) | Phase 5 | `costing` | - |
-| 11 | `POST` | `/api/admin/costing/bulk-import/preview` | [src/server/costingAdminRoutes.ts:598](../../src/server/costingAdminRoutes.ts#L598) | Phase 5 | `costing` | - |
-| 12 | `GET` | `/api/admin/costing/bulk-import/template/:kind` | [src/server/costingAdminRoutes.ts:580](../../src/server/costingAdminRoutes.ts#L580) | Phase 5 | `costing` | - |
-| 13 | `POST` | `/api/admin/costing/calculator/preview` | [src/server/costingAdminRoutes.ts:1626](../../src/server/costingAdminRoutes.ts#L1626) | Phase 5 | `costing` | - |
-| 14 | `GET` | `/api/admin/costing/components` | [src/server/costingAdminRoutes.ts:830](../../src/server/costingAdminRoutes.ts#L830) | Phase 5 | `costing` | - |
-| 15 | `POST` | `/api/admin/costing/components` | [src/server/costingAdminRoutes.ts:848](../../src/server/costingAdminRoutes.ts#L848) | Phase 5 | `costing` | - |
-| 16 | `PATCH` | `/api/admin/costing/components/:id` | [src/server/costingAdminRoutes.ts:863](../../src/server/costingAdminRoutes.ts#L863) | Phase 5 | `costing` | - |
-| 17 | `GET` | `/api/admin/costing/configurations` | [src/server/costingAdminRoutes.ts:710](../../src/server/costingAdminRoutes.ts#L710) | Phase 5 | `costing` | - |
-| 18 | `POST` | `/api/admin/costing/configurations` | [src/server/costingAdminRoutes.ts:725](../../src/server/costingAdminRoutes.ts#L725) | Phase 5 | `costing` | - |
-| 19 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/activate` | [src/server/costingAdminRoutes.ts:759](../../src/server/costingAdminRoutes.ts#L759) | Phase 5 | `costing` | - |
-| 20 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/approve` | [src/server/costingAdminRoutes.ts:1110](../../src/server/costingAdminRoutes.ts#L1110) | Phase 5 | `costing` | - |
-| 21 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/submit` | [src/server/costingAdminRoutes.ts:1095](../../src/server/costingAdminRoutes.ts#L1095) | Phase 5 | `costing` | - |
-| 22 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/validate` | [src/server/costingAdminRoutes.ts:1080](../../src/server/costingAdminRoutes.ts#L1080) | Phase 5 | `costing` | - |
-| 23 | `POST` | `/api/admin/costing/configurations/:id/versions` | [src/server/costingAdminRoutes.ts:744](../../src/server/costingAdminRoutes.ts#L744) | Phase 5 | `costing` | - |
-| 24 | `GET` | `/api/admin/costing/currencies` | [src/server/costingAdminRoutes.ts:247](../../src/server/costingAdminRoutes.ts#L247) | Phase 5 | `costing` | - |
-| 25 | `POST` | `/api/admin/costing/currencies` | [src/server/costingAdminRoutes.ts:264](../../src/server/costingAdminRoutes.ts#L264) | Phase 5 | `costing` | - |
-| 26 | `DELETE` | `/api/admin/costing/currencies/:code` | [src/server/costingAdminRoutes.ts:299](../../src/server/costingAdminRoutes.ts#L299) | Phase 5 | `costing` | - |
-| 27 | `PATCH` | `/api/admin/costing/currencies/:code` | [src/server/costingAdminRoutes.ts:283](../../src/server/costingAdminRoutes.ts#L283) | Phase 5 | `costing` | - |
-| 28 | `POST` | `/api/admin/costing/currencies/:code/actions` | [src/server/costingAdminRoutes.ts:315](../../src/server/costingAdminRoutes.ts#L315) | Phase 5 | `costing` | - |
-| 29 | `POST` | `/api/admin/costing/decision-5/sign-off` | [src/server/costingAdminRoutes.ts:1763](../../src/server/costingAdminRoutes.ts#L1763) | Phase 5 | `costing` | - |
-| 30 | `GET` | `/api/admin/costing/exchange-rates` | [src/server/costingAdminRoutes.ts:1460](../../src/server/costingAdminRoutes.ts#L1460) | Phase 5 | `costing` | - |
-| 31 | `POST` | `/api/admin/costing/exchange-rates` | [src/server/costingAdminRoutes.ts:1493](../../src/server/costingAdminRoutes.ts#L1493) | Phase 5 | `costing` | - |
-| 32 | `GET` | `/api/admin/costing/exchange-rates/:id` | [src/server/costingAdminRoutes.ts:1477](../../src/server/costingAdminRoutes.ts#L1477) | Phase 5 | `costing` | - |
-| 33 | `PATCH` | `/api/admin/costing/exchange-rates/:id` | [src/server/costingAdminRoutes.ts:1512](../../src/server/costingAdminRoutes.ts#L1512) | Phase 5 | `costing` | - |
-| 34 | `POST` | `/api/admin/costing/exchange-rates/:id/activate` | [src/server/costingAdminRoutes.ts:1588](../../src/server/costingAdminRoutes.ts#L1588) | Phase 5 | `costing` | - |
-| 35 | `POST` | `/api/admin/costing/exchange-rates/:id/approve` | [src/server/costingAdminRoutes.ts:1573](../../src/server/costingAdminRoutes.ts#L1573) | Phase 5 | `costing` | - |
-| 36 | `POST` | `/api/admin/costing/exchange-rates/:id/submit` | [src/server/costingAdminRoutes.ts:1542](../../src/server/costingAdminRoutes.ts#L1542) | Phase 5 | `costing` | - |
-| 37 | `POST` | `/api/admin/costing/exchange-rates/:id/validate` | [src/server/costingAdminRoutes.ts:1527](../../src/server/costingAdminRoutes.ts#L1527) | Phase 5 | `costing` | - |
-| 38 | `POST` | `/api/admin/costing/exchange-rates/bulk-approve` | [src/server/costingAdminRoutes.ts:1557](../../src/server/costingAdminRoutes.ts#L1557) | Phase 5 | `costing` | - |
-| 39 | `GET` | `/api/admin/costing/formulas` | [src/server/costingAdminRoutes.ts:882](../../src/server/costingAdminRoutes.ts#L882) | Phase 5 | `costing` | - |
-| 40 | `POST` | `/api/admin/costing/formulas` | [src/server/costingAdminRoutes.ts:963](../../src/server/costingAdminRoutes.ts#L963) | Phase 5 | `costing` | - |
-| 41 | `GET` | `/api/admin/costing/formulas/:id` | [src/server/costingAdminRoutes.ts:947](../../src/server/costingAdminRoutes.ts#L947) | Phase 5 | `costing` | - |
-| 42 | `PATCH` | `/api/admin/costing/formulas/:id` | [src/server/costingAdminRoutes.ts:982](../../src/server/costingAdminRoutes.ts#L982) | Phase 5 | `costing` | - |
-| 43 | `POST` | `/api/admin/costing/formulas/:id/activate` | [src/server/costingAdminRoutes.ts:1005](../../src/server/costingAdminRoutes.ts#L1005) | Phase 5 | `costing` | - |
-| 44 | `POST` | `/api/admin/costing/formulas/:id/approve` | [src/server/costingAdminRoutes.ts:1144](../../src/server/costingAdminRoutes.ts#L1144) | Phase 5 | `costing` | - |
-| 45 | `POST` | `/api/admin/costing/formulas/:id/deactivate` | [src/server/costingAdminRoutes.ts:1020](../../src/server/costingAdminRoutes.ts#L1020) | Phase 5 | `costing` | - |
-| 46 | `POST` | `/api/admin/costing/formulas/:id/submit` | [src/server/costingAdminRoutes.ts:1129](../../src/server/costingAdminRoutes.ts#L1129) | Phase 5 | `costing` | - |
-| 47 | `POST` | `/api/admin/costing/formulas/preview` | [src/server/costingAdminRoutes.ts:923](../../src/server/costingAdminRoutes.ts#L923) | Phase 5 | `costing` | - |
-| 48 | `POST` | `/api/admin/costing/formulas/validate` | [src/server/costingAdminRoutes.ts:900](../../src/server/costingAdminRoutes.ts#L900) | Phase 5 | `costing` | - |
-| 49 | `GET` | `/api/admin/costing/layers` | [src/server/costingAdminRoutes.ts:1058](../../src/server/costingAdminRoutes.ts#L1058) | Phase 5 | `costing` | - |
-| 50 | `GET` | `/api/admin/costing/lookups` | [src/server/costingAdminRoutes.ts:1285](../../src/server/costingAdminRoutes.ts#L1285) | Phase 5 | `costing` | - |
-| 51 | `GET` | `/api/admin/costing/market-metal-price-defaults` | [src/server/costingAdminRoutes.ts:352](../../src/server/costingAdminRoutes.ts#L352) | Phase 5 | `costing` | - |
-| 52 | `POST` | `/api/admin/costing/market-metal-price-defaults` | [src/server/costingAdminRoutes.ts:385](../../src/server/costingAdminRoutes.ts#L385) | Phase 5 | `costing` | - |
-| 53 | `GET` | `/api/admin/costing/market-metal-price-defaults/:id` | [src/server/costingAdminRoutes.ts:400](../../src/server/costingAdminRoutes.ts#L400) | Phase 5 | `costing` | - |
-| 54 | `PATCH` | `/api/admin/costing/market-metal-price-defaults/:id` | [src/server/costingAdminRoutes.ts:431](../../src/server/costingAdminRoutes.ts#L431) | Phase 5 | `costing` | - |
-| 55 | `POST` | `/api/admin/costing/market-metal-price-defaults/:id/actions` | [src/server/costingAdminRoutes.ts:446](../../src/server/costingAdminRoutes.ts#L446) | Phase 5 | `costing` | - |
-| 56 | `GET` | `/api/admin/costing/market-metal-price-defaults/:id/audit` | [src/server/costingAdminRoutes.ts:416](../../src/server/costingAdminRoutes.ts#L416) | Phase 5 | `costing` | - |
-| 57 | `GET` | `/api/admin/costing/market-metal-price-defaults/active` | [src/server/costingAdminRoutes.ts:370](../../src/server/costingAdminRoutes.ts#L370) | Phase 5 | `costing` | - |
-| 58 | `GET` | `/api/admin/costing/metal-cost-components` | [src/server/costingAdminRoutes.ts:469](../../src/server/costingAdminRoutes.ts#L469) | Phase 5 | `costing` | - |
-| 59 | `POST` | `/api/admin/costing/metal-cost-components` | [src/server/costingAdminRoutes.ts:496](../../src/server/costingAdminRoutes.ts#L496) | Phase 5 | `costing` | - |
-| 60 | `GET` | `/api/admin/costing/metal-cost-components/:id` | [src/server/costingAdminRoutes.ts:511](../../src/server/costingAdminRoutes.ts#L511) | Phase 5 | `costing` | - |
-| 61 | `PATCH` | `/api/admin/costing/metal-cost-components/:id` | [src/server/costingAdminRoutes.ts:542](../../src/server/costingAdminRoutes.ts#L542) | Phase 5 | `costing` | - |
-| 62 | `POST` | `/api/admin/costing/metal-cost-components/:id/actions` | [src/server/costingAdminRoutes.ts:557](../../src/server/costingAdminRoutes.ts#L557) | Phase 5 | `costing` | - |
-| 63 | `GET` | `/api/admin/costing/metal-cost-components/:id/audit` | [src/server/costingAdminRoutes.ts:527](../../src/server/costingAdminRoutes.ts#L527) | Phase 5 | `costing` | - |
-| 64 | `GET` | `/api/admin/costing/methods` | [src/server/costingAdminRoutes.ts:1039](../../src/server/costingAdminRoutes.ts#L1039) | Phase 5 | `costing` | - |
-| 65 | `POST` | `/api/admin/costing/preview` | [src/server/costingAdminRoutes.ts:1607](../../src/server/costingAdminRoutes.ts#L1607) | Phase 5 | `costing` | - |
-| 66 | `GET` | `/api/admin/costing/production-readiness` | [src/server/costingAdminRoutes.ts:1778](../../src/server/costingAdminRoutes.ts#L1778) | Phase 5 | `costing` | - |
-| 67 | `GET` | `/api/admin/costing/raw-material-prices` | [src/server/costingAdminRoutes.ts:1693](../../src/server/costingAdminRoutes.ts#L1693) | Phase 5 | `costing` | - |
-| 68 | `POST` | `/api/admin/costing/raw-material-prices` | [src/server/costingAdminRoutes.ts:1712](../../src/server/costingAdminRoutes.ts#L1712) | Phase 5 | `costing` | - |
-| 69 | `POST` | `/api/admin/costing/raw-material-prices/:id/actions` | [src/server/costingAdminRoutes.ts:1743](../../src/server/costingAdminRoutes.ts#L1743) | Phase 5 | `costing` | - |
-| 70 | `POST` | `/api/admin/costing/raw-material-prices/bulk-approve` | [src/server/costingAdminRoutes.ts:1727](../../src/server/costingAdminRoutes.ts#L1727) | Phase 5 | `costing` | - |
-| 71 | `GET` | `/api/admin/costing/raw-material-prices/workbook-candidates` | [src/server/costingAdminRoutes.ts:1678](../../src/server/costingAdminRoutes.ts#L1678) | Phase 5 | `costing` | - |
-| 72 | `POST` | `/api/admin/costing/raw-materials/classify-suggested` | [src/server/costingAdminRoutes.ts:335](../../src/server/costingAdminRoutes.ts#L335) | Phase 5 | `costing` | - |
-| 73 | `GET` | `/api/admin/costing/readiness` | [src/server/costingAdminRoutes.ts:1864](../../src/server/costingAdminRoutes.ts#L1864) | Phase 5 | `costing` | - |
-| 74 | `GET` | `/api/admin/costing/readiness/cables` | [src/server/costingAdminRoutes.ts:1826](../../src/server/costingAdminRoutes.ts#L1826) | Phase 5 | `costing` | - |
-| 75 | `GET` | `/api/admin/costing/readiness/cables/:materialNumber` | [src/server/costingAdminRoutes.ts:1806](../../src/server/costingAdminRoutes.ts#L1806) | Phase 5 | `costing` | - |
-| 76 | `GET` | `/api/admin/costing/readiness/golden-regression` | [src/server/costingAdminRoutes.ts:1850](../../src/server/costingAdminRoutes.ts#L1850) | Phase 5 | `costing` | - |
-| 77 | `GET` | `/api/admin/costing/readiness/summary` | [src/server/costingAdminRoutes.ts:1792](../../src/server/costingAdminRoutes.ts#L1792) | Phase 5 | `costing` | - |
-| 78 | `GET` | `/api/admin/costing/scrap-rules` | [src/server/costingAdminRoutes.ts:1307](../../src/server/costingAdminRoutes.ts#L1307) | Phase 5 | `costing` | - |
-| 79 | `POST` | `/api/admin/costing/scrap-rules` | [src/server/costingAdminRoutes.ts:1346](../../src/server/costingAdminRoutes.ts#L1346) | Phase 5 | `costing` | - |
-| 80 | `GET` | `/api/admin/costing/scrap-rules/:id` | [src/server/costingAdminRoutes.ts:1330](../../src/server/costingAdminRoutes.ts#L1330) | Phase 5 | `costing` | - |
-| 81 | `PATCH` | `/api/admin/costing/scrap-rules/:id` | [src/server/costingAdminRoutes.ts:1365](../../src/server/costingAdminRoutes.ts#L1365) | Phase 5 | `costing` | - |
-| 82 | `POST` | `/api/admin/costing/scrap-rules/:id/activate` | [src/server/costingAdminRoutes.ts:1441](../../src/server/costingAdminRoutes.ts#L1441) | Phase 5 | `costing` | - |
-| 83 | `POST` | `/api/admin/costing/scrap-rules/:id/approve` | [src/server/costingAdminRoutes.ts:1426](../../src/server/costingAdminRoutes.ts#L1426) | Phase 5 | `costing` | - |
-| 84 | `POST` | `/api/admin/costing/scrap-rules/:id/submit` | [src/server/costingAdminRoutes.ts:1395](../../src/server/costingAdminRoutes.ts#L1395) | Phase 5 | `costing` | - |
-| 85 | `POST` | `/api/admin/costing/scrap-rules/:id/validate` | [src/server/costingAdminRoutes.ts:1380](../../src/server/costingAdminRoutes.ts#L1380) | Phase 5 | `costing` | - |
-| 86 | `POST` | `/api/admin/costing/scrap-rules/bulk-approve` | [src/server/costingAdminRoutes.ts:1410](../../src/server/costingAdminRoutes.ts#L1410) | Phase 5 | `costing` | - |
-| 87 | `POST` | `/api/admin/costing/validate` | [src/server/costingAdminRoutes.ts:1885](../../src/server/costingAdminRoutes.ts#L1885) | Phase 5 | `costing` | - |
-| 88 | `GET` | `/api/admin/costing/variables` | [src/server/costingAdminRoutes.ts:778](../../src/server/costingAdminRoutes.ts#L778) | Phase 5 | `costing` | - |
-| 89 | `POST` | `/api/admin/costing/variables` | [src/server/costingAdminRoutes.ts:796](../../src/server/costingAdminRoutes.ts#L796) | Phase 5 | `costing` | - |
-| 90 | `PATCH` | `/api/admin/costing/variables/:id` | [src/server/costingAdminRoutes.ts:811](../../src/server/costingAdminRoutes.ts#L811) | Phase 5 | `costing` | - |
-| 91 | `GET` | `/api/admin/costing/workspace/dashboard` | [src/server/costingAdminRoutes.ts:232](../../src/server/costingAdminRoutes.ts#L232) | Phase 5 | `costing` | - |
-| 92 | `GET` | `/api/admin/customer-reference-masters` | [src/server/adminCustomerRoutes.ts:66](../../src/server/adminCustomerRoutes.ts#L66) | Phase 1 | `admin-customers` | - |
-| 93 | `GET` | `/api/admin/customer-users` | [src/server/adminCustomerRoutes.ts:152](../../src/server/adminCustomerRoutes.ts#L152) | Phase 1 | `admin-customers` | - |
-| 94 | `POST` | `/api/admin/customer-users` | [src/server/adminCustomerRoutes.ts:167](../../src/server/adminCustomerRoutes.ts#L167) | Phase 1 | `admin-customers` | - |
-| 95 | `PATCH` | `/api/admin/customer-users/:id` | [src/server/adminCustomerRoutes.ts:183](../../src/server/adminCustomerRoutes.ts#L183) | Phase 1 | `admin-customers` | - |
-| 96 | `POST` | `/api/admin/customer-users/:id/unassign` | [src/server/adminCustomerRoutes.ts:195](../../src/server/adminCustomerRoutes.ts#L195) | Phase 1 | `admin-customers` | - |
-| 97 | `GET` | `/api/admin/customers` | [src/server/adminCustomerRoutes.ts:37](../../src/server/adminCustomerRoutes.ts#L37) | Phase 1 | `admin-customers` | - |
-| 98 | `POST` | `/api/admin/customers` | [src/server/adminCustomerRoutes.ts:76](../../src/server/adminCustomerRoutes.ts#L76) | Phase 1 | `admin-customers` | - |
-| 99 | `DELETE` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:140](../../src/server/adminCustomerRoutes.ts#L140) | Phase 1 | `admin-customers` | - |
-| 100 | `GET` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:97](../../src/server/adminCustomerRoutes.ts#L97) | Phase 1 | `admin-customers` | - |
-| 101 | `PATCH` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:107](../../src/server/adminCustomerRoutes.ts#L107) | Phase 1 | `admin-customers` | - |
-| 102 | `POST` | `/api/admin/customers/:id/activate` | [src/server/adminCustomerRoutes.ts:118](../../src/server/adminCustomerRoutes.ts#L118) | Phase 1 | `admin-customers` | - |
-| 103 | `GET` | `/api/admin/customers/:id/audit` | [src/server/adminCustomerRoutes.ts:87](../../src/server/adminCustomerRoutes.ts#L87) | Phase 1 | `admin-customers` | - |
-| 104 | `POST` | `/api/admin/customers/:id/deactivate` | [src/server/adminCustomerRoutes.ts:129](../../src/server/adminCustomerRoutes.ts#L129) | Phase 1 | `admin-customers` | - |
-| 105 | `GET` | `/api/admin/customers/export` | [src/server/adminCustomerRoutes.ts:52](../../src/server/adminCustomerRoutes.ts#L52) | Phase 1 | `admin-customers` | - |
-| 106 | `GET` | `/api/admin/permissions` | [src/server/adminIdentityRoutes.ts:264](../../src/server/adminIdentityRoutes.ts#L264) | Phase 1 | `admin-identity` | - |
-| 107 | `GET` | `/api/admin/permissions/matrix` | [src/server/adminIdentityRoutes.ts:274](../../src/server/adminIdentityRoutes.ts#L274) | Phase 1 | `admin-identity` | - |
-| 108 | `GET` | `/api/admin/platform/costing/logistics-rules` | [src/server/platformAdminRoutes.ts:82](../../src/server/platformAdminRoutes.ts#L82) | Phase 5 | `costing` | - |
-| 109 | `POST` | `/api/admin/platform/costing/logistics-rules` | [src/server/platformAdminRoutes.ts:93](../../src/server/platformAdminRoutes.ts#L93) | Phase 5 | `costing` | - |
-| 110 | `GET` | `/api/admin/platform/costing/metal-rates` | [src/server/platformAdminRoutes.ts:59](../../src/server/platformAdminRoutes.ts#L59) | Phase 5 | `costing` | - |
-| 111 | `POST` | `/api/admin/platform/costing/metal-rates` | [src/server/platformAdminRoutes.ts:70](../../src/server/platformAdminRoutes.ts#L70) | Phase 5 | `costing` | - |
-| 112 | `GET` | `/api/admin/platform/costing/packing-rules` | [src/server/platformAdminRoutes.ts:105](../../src/server/platformAdminRoutes.ts#L105) | Phase 5 | `costing` | - |
-| 113 | `POST` | `/api/admin/platform/costing/packing-rules` | [src/server/platformAdminRoutes.ts:116](../../src/server/platformAdminRoutes.ts#L116) | Phase 5 | `costing` | - |
-| 114 | `GET` | `/api/admin/platform/dashboard/kpis` | [src/server/platformAdminRoutes.ts:47](../../src/server/platformAdminRoutes.ts#L47) | Phase 5 | `costing` | - |
-| 115 | `GET` | `/api/admin/platform/fields` | [src/server/platformAdminRoutes.ts:128](../../src/server/platformAdminRoutes.ts#L128) | Phase 5 | `costing` | - |
-| 116 | `POST` | `/api/admin/platform/fields` | [src/server/platformAdminRoutes.ts:140](../../src/server/platformAdminRoutes.ts#L140) | Phase 5 | `costing` | - |
-| 117 | `GET` | `/api/admin/platform/notifications/rules` | [src/server/platformAdminRoutes.ts:152](../../src/server/platformAdminRoutes.ts#L152) | Phase 5 | `costing` | - |
-| 118 | `POST` | `/api/admin/platform/notifications/rules` | [src/server/platformAdminRoutes.ts:163](../../src/server/platformAdminRoutes.ts#L163) | Phase 5 | `costing` | - |
-| 119 | `GET` | `/api/admin/platform/reports` | [src/server/platformAdminRoutes.ts:175](../../src/server/platformAdminRoutes.ts#L175) | Phase 5 | `costing` | - |
-| 120 | `POST` | `/api/admin/platform/reports` | [src/server/platformAdminRoutes.ts:186](../../src/server/platformAdminRoutes.ts#L186) | Phase 5 | `costing` | - |
-| 121 | `POST` | `/api/admin/platform/reports/:code/run` | [src/server/platformAdminRoutes.ts:197](../../src/server/platformAdminRoutes.ts#L197) | Phase 5 | `costing` | - |
-| 122 | `GET` | `/api/admin/roles` | [src/server/adminIdentityRoutes.ts:171](../../src/server/adminIdentityRoutes.ts#L171) | Phase 1 | `admin-identity` | - |
-| 123 | `POST` | `/api/admin/roles` | [src/server/adminIdentityRoutes.ts:181](../../src/server/adminIdentityRoutes.ts#L181) | Phase 1 | `admin-identity` | - |
-| 124 | `GET` | `/api/admin/roles/:id` | [src/server/adminIdentityRoutes.ts:191](../../src/server/adminIdentityRoutes.ts#L191) | Phase 1 | `admin-identity` | - |
-| 125 | `PATCH` | `/api/admin/roles/:id` | [src/server/adminIdentityRoutes.ts:203](../../src/server/adminIdentityRoutes.ts#L203) | Phase 1 | `admin-identity` | - |
-| 126 | `POST` | `/api/admin/roles/:id/activate` | [src/server/adminIdentityRoutes.ts:212](../../src/server/adminIdentityRoutes.ts#L212) | Phase 1 | `admin-identity` | - |
-| 127 | `POST` | `/api/admin/roles/:id/deactivate` | [src/server/adminIdentityRoutes.ts:221](../../src/server/adminIdentityRoutes.ts#L221) | Phase 1 | `admin-identity` | - |
-| 128 | `GET` | `/api/admin/roles/:id/permissions` | [src/server/adminIdentityRoutes.ts:242](../../src/server/adminIdentityRoutes.ts#L242) | Phase 1 | `admin-identity` | - |
-| 129 | `PUT` | `/api/admin/roles/:id/permissions` | [src/server/adminIdentityRoutes.ts:254](../../src/server/adminIdentityRoutes.ts#L254) | Phase 1 | `admin-identity` | - |
-| 130 | `GET` | `/api/admin/roles/:id/users` | [src/server/adminIdentityRoutes.ts:230](../../src/server/adminIdentityRoutes.ts#L230) | Phase 1 | `admin-identity` | - |
-| 131 | `GET` | `/api/admin/security` | [src/server/adminIdentityRoutes.ts:288](../../src/server/adminIdentityRoutes.ts#L288) | Phase 1 | `admin-identity` | - |
-| 132 | `GET` | `/api/admin/users` | [src/server/adminIdentityRoutes.ts:40](../../src/server/adminIdentityRoutes.ts#L40) | Phase 1 | `admin-identity` | - |
-| 133 | `POST` | `/api/admin/users` | [src/server/adminIdentityRoutes.ts:59](../../src/server/adminIdentityRoutes.ts#L59) | Phase 1 | `admin-identity` | - |
-| 134 | `GET` | `/api/admin/users/:id` | [src/server/adminIdentityRoutes.ts:85](../../src/server/adminIdentityRoutes.ts#L85) | Phase 1 | `admin-identity` | - |
-| 135 | `PATCH` | `/api/admin/users/:id` | [src/server/adminIdentityRoutes.ts:97](../../src/server/adminIdentityRoutes.ts#L97) | Phase 1 | `admin-identity` | - |
-| 136 | `POST` | `/api/admin/users/:id/activate` | [src/server/adminIdentityRoutes.ts:107](../../src/server/adminIdentityRoutes.ts#L107) | Phase 1 | `admin-identity` | - |
-| 137 | `POST` | `/api/admin/users/:id/deactivate` | [src/server/adminIdentityRoutes.ts:116](../../src/server/adminIdentityRoutes.ts#L116) | Phase 1 | `admin-identity` | - |
-| 138 | `POST` | `/api/admin/users/:id/lock` | [src/server/adminIdentityRoutes.ts:125](../../src/server/adminIdentityRoutes.ts#L125) | Phase 1 | `admin-identity` | - |
-| 139 | `POST` | `/api/admin/users/:id/reset-password` | [src/server/adminIdentityRoutes.ts:143](../../src/server/adminIdentityRoutes.ts#L143) | Phase 1 | `admin-identity` | - |
-| 140 | `POST` | `/api/admin/users/:id/roles` | [src/server/adminIdentityRoutes.ts:152](../../src/server/adminIdentityRoutes.ts#L152) | Phase 1 | `admin-identity` | - |
-| 141 | `DELETE` | `/api/admin/users/:id/roles/:roleCode` | [src/server/adminIdentityRoutes.ts:162](../../src/server/adminIdentityRoutes.ts#L162) | Phase 1 | `admin-identity` | - |
-| 142 | `POST` | `/api/admin/users/:id/unlock` | [src/server/adminIdentityRoutes.ts:134](../../src/server/adminIdentityRoutes.ts#L134) | Phase 1 | `admin-identity` | - |
-| 143 | `GET` | `/api/advaris/mes-status` | [server.ts:123](../../server.ts#L123) | Phase 8 | `enterprise-integrations` | - |
-| 144 | `POST` | `/api/ai/assistant` | [server.ts:53](../../server.ts#L53) | Phase 8 | `ai-assistant` | - |
-| 145 | `POST` | `/api/auth/assign-role` | [src/server/identityAuthRoutes.ts:138](../../src/server/identityAuthRoutes.ts#L138) | Phase 1 | `auth` | - |
-| 146 | `POST` | `/api/auth/change-password` | [src/server/identityAuthRoutes.ts:95](../../src/server/identityAuthRoutes.ts#L95) | Phase 1 | `auth` | - |
-| 147 | `POST` | `/api/auth/forgot-password` | [src/server/identityAuthRoutes.ts:66](../../src/server/identityAuthRoutes.ts#L66) | Phase 1 | `auth` | - |
-| 148 | `POST` | `/api/auth/login` | [src/server/identityAuthRoutes.ts:26](../../src/server/identityAuthRoutes.ts#L26) | Phase 1 | `auth` | `loginRateLimit` |
-| 149 | `POST` | `/api/auth/logout` | [src/server/identityAuthRoutes.ts:43](../../src/server/identityAuthRoutes.ts#L43) | Phase 1 | `auth` | - |
-| 150 | `GET` | `/api/auth/me` | [src/server/identityAuthRoutes.ts:73](../../src/server/identityAuthRoutes.ts#L73) | Phase 1 | `auth` | - |
-| 151 | `POST` | `/api/auth/refresh-token` | [src/server/identityAuthRoutes.ts:55](../../src/server/identityAuthRoutes.ts#L55) | Phase 1 | `auth` | - |
-| 152 | `POST` | `/api/auth/register` | [src/server/identityAuthRoutes.ts:128](../../src/server/identityAuthRoutes.ts#L128) | Phase 1 | `auth` | - |
-| 153 | `POST` | `/api/auth/reset-password` | [src/server/identityAuthRoutes.ts:117](../../src/server/identityAuthRoutes.ts#L117) | Phase 1 | `auth` | - |
-| 154 | `GET` | `/api/auth/roles` | [src/server/identityAuthRoutes.ts:145](../../src/server/identityAuthRoutes.ts#L145) | Phase 1 | `auth` | - |
-| 155 | `POST` | `/api/auth/roles` | [src/server/identityAuthRoutes.ts:135](../../src/server/identityAuthRoutes.ts#L135) | Phase 1 | `auth` | - |
-| 156 | `GET` | `/api/auth/users` | [src/server/identityAuthRoutes.ts:141](../../src/server/identityAuthRoutes.ts#L141) | Phase 1 | `auth` | - |
-| 157 | `GET` | `/api/cables/compatibility` | [src/server/cableAuthorityRoutes.ts:60](../../src/server/cableAuthorityRoutes.ts#L60) | Phase 3 | `cable-authority` | - |
-| 158 | `POST` | `/api/cables/evaluate` | [src/server/cableAuthorityRoutes.ts:68](../../src/server/cableAuthorityRoutes.ts#L68) | Phase 3 | `cable-authority` | - |
-| 159 | `GET` | `/api/cables/requests` | [src/server/cableAuthorityRoutes.ts:120](../../src/server/cableAuthorityRoutes.ts#L120) | Phase 3 | `cable-authority` | - |
-| 160 | `POST` | `/api/cables/requests` | [src/server/cableAuthorityRoutes.ts:91](../../src/server/cableAuthorityRoutes.ts#L91) | Phase 3 | `cable-authority` | - |
-| 161 | `GET` | `/api/cables/search` | [src/server/cableAuthorityRoutes.ts:30](../../src/server/cableAuthorityRoutes.ts#L30) | Phase 3 | `cable-authority` | - |
-| 162 | `GET` | `/api/commercial-pricing` | [src/server/commercialPricingRoutes.ts:38](../../src/server/commercialPricingRoutes.ts#L38) | Phase 4 | `commercial-pricing` | - |
-| 163 | `POST` | `/api/commercial-pricing` | [src/server/commercialPricingRoutes.ts:67](../../src/server/commercialPricingRoutes.ts#L67) | Phase 4 | `commercial-pricing` | - |
-| 164 | `POST` | `/api/commercial-pricing/:id/actions` | [src/server/commercialPricingRoutes.ts:146](../../src/server/commercialPricingRoutes.ts#L146) | Phase 4 | `commercial-pricing` | - |
-| 165 | `POST` | `/api/commercial-pricing/:id/approve-pricing` | [src/server/commercialPricingRoutes.ts:358](../../src/server/commercialPricingRoutes.ts#L358) | Phase 4 | `commercial-pricing` | - |
-| 166 | `GET` | `/api/commercial-pricing/:id/history` | [src/server/commercialPricingRoutes.ts:103](../../src/server/commercialPricingRoutes.ts#L103) | Phase 4 | `commercial-pricing` | - |
-| 167 | `POST` | `/api/commercial-pricing/:id/price` | [src/server/commercialPricingRoutes.ts:306](../../src/server/commercialPricingRoutes.ts#L306) | Phase 4 | `commercial-pricing` | - |
-| 168 | `POST` | `/api/commercial-pricing/:id/submit-for-approval` | [src/server/commercialPricingRoutes.ts:341](../../src/server/commercialPricingRoutes.ts#L341) | Phase 4 | `commercial-pricing` | - |
-| 169 | `POST` | `/api/commercial-pricing/:id/versions` | [src/server/commercialPricingRoutes.ts:120](../../src/server/commercialPricingRoutes.ts#L120) | Phase 4 | `commercial-pricing` | - |
-| 170 | `POST` | `/api/commercial-pricing/calculate` | [src/server/commercialPricingRoutes.ts:257](../../src/server/commercialPricingRoutes.ts#L257) | Phase 4 | `commercial-pricing` | - |
-| 171 | `GET` | `/api/commercial-pricing/export` | [src/server/commercialPricingRoutes.ts:182](../../src/server/commercialPricingRoutes.ts#L182) | Phase 4 | `commercial-pricing` | - |
-| 172 | `GET` | `/api/commercial-pricing/options` | [src/server/commercialPricingRoutes.ts:87](../../src/server/commercialPricingRoutes.ts#L87) | Phase 4 | `commercial-pricing` | - |
-| 173 | `GET` | `/api/costing` | [src/server/costingRoutes.ts:70](../../src/server/costingRoutes.ts#L70) | Phase 5 | `costing` | - |
-| 174 | `GET` | `/api/costing/:id` | [src/server/costingRoutes.ts:88](../../src/server/costingRoutes.ts#L88) | Phase 5 | `costing` | - |
-| 175 | `POST` | `/api/costing/:id/recalculate` | [src/server/costingRoutes.ts:141](../../src/server/costingRoutes.ts#L141) | Phase 5 | `costing` | - |
-| 176 | `POST` | `/api/costing/calculate` | [src/server/costingRoutes.ts:100](../../src/server/costingRoutes.ts#L100) | Phase 5 | `costing` | - |
-| 177 | `GET` | `/api/costing/readiness/:materialNumber` | [src/server/costingRoutes.ts:60](../../src/server/costingRoutes.ts#L60) | Phase 5 | `costing` | - |
-| 178 | `GET` | `/api/customer-service/cases` | [src/server/customerServiceRoutes.ts:199](../../src/server/customerServiceRoutes.ts#L199) | Phase 7 | `customer-service` | - |
-| 179 | `POST` | `/api/customer-service/cases` | [src/server/customerServiceRoutes.ts:220](../../src/server/customerServiceRoutes.ts#L220) | Phase 7 | `customer-service` | - |
-| 180 | `GET` | `/api/customer-service/cases/:id` | [src/server/customerServiceRoutes.ts:232](../../src/server/customerServiceRoutes.ts#L232) | Phase 7 | `customer-service` | - |
-| 181 | `POST` | `/api/customer-service/cases/:id/assign` | [src/server/customerServiceRoutes.ts:294](../../src/server/customerServiceRoutes.ts#L294) | Phase 7 | `customer-service` | - |
-| 182 | `POST` | `/api/customer-service/cases/:id/attachments` | [src/server/customerServiceRoutes.ts:256](../../src/server/customerServiceRoutes.ts#L256) | Phase 7 | `customer-service` | - |
-| 183 | `GET` | `/api/customer-service/cases/:id/attachments/:attachmentId` | [src/server/customerServiceRoutes.ts:268](../../src/server/customerServiceRoutes.ts#L268) | Phase 7 | `customer-service` | - |
-| 184 | `POST` | `/api/customer-service/cases/:id/comments` | [src/server/customerServiceRoutes.ts:244](../../src/server/customerServiceRoutes.ts#L244) | Phase 7 | `customer-service` | - |
-| 185 | `POST` | `/api/customer-service/cases/:id/confirm-resolution` | [src/server/customerServiceRoutes.ts:318](../../src/server/customerServiceRoutes.ts#L318) | Phase 7 | `customer-service` | - |
-| 186 | `POST` | `/api/customer-service/cases/:id/request-reopen` | [src/server/customerServiceRoutes.ts:331](../../src/server/customerServiceRoutes.ts#L331) | Phase 7 | `customer-service` | - |
-| 187 | `POST` | `/api/customer-service/cases/:id/resolve` | [src/server/customerServiceRoutes.ts:306](../../src/server/customerServiceRoutes.ts#L306) | Phase 7 | `customer-service` | - |
-| 188 | `POST` | `/api/customer-service/cases/:id/status` | [src/server/customerServiceRoutes.ts:282](../../src/server/customerServiceRoutes.ts#L282) | Phase 7 | `customer-service` | - |
-| 189 | `GET` | `/api/customer-service/cases/summary` | [src/server/customerServiceRoutes.ts:187](../../src/server/customerServiceRoutes.ts#L187) | Phase 7 | `customer-service` | - |
-| 190 | `GET` | `/api/customer-service/categories` | [src/server/customerServiceRoutes.ts:71](../../src/server/customerServiceRoutes.ts#L71) | Phase 7 | `customer-service` | - |
-| 191 | `GET` | `/api/customer-service/chat` | [src/server/customerServiceRoutes.ts:148](../../src/server/customerServiceRoutes.ts#L148) | Phase 7 | `customer-service` | - |
-| 192 | `POST` | `/api/customer-service/chat/messages` | [src/server/customerServiceRoutes.ts:163](../../src/server/customerServiceRoutes.ts#L163) | Phase 7 | `customer-service` | - |
-| 193 | `POST` | `/api/customer-service/chat/request-engineer` | [src/server/customerServiceRoutes.ts:175](../../src/server/customerServiceRoutes.ts#L175) | Phase 7 | `customer-service` | - |
-| 194 | `GET` | `/api/customer-service/meta` | [src/server/customerServiceRoutes.ts:83](../../src/server/customerServiceRoutes.ts#L83) | Phase 7 | `customer-service` | - |
-| 195 | `GET` | `/api/customer-service/references/inquiries` | [src/server/customerServiceRoutes.ts:95](../../src/server/customerServiceRoutes.ts#L95) | Phase 7 | `customer-service` | - |
-| 196 | `GET` | `/api/customer-service/references/inquiries/:inquiryId/lines` | [src/server/customerServiceRoutes.ts:112](../../src/server/customerServiceRoutes.ts#L112) | Phase 7 | `customer-service` | - |
-| 197 | `GET` | `/api/customer-service/references/resolve` | [src/server/customerServiceRoutes.ts:130](../../src/server/customerServiceRoutes.ts#L130) | Phase 7 | `customer-service` | - |
-| 198 | `GET` | `/api/d365/sync-status` | [server.ts:111](../../server.ts#L111) | Phase 8 | `enterprise-integrations` | - |
-| 199 | `GET` | `/api/inquiries` | [src/server/commercialRoutes.ts:146](../../src/server/commercialRoutes.ts#L146) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 200 | `GET` | `/api/inquiries` | [src/server/commercialRoutes.ts:720](../../src/server/commercialRoutes.ts#L720) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 201 | `POST` | `/api/inquiries` | [src/server/commercialRoutes.ts:285](../../src/server/commercialRoutes.ts#L285) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 202 | `POST` | `/api/inquiries` | [src/server/commercialRoutes.ts:797](../../src/server/commercialRoutes.ts#L797) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 203 | `GET` | `/api/inquiries/:id` | [src/server/commercialRoutes.ts:231](../../src/server/commercialRoutes.ts#L231) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 204 | `GET` | `/api/inquiries/:id` | [src/server/commercialRoutes.ts:759](../../src/server/commercialRoutes.ts#L759) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 205 | `PATCH` | `/api/inquiries/:id` | [src/server/commercialRoutes.ts:304](../../src/server/commercialRoutes.ts#L304) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 206 | `GET` | `/api/inquiries/:id/activity` | [src/server/commercialRoutes.ts:620](../../src/server/commercialRoutes.ts#L620) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 207 | `GET` | `/api/inquiries/:id/attachments` | [src/server/commercialRoutes.ts:564](../../src/server/commercialRoutes.ts#L564) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 208 | `POST` | `/api/inquiries/:id/attachments` | [src/server/commercialRoutes.ts:577](../../src/server/commercialRoutes.ts#L577) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 209 | `DELETE` | `/api/inquiries/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:606](../../src/server/commercialRoutes.ts#L606) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 210 | `GET` | `/api/inquiries/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:591](../../src/server/commercialRoutes.ts#L591) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 211 | `POST` | `/api/inquiries/:id/calculate-cost` | [src/server/commercialRoutes.ts:472](../../src/server/commercialRoutes.ts#L472) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 212 | `POST` | `/api/inquiries/:id/cancel` | [src/server/commercialRoutes.ts:687](../../src/server/commercialRoutes.ts#L687) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 213 | `GET` | `/api/inquiries/:id/costing` | [src/server/commercialRoutes.ts:831](../../src/server/commercialRoutes.ts#L831) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 214 | `GET` | `/api/inquiries/:id/export` | [src/server/commercialRoutes.ts:267](../../src/server/commercialRoutes.ts#L267) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 215 | `POST` | `/api/inquiries/:id/lines` | [src/server/commercialRoutes.ts:318](../../src/server/commercialRoutes.ts#L318) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 216 | `DELETE` | `/api/inquiries/:id/lines/:lineId` | [src/server/commercialRoutes.ts:387](../../src/server/commercialRoutes.ts#L387) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 217 | `PATCH` | `/api/inquiries/:id/lines/:lineId` | [src/server/commercialRoutes.ts:354](../../src/server/commercialRoutes.ts#L354) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 218 | `GET` | `/api/inquiries/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:416](../../src/server/commercialRoutes.ts#L416) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 219 | `POST` | `/api/inquiries/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:429](../../src/server/commercialRoutes.ts#L429) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 220 | `DELETE` | `/api/inquiries/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:458](../../src/server/commercialRoutes.ts#L458) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 221 | `GET` | `/api/inquiries/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:443](../../src/server/commercialRoutes.ts#L443) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 222 | `POST` | `/api/inquiries/:id/lines/:lineId/calculate-cost` | [src/server/commercialRoutes.ts:503](../../src/server/commercialRoutes.ts#L503) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 223 | `GET` | `/api/inquiries/:id/lines/:lineId/costing` | [src/server/commercialRoutes.ts:541](../../src/server/commercialRoutes.ts#L541) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 224 | `POST` | `/api/inquiries/:id/lines/:lineId/drum-schedule/confirm` | [src/server/commercialRoutes.ts:367](../../src/server/commercialRoutes.ts#L367) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 225 | `POST` | `/api/inquiries/:id/lines/:lineId/duplicate` | [src/server/commercialRoutes.ts:400](../../src/server/commercialRoutes.ts#L400) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 226 | `POST` | `/api/inquiries/:id/lines/reorder` | [src/server/commercialRoutes.ts:341](../../src/server/commercialRoutes.ts#L341) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 227 | `POST` | `/api/inquiries/:id/new-version` | [src/server/commercialRoutes.ts:671](../../src/server/commercialRoutes.ts#L671) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 228 | `POST` | `/api/inquiries/:id/quotation` | [src/server/commercialRoutes.ts:699](../../src/server/commercialRoutes.ts#L699) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 229 | `POST` | `/api/inquiries/:id/submit` | [src/server/commercialRoutes.ts:634](../../src/server/commercialRoutes.ts#L634) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 230 | `GET` | `/api/inquiries/:id/versions` | [src/server/commercialRoutes.ts:218](../../src/server/commercialRoutes.ts#L218) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 231 | `POST` | `/api/inquiries/:id/versions` | [src/server/commercialRoutes.ts:817](../../src/server/commercialRoutes.ts#L817) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 232 | `GET` | `/api/inquiries/meta/field-definitions` | [src/server/commercialRoutes.ts:176](../../src/server/commercialRoutes.ts#L176) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 233 | `GET` | `/api/master/bom-conflicts` | [src/server/masterDataRoutes.ts:1305](../../src/server/masterDataRoutes.ts#L1305) | Phase 2 | `master-data` | - |
-| 234 | `GET` | `/api/master/bom-conflicts-export` | [src/server/masterDataRoutes.ts:1330](../../src/server/masterDataRoutes.ts#L1330) | Phase 2 | `master-data` | - |
-| 235 | `POST` | `/api/master/bom-conflicts/:conflictId/actions` | [src/server/masterDataRoutes.ts:1411](../../src/server/masterDataRoutes.ts#L1411) | Phase 2 | `master-data` | - |
-| 236 | `GET` | `/api/master/bom-duplicate-observations` | [src/server/masterDataRoutes.ts:1512](../../src/server/masterDataRoutes.ts#L1512) | Phase 2 | `master-data` | - |
-| 237 | `GET` | `/api/master/boms` | [src/server/masterDataRoutes.ts:370](../../src/server/masterDataRoutes.ts#L370) | Phase 2 | `master-data` | - |
-| 238 | `POST` | `/api/master/boms/excel-commit` | [src/server/masterDataRoutes.ts:380](../../src/server/masterDataRoutes.ts#L380) | Phase 2 | `master-data` | - |
-| 239 | `POST` | `/api/master/cable-scrap-import/commit` | [src/server/masterDataRoutes.ts:625](../../src/server/masterDataRoutes.ts#L625) | Phase 2 | `master-data` | - |
-| 240 | `POST` | `/api/master/cable-scrap-import/preview` | [src/server/masterDataRoutes.ts:605](../../src/server/masterDataRoutes.ts#L605) | Phase 2 | `master-data` | - |
-| 241 | `GET` | `/api/master/cable-scrap-template-export` | [src/server/masterDataRoutes.ts:582](../../src/server/masterDataRoutes.ts#L582) | Phase 2 | `master-data` | - |
-| 242 | `GET` | `/api/master/cables` | [src/server/masterDataRoutes.ts:217](../../src/server/masterDataRoutes.ts#L217) | Phase 2 | `master-data` | - |
-| 243 | `POST` | `/api/master/cables` | [src/server/masterDataRoutes.ts:272](../../src/server/masterDataRoutes.ts#L272) | Phase 2 | `master-data` | - |
-| 244 | `GET` | `/api/master/cables/:materialNumber` | [src/server/masterDataRoutes.ts:260](../../src/server/masterDataRoutes.ts#L260) | Phase 2 | `master-data` | - |
-| 245 | `PUT` | `/api/master/cables/:materialNumber` | [src/server/masterDataRoutes.ts:310](../../src/server/masterDataRoutes.ts#L310) | Phase 2 | `master-data` | - |
-| 246 | `GET` | `/api/master/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:322](../../src/server/masterDataRoutes.ts#L322) | Phase 2 | `master-data` | - |
-| 247 | `POST` | `/api/master/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:331](../../src/server/masterDataRoutes.ts#L331) | Phase 2 | `master-data` | - |
-| 248 | `DELETE` | `/api/master/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:357](../../src/server/masterDataRoutes.ts#L357) | Phase 2 | `master-data` | - |
-| 249 | `GET` | `/api/master/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:345](../../src/server/masterDataRoutes.ts#L345) | Phase 2 | `master-data` | - |
-| 250 | `GET` | `/api/master/commercial-pricing-rules` | [src/server/commercialPricingRoutes.ts:38](../../src/server/commercialPricingRoutes.ts#L38) | Phase 2 | `commercial-pricing-rules` | - |
-| 251 | `POST` | `/api/master/commercial-pricing-rules` | [src/server/commercialPricingRoutes.ts:67](../../src/server/commercialPricingRoutes.ts#L67) | Phase 2 | `commercial-pricing-rules` | - |
-| 252 | `POST` | `/api/master/commercial-pricing-rules/:id/actions` | [src/server/commercialPricingRoutes.ts:146](../../src/server/commercialPricingRoutes.ts#L146) | Phase 2 | `commercial-pricing-rules` | - |
-| 253 | `POST` | `/api/master/commercial-pricing-rules/:id/approve-pricing` | [src/server/commercialPricingRoutes.ts:358](../../src/server/commercialPricingRoutes.ts#L358) | Phase 2 | `commercial-pricing-rules` | - |
-| 254 | `GET` | `/api/master/commercial-pricing-rules/:id/history` | [src/server/commercialPricingRoutes.ts:103](../../src/server/commercialPricingRoutes.ts#L103) | Phase 2 | `commercial-pricing-rules` | - |
-| 255 | `POST` | `/api/master/commercial-pricing-rules/:id/price` | [src/server/commercialPricingRoutes.ts:306](../../src/server/commercialPricingRoutes.ts#L306) | Phase 2 | `commercial-pricing-rules` | - |
-| 256 | `POST` | `/api/master/commercial-pricing-rules/:id/submit-for-approval` | [src/server/commercialPricingRoutes.ts:341](../../src/server/commercialPricingRoutes.ts#L341) | Phase 2 | `commercial-pricing-rules` | - |
-| 257 | `POST` | `/api/master/commercial-pricing-rules/:id/versions` | [src/server/commercialPricingRoutes.ts:120](../../src/server/commercialPricingRoutes.ts#L120) | Phase 2 | `commercial-pricing-rules` | - |
-| 258 | `POST` | `/api/master/commercial-pricing-rules/calculate` | [src/server/commercialPricingRoutes.ts:257](../../src/server/commercialPricingRoutes.ts#L257) | Phase 2 | `commercial-pricing-rules` | - |
-| 259 | `GET` | `/api/master/commercial-pricing-rules/export` | [src/server/commercialPricingRoutes.ts:182](../../src/server/commercialPricingRoutes.ts#L182) | Phase 2 | `commercial-pricing-rules` | - |
-| 260 | `GET` | `/api/master/commercial-pricing-rules/options` | [src/server/commercialPricingRoutes.ts:87](../../src/server/commercialPricingRoutes.ts#L87) | Phase 2 | `commercial-pricing-rules` | - |
-| 261 | `GET` | `/api/master/costing-readiness` | [src/server/masterDataRoutes.ts:1450](../../src/server/masterDataRoutes.ts#L1450) | Phase 2 | `master-data` | - |
-| 262 | `GET` | `/api/master/db` | [src/server/masterDataRoutes.ts:208](../../src/server/masterDataRoutes.ts#L208) | Phase 2 | `master-data` | - |
-| 263 | `GET` | `/api/master/drums` | [src/server/masterDataRoutes.ts:833](../../src/server/masterDataRoutes.ts#L833) | Phase 2 | `master-data` | - |
-| 264 | `POST` | `/api/master/drums` | [src/server/masterDataCutoverRoutes.ts:184](../../src/server/masterDataCutoverRoutes.ts#L184) | Phase 2 | `master-data-export` | - |
-| 265 | `DELETE` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:160](../../src/server/masterDataCutoverRoutes.ts#L160) | Phase 2 | `master-data-export` | - |
-| 266 | `GET` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:172](../../src/server/masterDataCutoverRoutes.ts#L172) | Phase 2 | `master-data-export` | - |
-| 267 | `PUT` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:226](../../src/server/masterDataCutoverRoutes.ts#L226) | Phase 2 | `master-data-export` | - |
-| 268 | `POST` | `/api/master/drums/candidates` | [src/server/masterDataRoutes.ts:874](../../src/server/masterDataRoutes.ts#L874) | Phase 2 | `master-data` | - |
-| 269 | `POST` | `/api/master/drums/capacity` | [src/server/masterDataRoutes.ts:843](../../src/server/masterDataRoutes.ts#L843) | Phase 2 | `master-data` | - |
-| 270 | `POST` | `/api/master/drums/excel-commit` | [src/server/masterDataCutoverRoutes.ts:141](../../src/server/masterDataCutoverRoutes.ts#L141) | Phase 2 | `master-data-export` | - |
-| 271 | `POST` | `/api/master/drums/excel-preview` | [src/server/masterDataCutoverRoutes.ts:126](../../src/server/masterDataCutoverRoutes.ts#L126) | Phase 2 | `master-data-export` | - |
-| 272 | `POST` | `/api/master/drums/optimize` | [src/server/masterDataRoutes.ts:982](../../src/server/masterDataRoutes.ts#L982) | Phase 2 | `master-data` | - |
-| 273 | `POST` | `/api/master/drums/validate` | [src/server/masterDataRoutes.ts:951](../../src/server/masterDataRoutes.ts#L951) | Phase 2 | `master-data` | - |
-| 274 | `GET` | `/api/master/engineering-mappings` | [src/server/masterDataRoutes.ts:1060](../../src/server/masterDataRoutes.ts#L1060) | Phase 2 | `master-data` | - |
-| 275 | `GET` | `/api/master/engineering-mappings-export` | [src/server/masterDataRoutes.ts:1073](../../src/server/masterDataRoutes.ts#L1073) | Phase 2 | `master-data` | - |
-| 276 | `GET` | `/api/master/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1119](../../src/server/masterDataRoutes.ts#L1119) | Phase 2 | `master-data` | - |
-| 277 | `PUT` | `/api/master/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1131](../../src/server/masterDataRoutes.ts#L1131) | Phase 2 | `master-data` | - |
-| 278 | `POST` | `/api/master/engineering-mappings/:materialNumber/actions` | [src/server/masterDataRoutes.ts:1263](../../src/server/masterDataRoutes.ts#L1263) | Phase 2 | `master-data` | - |
-| 279 | `POST` | `/api/master/engineering-mappings/bulk/actions` | [src/server/masterDataRoutes.ts:1166](../../src/server/masterDataRoutes.ts#L1166) | Phase 2 | `master-data` | - |
-| 280 | `POST` | `/api/master/engineering-mappings/bulk/validate` | [src/server/masterDataRoutes.ts:1149](../../src/server/masterDataRoutes.ts#L1149) | Phase 2 | `master-data` | - |
-| 281 | `POST` | `/api/master/engineering-mappings/import/commit` | [src/server/masterDataRoutes.ts:1240](../../src/server/masterDataRoutes.ts#L1240) | Phase 2 | `master-data` | - |
-| 282 | `POST` | `/api/master/engineering-mappings/import/preview` | [src/server/masterDataRoutes.ts:1206](../../src/server/masterDataRoutes.ts#L1206) | Phase 2 | `master-data` | - |
-| 283 | `GET` | `/api/master/export/:entity` | [src/server/masterDataExportRoutes.ts:34](../../src/server/masterDataExportRoutes.ts#L34) | Phase 2 | `master-data-export` | - |
-| 284 | `GET` | `/api/master/imports` | [src/server/masterDataRoutes.ts:1522](../../src/server/masterDataRoutes.ts#L1522) | Phase 2 | `master-data` | - |
-| 285 | `POST` | `/api/master/imports/commit` | [src/server/masterDataRoutes.ts:1679](../../src/server/masterDataRoutes.ts#L1679) | Phase 2 | `master-data` | - |
-| 286 | `POST` | `/api/master/imports/preview` | [src/server/masterDataRoutes.ts:1652](../../src/server/masterDataRoutes.ts#L1652) | Phase 2 | `master-data` | - |
-| 287 | `GET` | `/api/master/keys` | [src/server/masterDataRoutes.ts:1491](../../src/server/masterDataRoutes.ts#L1491) | Phase 2 | `master-data` | - |
-| 288 | `GET` | `/api/master/market-metals/imports` | [src/server/marketMetalImportRoutes.ts:28](../../src/server/marketMetalImportRoutes.ts#L28) | Phase 2 | `market-metal` | - |
-| 289 | `POST` | `/api/master/market-metals/imports` | [src/server/marketMetalImportRoutes.ts:69](../../src/server/marketMetalImportRoutes.ts#L69) | Phase 2 | `market-metal` | - |
-| 290 | `GET` | `/api/master/market-metals/imports/:id` | [src/server/marketMetalImportRoutes.ts:38](../../src/server/marketMetalImportRoutes.ts#L38) | Phase 2 | `market-metal` | - |
-| 291 | `POST` | `/api/master/market-metals/imports/:id/approve` | [src/server/marketMetalImportRoutes.ts:93](../../src/server/marketMetalImportRoutes.ts#L93) | Phase 2 | `market-metal` | - |
-| 292 | `GET` | `/api/master/market-metals/imports/:id/image` | [src/server/marketMetalImportRoutes.ts:56](../../src/server/marketMetalImportRoutes.ts#L56) | Phase 2 | `market-metal` | - |
-| 293 | `POST` | `/api/master/market-metals/imports/:id/publish` | [src/server/marketMetalImportRoutes.ts:104](../../src/server/marketMetalImportRoutes.ts#L104) | Phase 2 | `market-metal` | - |
-| 294 | `PATCH` | `/api/master/market-metals/imports/:id/rows/:code` | [src/server/marketMetalImportRoutes.ts:82](../../src/server/marketMetalImportRoutes.ts#L82) | Phase 2 | `market-metal` | - |
-| 295 | `GET` | `/api/master/raw-material-price-readiness` | [src/server/masterDataRoutes.ts:1469](../../src/server/masterDataRoutes.ts#L1469) | Phase 2 | `master-data` | - |
-| 296 | `GET` | `/api/master/raw-material-prices` | [src/server/masterDataRoutes.ts:431](../../src/server/masterDataRoutes.ts#L431) | Phase 2 | `master-data` | - |
-| 297 | `POST` | `/api/master/raw-material-prices` | [src/server/masterDataRoutes.ts:465](../../src/server/masterDataRoutes.ts#L465) | Phase 2 | `master-data` | - |
-| 298 | `GET` | `/api/master/raw-material-prices-export` | [src/server/masterDataRoutes.ts:522](../../src/server/masterDataRoutes.ts#L522) | Phase 2 | `master-data` | - |
-| 299 | `POST` | `/api/master/raw-material-prices/:id/actions` | [src/server/masterDataRoutes.ts:483](../../src/server/masterDataRoutes.ts#L483) | Phase 2 | `master-data` | - |
-| 300 | `GET` | `/api/master/raw-material-prices/:rawMaterialCode` | [src/server/masterDataRoutes.ts:452](../../src/server/masterDataRoutes.ts#L452) | Phase 2 | `master-data` | - |
-| 301 | `POST` | `/api/master/raw-material-prices/import/commit` | [src/server/masterDataRoutes.ts:799](../../src/server/masterDataRoutes.ts#L799) | Phase 2 | `master-data` | - |
-| 302 | `POST` | `/api/master/raw-material-prices/import/preview` | [src/server/masterDataRoutes.ts:645](../../src/server/masterDataRoutes.ts#L645) | Phase 2 | `master-data` | - |
-| 303 | `GET` | `/api/master/raw-materials` | [src/server/masterDataRoutes.ts:421](../../src/server/masterDataRoutes.ts#L421) | Phase 2 | `master-data` | - |
-| 304 | `POST` | `/api/master/raw-materials` | [src/server/masterDataRoutes.ts:1532](../../src/server/masterDataRoutes.ts#L1532) | Phase 2 | `master-data` | - |
-| 305 | `PUT` | `/api/master/raw-materials/:code` | [src/server/masterDataRoutes.ts:1564](../../src/server/masterDataRoutes.ts#L1564) | Phase 2 | `master-data` | - |
-| 306 | `POST` | `/api/master/raw-materials/:code/prices` | [src/server/masterDataRoutes.ts:1576](../../src/server/masterDataRoutes.ts#L1576) | Phase 2 | `master-data` | - |
-| 307 | `GET` | `/api/master/readiness` | [src/server/masterDataRoutes.ts:1050](../../src/server/masterDataRoutes.ts#L1050) | Phase 2 | `master-data` | - |
-| 308 | `GET` | `/api/master/reference` | [src/server/masterDataRoutes.ts:1040](../../src/server/masterDataRoutes.ts#L1040) | Phase 2 | `master-data` | - |
-| 309 | `GET` | `/api/master/sot-status` | [src/server/masterDataCutoverRoutes.ts:103](../../src/server/masterDataCutoverRoutes.ts#L103) | Phase 2 | `master-data-export` | - |
-| 310 | `GET` | `/api/master/uniqueness` | [src/server/masterDataRoutes.ts:1502](../../src/server/masterDataRoutes.ts#L1502) | Phase 2 | `master-data` | - |
-| 311 | `GET` | `/api/notifications` | [src/server/notificationRoutes.ts:40](../../src/server/notificationRoutes.ts#L40) | Phase 7 | `notifications` | - |
-| 312 | `POST` | `/api/notifications/:id/read` | [src/server/notificationRoutes.ts:65](../../src/server/notificationRoutes.ts#L65) | Phase 7 | `notifications` | - |
-| 313 | `GET` | `/api/notifications/catalog` | [src/server/notificationRoutes.ts:25](../../src/server/notificationRoutes.ts#L25) | Phase 7 | `notifications` | - |
-| 314 | `GET` | `/api/notifications/emails` | [src/server/notificationRoutes.ts:85](../../src/server/notificationRoutes.ts#L85) | Phase 7 | `notifications` | - |
-| 315 | `POST` | `/api/notifications/emails/:id/retry` | [src/server/notificationRoutes.ts:101](../../src/server/notificationRoutes.ts#L101) | Phase 7 | `notifications` | - |
-| 316 | `POST` | `/api/notifications/read-all` | [src/server/notificationRoutes.ts:75](../../src/server/notificationRoutes.ts#L75) | Phase 7 | `notifications` | - |
-| 317 | `GET` | `/api/platform/bom-conflicts` | [src/server/masterDataRoutes.ts:1305](../../src/server/masterDataRoutes.ts#L1305) | Phase 2 | `master-data` | - |
-| 318 | `GET` | `/api/platform/bom-conflicts-export` | [src/server/masterDataRoutes.ts:1330](../../src/server/masterDataRoutes.ts#L1330) | Phase 2 | `master-data` | - |
-| 319 | `POST` | `/api/platform/bom-conflicts/:conflictId/actions` | [src/server/masterDataRoutes.ts:1411](../../src/server/masterDataRoutes.ts#L1411) | Phase 2 | `master-data` | - |
-| 320 | `GET` | `/api/platform/bom-duplicate-observations` | [src/server/masterDataRoutes.ts:1512](../../src/server/masterDataRoutes.ts#L1512) | Phase 2 | `master-data` | - |
-| 321 | `GET` | `/api/platform/boms` | [src/server/masterDataRoutes.ts:370](../../src/server/masterDataRoutes.ts#L370) | Phase 2 | `master-data` | - |
-| 322 | `POST` | `/api/platform/boms/excel-commit` | [src/server/masterDataRoutes.ts:380](../../src/server/masterDataRoutes.ts#L380) | Phase 2 | `master-data` | - |
-| 323 | `POST` | `/api/platform/cable-scrap-import/commit` | [src/server/masterDataRoutes.ts:625](../../src/server/masterDataRoutes.ts#L625) | Phase 2 | `master-data` | - |
-| 324 | `POST` | `/api/platform/cable-scrap-import/preview` | [src/server/masterDataRoutes.ts:605](../../src/server/masterDataRoutes.ts#L605) | Phase 2 | `master-data` | - |
-| 325 | `GET` | `/api/platform/cable-scrap-template-export` | [src/server/masterDataRoutes.ts:582](../../src/server/masterDataRoutes.ts#L582) | Phase 2 | `master-data` | - |
-| 326 | `GET` | `/api/platform/cables` | [src/server/masterDataRoutes.ts:217](../../src/server/masterDataRoutes.ts#L217) | Phase 2 | `master-data` | - |
-| 327 | `POST` | `/api/platform/cables` | [src/server/masterDataRoutes.ts:272](../../src/server/masterDataRoutes.ts#L272) | Phase 2 | `master-data` | - |
-| 328 | `GET` | `/api/platform/cables/:materialNumber` | [src/server/masterDataRoutes.ts:260](../../src/server/masterDataRoutes.ts#L260) | Phase 2 | `master-data` | - |
-| 329 | `PUT` | `/api/platform/cables/:materialNumber` | [src/server/masterDataRoutes.ts:310](../../src/server/masterDataRoutes.ts#L310) | Phase 2 | `master-data` | - |
-| 330 | `GET` | `/api/platform/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:322](../../src/server/masterDataRoutes.ts#L322) | Phase 2 | `master-data` | - |
-| 331 | `POST` | `/api/platform/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:331](../../src/server/masterDataRoutes.ts#L331) | Phase 2 | `master-data` | - |
-| 332 | `DELETE` | `/api/platform/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:357](../../src/server/masterDataRoutes.ts#L357) | Phase 2 | `master-data` | - |
-| 333 | `GET` | `/api/platform/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:345](../../src/server/masterDataRoutes.ts#L345) | Phase 2 | `master-data` | - |
-| 334 | `GET` | `/api/platform/costing-readiness` | [src/server/masterDataRoutes.ts:1450](../../src/server/masterDataRoutes.ts#L1450) | Phase 2 | `master-data` | - |
-| 335 | `GET` | `/api/platform/db` | [src/server/masterDataRoutes.ts:208](../../src/server/masterDataRoutes.ts#L208) | Phase 2 | `master-data` | - |
-| 336 | `GET` | `/api/platform/drums` | [src/server/masterDataRoutes.ts:833](../../src/server/masterDataRoutes.ts#L833) | Phase 2 | `master-data` | - |
-| 337 | `POST` | `/api/platform/drums/candidates` | [src/server/masterDataRoutes.ts:874](../../src/server/masterDataRoutes.ts#L874) | Phase 2 | `master-data` | - |
-| 338 | `POST` | `/api/platform/drums/capacity` | [src/server/masterDataRoutes.ts:843](../../src/server/masterDataRoutes.ts#L843) | Phase 2 | `master-data` | - |
-| 339 | `POST` | `/api/platform/drums/optimize` | [src/server/masterDataRoutes.ts:982](../../src/server/masterDataRoutes.ts#L982) | Phase 2 | `master-data` | - |
-| 340 | `POST` | `/api/platform/drums/validate` | [src/server/masterDataRoutes.ts:951](../../src/server/masterDataRoutes.ts#L951) | Phase 2 | `master-data` | - |
-| 341 | `GET` | `/api/platform/engineering-mappings` | [src/server/masterDataRoutes.ts:1060](../../src/server/masterDataRoutes.ts#L1060) | Phase 2 | `master-data` | - |
-| 342 | `GET` | `/api/platform/engineering-mappings-export` | [src/server/masterDataRoutes.ts:1073](../../src/server/masterDataRoutes.ts#L1073) | Phase 2 | `master-data` | - |
-| 343 | `GET` | `/api/platform/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1119](../../src/server/masterDataRoutes.ts#L1119) | Phase 2 | `master-data` | - |
-| 344 | `PUT` | `/api/platform/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1131](../../src/server/masterDataRoutes.ts#L1131) | Phase 2 | `master-data` | - |
-| 345 | `POST` | `/api/platform/engineering-mappings/:materialNumber/actions` | [src/server/masterDataRoutes.ts:1263](../../src/server/masterDataRoutes.ts#L1263) | Phase 2 | `master-data` | - |
-| 346 | `POST` | `/api/platform/engineering-mappings/bulk/actions` | [src/server/masterDataRoutes.ts:1166](../../src/server/masterDataRoutes.ts#L1166) | Phase 2 | `master-data` | - |
-| 347 | `POST` | `/api/platform/engineering-mappings/bulk/validate` | [src/server/masterDataRoutes.ts:1149](../../src/server/masterDataRoutes.ts#L1149) | Phase 2 | `master-data` | - |
-| 348 | `POST` | `/api/platform/engineering-mappings/import/commit` | [src/server/masterDataRoutes.ts:1240](../../src/server/masterDataRoutes.ts#L1240) | Phase 2 | `master-data` | - |
-| 349 | `POST` | `/api/platform/engineering-mappings/import/preview` | [src/server/masterDataRoutes.ts:1206](../../src/server/masterDataRoutes.ts#L1206) | Phase 2 | `master-data` | - |
-| 350 | `GET` | `/api/platform/health` | [server.ts:55](../../server.ts#L55) | Phase 0 | `platform-health` | - |
-| 351 | `GET` | `/api/platform/imports` | [src/server/masterDataRoutes.ts:1522](../../src/server/masterDataRoutes.ts#L1522) | Phase 2 | `master-data` | - |
-| 352 | `POST` | `/api/platform/imports/commit` | [src/server/masterDataRoutes.ts:1679](../../src/server/masterDataRoutes.ts#L1679) | Phase 2 | `master-data` | - |
-| 353 | `POST` | `/api/platform/imports/preview` | [src/server/masterDataRoutes.ts:1652](../../src/server/masterDataRoutes.ts#L1652) | Phase 2 | `master-data` | - |
-| 354 | `GET` | `/api/platform/keys` | [src/server/masterDataRoutes.ts:1491](../../src/server/masterDataRoutes.ts#L1491) | Phase 2 | `master-data` | - |
-| 355 | `GET` | `/api/platform/raw-material-price-readiness` | [src/server/masterDataRoutes.ts:1469](../../src/server/masterDataRoutes.ts#L1469) | Phase 2 | `master-data` | - |
-| 356 | `GET` | `/api/platform/raw-material-prices` | [src/server/masterDataRoutes.ts:431](../../src/server/masterDataRoutes.ts#L431) | Phase 2 | `master-data` | - |
-| 357 | `POST` | `/api/platform/raw-material-prices` | [src/server/masterDataRoutes.ts:465](../../src/server/masterDataRoutes.ts#L465) | Phase 2 | `master-data` | - |
-| 358 | `GET` | `/api/platform/raw-material-prices-export` | [src/server/masterDataRoutes.ts:522](../../src/server/masterDataRoutes.ts#L522) | Phase 2 | `master-data` | - |
-| 359 | `POST` | `/api/platform/raw-material-prices/:id/actions` | [src/server/masterDataRoutes.ts:483](../../src/server/masterDataRoutes.ts#L483) | Phase 2 | `master-data` | - |
-| 360 | `GET` | `/api/platform/raw-material-prices/:rawMaterialCode` | [src/server/masterDataRoutes.ts:452](../../src/server/masterDataRoutes.ts#L452) | Phase 2 | `master-data` | - |
-| 361 | `POST` | `/api/platform/raw-material-prices/import/commit` | [src/server/masterDataRoutes.ts:799](../../src/server/masterDataRoutes.ts#L799) | Phase 2 | `master-data` | - |
-| 362 | `POST` | `/api/platform/raw-material-prices/import/preview` | [src/server/masterDataRoutes.ts:645](../../src/server/masterDataRoutes.ts#L645) | Phase 2 | `master-data` | - |
-| 363 | `GET` | `/api/platform/raw-materials` | [src/server/masterDataRoutes.ts:421](../../src/server/masterDataRoutes.ts#L421) | Phase 2 | `master-data` | - |
-| 364 | `POST` | `/api/platform/raw-materials` | [src/server/masterDataRoutes.ts:1532](../../src/server/masterDataRoutes.ts#L1532) | Phase 2 | `master-data` | - |
-| 365 | `PUT` | `/api/platform/raw-materials/:code` | [src/server/masterDataRoutes.ts:1564](../../src/server/masterDataRoutes.ts#L1564) | Phase 2 | `master-data` | - |
-| 366 | `POST` | `/api/platform/raw-materials/:code/prices` | [src/server/masterDataRoutes.ts:1576](../../src/server/masterDataRoutes.ts#L1576) | Phase 2 | `master-data` | - |
-| 367 | `GET` | `/api/platform/readiness` | [src/server/masterDataRoutes.ts:1050](../../src/server/masterDataRoutes.ts#L1050) | Phase 2 | `master-data` | - |
-| 368 | `GET` | `/api/platform/reference` | [src/server/masterDataRoutes.ts:1040](../../src/server/masterDataRoutes.ts#L1040) | Phase 2 | `master-data` | - |
-| 369 | `GET` | `/api/platform/status` | [server.ts:65](../../server.ts#L65) | Phase 0 | `platform-health` | - |
-| 370 | `GET` | `/api/platform/uniqueness` | [src/server/masterDataRoutes.ts:1502](../../src/server/masterDataRoutes.ts#L1502) | Phase 2 | `master-data` | - |
-| 371 | `GET` | `/api/quotations` | [src/server/commercialRoutes.ts:146](../../src/server/commercialRoutes.ts#L146) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 372 | `GET` | `/api/quotations` | [src/server/commercialRoutes.ts:720](../../src/server/commercialRoutes.ts#L720) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 373 | `GET` | `/api/quotations` | [src/server/commercialPricingRoutes.ts:38](../../src/server/commercialPricingRoutes.ts#L38) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 374 | `GET` | `/api/quotations` | [src/server/commercialCommitmentRoutes.ts:174](../../src/server/commercialCommitmentRoutes.ts#L174) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 375 | `GET` | `/api/quotations` | [src/server/commercialCommitmentRoutes.ts:244](../../src/server/commercialCommitmentRoutes.ts#L244) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 376 | `GET` | `/api/quotations` | [src/server/commercialCommitmentRoutes.ts:302](../../src/server/commercialCommitmentRoutes.ts#L302) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 377 | `POST` | `/api/quotations` | [src/server/commercialRoutes.ts:285](../../src/server/commercialRoutes.ts#L285) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 378 | `POST` | `/api/quotations` | [src/server/commercialRoutes.ts:797](../../src/server/commercialRoutes.ts#L797) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 379 | `POST` | `/api/quotations` | [src/server/commercialPricingRoutes.ts:67](../../src/server/commercialPricingRoutes.ts#L67) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 380 | `POST` | `/api/quotations` | [src/server/commercialCommitmentRoutes.ts:188](../../src/server/commercialCommitmentRoutes.ts#L188) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 381 | `GET` | `/api/quotations/:id` | [src/server/commercialRoutes.ts:231](../../src/server/commercialRoutes.ts#L231) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 382 | `GET` | `/api/quotations/:id` | [src/server/commercialRoutes.ts:759](../../src/server/commercialRoutes.ts#L759) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 383 | `GET` | `/api/quotations/:id` | [src/server/commercialCommitmentRoutes.ts:205](../../src/server/commercialCommitmentRoutes.ts#L205) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 384 | `GET` | `/api/quotations/:id` | [src/server/commercialCommitmentRoutes.ts:291](../../src/server/commercialCommitmentRoutes.ts#L291) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 385 | `GET` | `/api/quotations/:id` | [src/server/commercialCommitmentRoutes.ts:333](../../src/server/commercialCommitmentRoutes.ts#L333) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 386 | `GET` | `/api/quotations/:id` | [src/server/commercialCommitmentRoutes.ts:370](../../src/server/commercialCommitmentRoutes.ts#L370) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 387 | `PATCH` | `/api/quotations/:id` | [src/server/commercialRoutes.ts:304](../../src/server/commercialRoutes.ts#L304) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 388 | `POST` | `/api/quotations/:id/actions` | [src/server/commercialPricingRoutes.ts:146](../../src/server/commercialPricingRoutes.ts#L146) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 389 | `GET` | `/api/quotations/:id/activity` | [src/server/commercialRoutes.ts:620](../../src/server/commercialRoutes.ts#L620) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 390 | `POST` | `/api/quotations/:id/approve-commercial` | [src/server/commercialCommitmentRoutes.ts:148](../../src/server/commercialCommitmentRoutes.ts#L148) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 391 | `POST` | `/api/quotations/:id/approve-pricing` | [src/server/commercialPricingRoutes.ts:358](../../src/server/commercialPricingRoutes.ts#L358) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 392 | `GET` | `/api/quotations/:id/attachments` | [src/server/commercialRoutes.ts:564](../../src/server/commercialRoutes.ts#L564) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 393 | `POST` | `/api/quotations/:id/attachments` | [src/server/commercialRoutes.ts:577](../../src/server/commercialRoutes.ts#L577) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 394 | `DELETE` | `/api/quotations/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:606](../../src/server/commercialRoutes.ts#L606) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 395 | `GET` | `/api/quotations/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:591](../../src/server/commercialRoutes.ts#L591) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 396 | `POST` | `/api/quotations/:id/calculate-cost` | [src/server/commercialRoutes.ts:472](../../src/server/commercialRoutes.ts#L472) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 397 | `POST` | `/api/quotations/:id/cancel` | [src/server/commercialRoutes.ts:687](../../src/server/commercialRoutes.ts#L687) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 398 | `POST` | `/api/quotations/:id/commitments` | [src/server/commercialCommitmentRoutes.ts:162](../../src/server/commercialCommitmentRoutes.ts#L162) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 399 | `GET` | `/api/quotations/:id/costing` | [src/server/commercialRoutes.ts:831](../../src/server/commercialRoutes.ts#L831) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 400 | `GET` | `/api/quotations/:id/export` | [src/server/commercialRoutes.ts:267](../../src/server/commercialRoutes.ts#L267) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 401 | `GET` | `/api/quotations/:id/history` | [src/server/commercialPricingRoutes.ts:103](../../src/server/commercialPricingRoutes.ts#L103) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 402 | `POST` | `/api/quotations/:id/lines` | [src/server/commercialRoutes.ts:318](../../src/server/commercialRoutes.ts#L318) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 403 | `DELETE` | `/api/quotations/:id/lines/:lineId` | [src/server/commercialRoutes.ts:387](../../src/server/commercialRoutes.ts#L387) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 404 | `PATCH` | `/api/quotations/:id/lines/:lineId` | [src/server/commercialRoutes.ts:354](../../src/server/commercialRoutes.ts#L354) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 405 | `GET` | `/api/quotations/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:416](../../src/server/commercialRoutes.ts#L416) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 406 | `POST` | `/api/quotations/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:429](../../src/server/commercialRoutes.ts#L429) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 407 | `DELETE` | `/api/quotations/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:458](../../src/server/commercialRoutes.ts#L458) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 408 | `GET` | `/api/quotations/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:443](../../src/server/commercialRoutes.ts#L443) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 409 | `POST` | `/api/quotations/:id/lines/:lineId/calculate-cost` | [src/server/commercialRoutes.ts:503](../../src/server/commercialRoutes.ts#L503) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 410 | `GET` | `/api/quotations/:id/lines/:lineId/costing` | [src/server/commercialRoutes.ts:541](../../src/server/commercialRoutes.ts#L541) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 411 | `POST` | `/api/quotations/:id/lines/:lineId/drum-schedule/confirm` | [src/server/commercialRoutes.ts:367](../../src/server/commercialRoutes.ts#L367) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 412 | `POST` | `/api/quotations/:id/lines/:lineId/duplicate` | [src/server/commercialRoutes.ts:400](../../src/server/commercialRoutes.ts#L400) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 413 | `POST` | `/api/quotations/:id/lines/reorder` | [src/server/commercialRoutes.ts:341](../../src/server/commercialRoutes.ts#L341) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 414 | `POST` | `/api/quotations/:id/new-version` | [src/server/commercialRoutes.ts:671](../../src/server/commercialRoutes.ts#L671) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 415 | `POST` | `/api/quotations/:id/price` | [src/server/commercialPricingRoutes.ts:306](../../src/server/commercialPricingRoutes.ts#L306) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 416 | `POST` | `/api/quotations/:id/quotation` | [src/server/commercialRoutes.ts:699](../../src/server/commercialRoutes.ts#L699) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 417 | `GET` | `/api/quotations/:id/releases` | [src/server/commercialCommitmentRoutes.ts:344](../../src/server/commercialCommitmentRoutes.ts#L344) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 418 | `POST` | `/api/quotations/:id/releases` | [src/server/commercialCommitmentRoutes.ts:355](../../src/server/commercialCommitmentRoutes.ts#L355) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 419 | `POST` | `/api/quotations/:id/sales-agreements` | [src/server/commercialCommitmentRoutes.ts:230](../../src/server/commercialCommitmentRoutes.ts#L230) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 420 | `POST` | `/api/quotations/:id/sales-orders` | [src/server/commercialCommitmentRoutes.ts:216](../../src/server/commercialCommitmentRoutes.ts#L216) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 421 | `POST` | `/api/quotations/:id/submit` | [src/server/commercialRoutes.ts:634](../../src/server/commercialRoutes.ts#L634) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 422 | `POST` | `/api/quotations/:id/submit-for-approval` | [src/server/commercialPricingRoutes.ts:341](../../src/server/commercialPricingRoutes.ts#L341) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 423 | `GET` | `/api/quotations/:id/versions` | [src/server/commercialRoutes.ts:218](../../src/server/commercialRoutes.ts#L218) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 424 | `POST` | `/api/quotations/:id/versions` | [src/server/commercialRoutes.ts:817](../../src/server/commercialRoutes.ts#L817) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 425 | `POST` | `/api/quotations/:id/versions` | [src/server/commercialPricingRoutes.ts:120](../../src/server/commercialPricingRoutes.ts#L120) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 426 | `POST` | `/api/quotations/calculate` | [src/server/commercialPricingRoutes.ts:257](../../src/server/commercialPricingRoutes.ts#L257) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 427 | `POST` | `/api/quotations/direct-mts` | [src/server/commercialCommitmentRoutes.ts:276](../../src/server/commercialCommitmentRoutes.ts#L276) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 428 | `GET` | `/api/quotations/export` | [src/server/commercialPricingRoutes.ts:182](../../src/server/commercialPricingRoutes.ts#L182) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 429 | `POST` | `/api/quotations/from-quotation/:quotationRevisionId` | [src/server/commercialCommitmentRoutes.ts:257](../../src/server/commercialCommitmentRoutes.ts#L257) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 430 | `POST` | `/api/quotations/from-quotation/:quotationRevisionId` | [src/server/commercialCommitmentRoutes.ts:315](../../src/server/commercialCommitmentRoutes.ts#L315) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 431 | `GET` | `/api/quotations/meta/field-definitions` | [src/server/commercialRoutes.ts:176](../../src/server/commercialRoutes.ts#L176) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 432 | `GET` | `/api/quotations/options` | [src/server/commercialPricingRoutes.ts:87](../../src/server/commercialPricingRoutes.ts#L87) | Phase 4 | `commercial-inquiries-quotations` | - |
-| 433 | `GET` | `/api/technical-office/compatibility` | [src/server/cableAuthorityRoutes.ts:60](../../src/server/cableAuthorityRoutes.ts#L60) | Phase 3 | `cable-authority` | - |
-| 434 | `POST` | `/api/technical-office/evaluate` | [src/server/cableAuthorityRoutes.ts:68](../../src/server/cableAuthorityRoutes.ts#L68) | Phase 3 | `cable-authority` | - |
-| 435 | `GET` | `/api/technical-office/requests` | [src/server/cableAuthorityRoutes.ts:120](../../src/server/cableAuthorityRoutes.ts#L120) | Phase 3 | `cable-authority` | - |
-| 436 | `POST` | `/api/technical-office/requests` | [src/server/cableAuthorityRoutes.ts:91](../../src/server/cableAuthorityRoutes.ts#L91) | Phase 3 | `cable-authority` | - |
-| 437 | `GET` | `/api/technical-office/search` | [src/server/cableAuthorityRoutes.ts:30](../../src/server/cableAuthorityRoutes.ts#L30) | Phase 3 | `cable-authority` | - |
-| 438 | `GET` | `/api/v2/algorithm-configurations` | [src/server/containerStudyRoutes.ts:119](../../src/server/containerStudyRoutes.ts#L119) | Phase 6 | `container-study` | - |
-| 439 | `POST` | `/api/v2/algorithm-configurations/:id/activate` | [src/server/containerStudyRoutes.ts:129](../../src/server/containerStudyRoutes.ts#L129) | Phase 6 | `container-study` | - |
-| 440 | `GET` | `/api/v2/algorithm-versions` | [src/server/containerStudyRoutes.ts:109](../../src/server/containerStudyRoutes.ts#L109) | Phase 6 | `container-study` | - |
-| 441 | `GET` | `/api/v2/audit/events` | [src/server/v2PlatformRoutes.ts:360](../../src/server/v2PlatformRoutes.ts#L360) | Phase 4 | `v2-platform` | - |
-| 442 | `GET` | `/api/v2/audit/migration` | [src/server/v2PlatformRoutes.ts:377](../../src/server/v2PlatformRoutes.ts#L377) | Phase 4 | `v2-platform` | - |
-| 443 | `GET` | `/api/v2/boundary` | [src/server/v2PlatformRoutes.ts:88](../../src/server/v2PlatformRoutes.ts#L88) | Phase 4 | `v2-platform` | - |
-| 444 | `GET` | `/api/v2/cables/products` | [src/server/v2CableSearchRoutes.ts:143](../../src/server/v2CableSearchRoutes.ts#L143) | Phase 3 | `cable-authority` | - |
-| 445 | `GET` | `/api/v2/cables/products/export` | [src/server/v2CableSearchRoutes.ts:86](../../src/server/v2CableSearchRoutes.ts#L86) | Phase 3 | `cable-authority` | - |
-| 446 | `GET` | `/api/v2/cables/products/facets` | [src/server/v2CableSearchRoutes.ts:76](../../src/server/v2CableSearchRoutes.ts#L76) | Phase 3 | `cable-authority` | - |
-| 447 | `GET` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:161](../../src/server/v2CableSearchRoutes.ts#L161) | Phase 3 | `cable-authority` | - |
-| 448 | `POST` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:195](../../src/server/v2CableSearchRoutes.ts#L195) | Phase 3 | `cable-authority` | - |
-| 449 | `GET` | `/api/v2/cables/search/facets` | [src/server/v2CableSearchRoutes.ts:183](../../src/server/v2CableSearchRoutes.ts#L183) | Phase 3 | `cable-authority` | - |
-| 450 | `POST` | `/api/v2/container-studies` | [src/server/containerStudyRoutes.ts:302](../../src/server/containerStudyRoutes.ts#L302) | Phase 6 | `container-study` | - |
-| 451 | `GET` | `/api/v2/container-studies/:id` | [src/server/containerStudyRoutes.ts:327](../../src/server/containerStudyRoutes.ts#L327) | Phase 6 | `container-study` | - |
-| 452 | `POST` | `/api/v2/container-studies/:id/calculate` | [src/server/containerStudyRoutes.ts:449](../../src/server/containerStudyRoutes.ts#L449) | Phase 6 | `container-study` | - |
-| 453 | `POST` | `/api/v2/container-studies/:id/confirm` | [src/server/containerStudyRoutes.ts:397](../../src/server/containerStudyRoutes.ts#L397) | Phase 6 | `container-study` | - |
-| 454 | `GET` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:347](../../src/server/containerStudyRoutes.ts#L347) | Phase 6 | `container-study` | - |
-| 455 | `PATCH` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:363](../../src/server/containerStudyRoutes.ts#L363) | Phase 6 | `container-study` | - |
-| 456 | `POST` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:337](../../src/server/containerStudyRoutes.ts#L337) | Phase 6 | `container-study` | - |
-| 457 | `PUT` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:357](../../src/server/containerStudyRoutes.ts#L357) | Phase 6 | `container-study` | - |
-| 458 | `GET` | `/api/v2/container-studies/:id/results` | [src/server/containerStudyRoutes.ts:417](../../src/server/containerStudyRoutes.ts#L417) | Phase 6 | `container-study` | - |
-| 459 | `GET` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:427](../../src/server/containerStudyRoutes.ts#L427) | Phase 6 | `container-study` | - |
-| 460 | `PATCH` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:443](../../src/server/containerStudyRoutes.ts#L443) | Phase 6 | `container-study` | - |
-| 461 | `PUT` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:437](../../src/server/containerStudyRoutes.ts#L437) | Phase 6 | `container-study` | - |
-| 462 | `POST` | `/api/v2/container-studies/:id/snapshots` | [src/server/containerStudyRoutes.ts:369](../../src/server/containerStudyRoutes.ts#L369) | Phase 6 | `container-study` | - |
-| 463 | `POST` | `/api/v2/container-studies/:id/supersede` | [src/server/containerStudyRoutes.ts:407](../../src/server/containerStudyRoutes.ts#L407) | Phase 6 | `container-study` | - |
-| 464 | `POST` | `/api/v2/container-studies/:id/validate` | [src/server/containerStudyRoutes.ts:387](../../src/server/containerStudyRoutes.ts#L387) | Phase 6 | `container-study` | - |
-| 465 | `GET` | `/api/v2/container-study-results/:resultId/shipment-cost-snapshot` | [src/server/shipmentCostSnapshotRoutes.ts:79](../../src/server/shipmentCostSnapshotRoutes.ts#L79) | Phase 6 | `container-study` | - |
-| 466 | `GET` | `/api/v2/container-types` | [src/server/containerStudyRoutes.ts:88](../../src/server/containerStudyRoutes.ts#L88) | Phase 6 | `container-study` | - |
-| 467 | `POST` | `/api/v2/container-types/:id/versions` | [src/server/containerStudyRoutes.ts:98](../../src/server/containerStudyRoutes.ts#L98) | Phase 6 | `container-study` | - |
-| 468 | `GET` | `/api/v2/customer-financial-offers/:id` | [src/server/financialOfferSnapshotRoutes.ts:96](../../src/server/financialOfferSnapshotRoutes.ts#L96) | Phase 6 | `financial-offer` | - |
-| 469 | `GET` | `/api/v2/customer-shipping-cost-rates` | [src/server/customerShippingCostRoutes.ts:95](../../src/server/customerShippingCostRoutes.ts#L95) | Phase 6 | `shipping` | - |
-| 470 | `POST` | `/api/v2/customer-shipping-cost-rates` | [src/server/customerShippingCostRoutes.ts:108](../../src/server/customerShippingCostRoutes.ts#L108) | Phase 6 | `shipping` | - |
-| 471 | `PATCH` | `/api/v2/customer-shipping-cost-rates/:id` | [src/server/customerShippingCostRoutes.ts:118](../../src/server/customerShippingCostRoutes.ts#L118) | Phase 6 | `shipping` | - |
-| 472 | `GET` | `/api/v2/customer-shipping-cost-rates/history` | [src/server/customerShippingCostRoutes.ts:61](../../src/server/customerShippingCostRoutes.ts#L61) | Phase 6 | `shipping` | - |
-| 473 | `GET` | `/api/v2/customer-shipping-cost-rates/options` | [src/server/customerShippingCostRoutes.ts:51](../../src/server/customerShippingCostRoutes.ts#L51) | Phase 6 | `shipping` | - |
-| 474 | `GET` | `/api/v2/customer-shipping-cost-rates/resolve` | [src/server/customerShippingCostRoutes.ts:77](../../src/server/customerShippingCostRoutes.ts#L77) | Phase 6 | `shipping` | - |
-| 475 | `GET` | `/api/v2/data-ownership` | [src/server/v2PlatformRoutes.ts:144](../../src/server/v2PlatformRoutes.ts#L144) | Phase 4 | `v2-platform` | - |
-| 476 | `GET` | `/api/v2/destination-ports` | [src/server/shippingCostRoutes.ts:58](../../src/server/shippingCostRoutes.ts#L58) | Phase 6 | `shipping` | - |
-| 477 | `POST` | `/api/v2/destination-ports` | [src/server/shippingCostRoutes.ts:70](../../src/server/shippingCostRoutes.ts#L70) | Phase 6 | `shipping` | - |
-| 478 | `GET` | `/api/v2/destination-ports/:id` | [src/server/shippingCostRoutes.ts:80](../../src/server/shippingCostRoutes.ts#L80) | Phase 6 | `shipping` | - |
-| 479 | `PATCH` | `/api/v2/destination-ports/:id` | [src/server/shippingCostRoutes.ts:90](../../src/server/shippingCostRoutes.ts#L90) | Phase 6 | `shipping` | - |
-| 480 | `POST` | `/api/v2/financial-offer-snapshots` | [src/server/financialOfferSnapshotRoutes.ts:56](../../src/server/financialOfferSnapshotRoutes.ts#L56) | Phase 6 | `financial-offer` | - |
-| 481 | `GET` | `/api/v2/financial-offer-snapshots/:id` | [src/server/financialOfferSnapshotRoutes.ts:76](../../src/server/financialOfferSnapshotRoutes.ts#L76) | Phase 6 | `financial-offer` | - |
-| 482 | `GET` | `/api/v2/ia/master-data/ownership` | [src/server/v2PlatformRoutes.ts:437](../../src/server/v2PlatformRoutes.ts#L437) | Phase 4 | `v2-platform` | - |
-| 483 | `GET` | `/api/v2/ia/modules/:moduleId/workspace` | [src/server/v2PlatformRoutes.ts:394](../../src/server/v2PlatformRoutes.ts#L394) | Phase 4 | `v2-platform` | - |
-| 484 | `GET` | `/api/v2/ia/navigator` | [src/server/v2PlatformRoutes.ts:415](../../src/server/v2PlatformRoutes.ts#L415) | Phase 4 | `v2-platform` | - |
-| 485 | `GET` | `/api/v2/ia/service-boundaries` | [src/server/v2PlatformRoutes.ts:451](../../src/server/v2PlatformRoutes.ts#L451) | Phase 4 | `v2-platform` | - |
-| 486 | `GET` | `/api/v2/incoterms` | [src/server/shippingCostRoutes.ts:100](../../src/server/shippingCostRoutes.ts#L100) | Phase 6 | `shipping` | - |
-| 487 | `POST` | `/api/v2/incoterms` | [src/server/shippingCostRoutes.ts:112](../../src/server/shippingCostRoutes.ts#L112) | Phase 6 | `shipping` | - |
-| 488 | `GET` | `/api/v2/incoterms/:id` | [src/server/shippingCostRoutes.ts:122](../../src/server/shippingCostRoutes.ts#L122) | Phase 6 | `shipping` | - |
-| 489 | `PATCH` | `/api/v2/incoterms/:id` | [src/server/shippingCostRoutes.ts:132](../../src/server/shippingCostRoutes.ts#L132) | Phase 6 | `shipping` | - |
-| 490 | `GET` | `/api/v2/inquiries` | [src/server/v2InquiryConfigurationRoutes.ts:175](../../src/server/v2InquiryConfigurationRoutes.ts#L175) | Phase 4 | `v2-inquiry-configuration` | - |
-| 491 | `POST` | `/api/v2/inquiries` | [src/server/v2InquiryConfigurationRoutes.ts:164](../../src/server/v2InquiryConfigurationRoutes.ts#L164) | Phase 4 | `v2-inquiry-configuration` | - |
-| 492 | `GET` | `/api/v2/inquiries/:id` | [src/server/v2InquiryConfigurationRoutes.ts:190](../../src/server/v2InquiryConfigurationRoutes.ts#L190) | Phase 4 | `v2-inquiry-configuration` | - |
-| 493 | `POST` | `/api/v2/inquiries/:id/calculate` | [src/server/v2InquiryConfigurationRoutes.ts:622](../../src/server/v2InquiryConfigurationRoutes.ts#L622) | Phase 4 | `v2-inquiry-configuration` | - |
-| 494 | `GET` | `/api/v2/inquiries/:id/container-studies` | [src/server/v2InquiryConfigurationRoutes.ts:790](../../src/server/v2InquiryConfigurationRoutes.ts#L790) | Phase 4 | `v2-inquiry-configuration` | - |
-| 495 | `POST` | `/api/v2/inquiries/:id/container-studies` | [src/server/v2InquiryConfigurationRoutes.ts:778](../../src/server/v2InquiryConfigurationRoutes.ts#L778) | Phase 4 | `v2-inquiry-configuration` | - |
-| 496 | `POST` | `/api/v2/inquiries/:id/engineering-status` | [src/server/v2InquiryConfigurationRoutes.ts:261](../../src/server/v2InquiryConfigurationRoutes.ts#L261) | Phase 4 | `v2-inquiry-configuration` | - |
-| 497 | `GET` | `/api/v2/inquiries/:id/lines` | [src/server/v2InquiryConfigurationRoutes.ts:212](../../src/server/v2InquiryConfigurationRoutes.ts#L212) | Phase 4 | `v2-inquiry-configuration` | - |
-| 498 | `POST` | `/api/v2/inquiries/:id/lines` | [src/server/v2InquiryConfigurationRoutes.ts:201](../../src/server/v2InquiryConfigurationRoutes.ts#L201) | Phase 4 | `v2-inquiry-configuration` | - |
-| 499 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/commercial-pricing/preview` | [src/server/v2InquiryConfigurationRoutes.ts:575](../../src/server/v2InquiryConfigurationRoutes.ts#L575) | Phase 4 | `v2-inquiry-configuration` | - |
-| 500 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/calculate` | [src/server/v2InquiryConfigurationRoutes.ts:527](../../src/server/v2InquiryConfigurationRoutes.ts#L527) | Phase 4 | `v2-inquiry-configuration` | - |
-| 501 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/current` | [src/server/v2InquiryConfigurationRoutes.ts:543](../../src/server/v2InquiryConfigurationRoutes.ts#L543) | Phase 4 | `v2-inquiry-configuration` | - |
-| 502 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/preview` | [src/server/v2InquiryConfigurationRoutes.ts:515](../../src/server/v2InquiryConfigurationRoutes.ts#L515) | Phase 4 | `v2-inquiry-configuration` | - |
-| 503 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans` | [src/server/v2InquiryConfigurationRoutes.ts:332](../../src/server/v2InquiryConfigurationRoutes.ts#L332) | Phase 4 | `v2-inquiry-configuration` | - |
-| 504 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans` | [src/server/v2InquiryConfigurationRoutes.ts:273](../../src/server/v2InquiryConfigurationRoutes.ts#L273) | Phase 4 | `v2-inquiry-configuration` | - |
-| 505 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/:planId/handoff` | [src/server/v2InquiryConfigurationRoutes.ts:354](../../src/server/v2InquiryConfigurationRoutes.ts#L354) | Phase 4 | `v2-inquiry-configuration` | - |
-| 506 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/current` | [src/server/v2InquiryConfigurationRoutes.ts:343](../../src/server/v2InquiryConfigurationRoutes.ts#L343) | Phase 4 | `v2-inquiry-configuration` | - |
-| 507 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/preview` | [src/server/v2InquiryConfigurationRoutes.ts:289](../../src/server/v2InquiryConfigurationRoutes.ts#L289) | Phase 4 | `v2-inquiry-configuration` | - |
-| 508 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-requirements` | [src/server/v2InquiryConfigurationRoutes.ts:321](../../src/server/v2InquiryConfigurationRoutes.ts#L321) | Phase 4 | `v2-inquiry-configuration` | - |
-| 509 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-requirements` | [src/server/v2InquiryConfigurationRoutes.ts:305](../../src/server/v2InquiryConfigurationRoutes.ts#L305) | Phase 4 | `v2-inquiry-configuration` | - |
-| 510 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans` | [src/server/v2InquiryConfigurationRoutes.ts:466](../../src/server/v2InquiryConfigurationRoutes.ts#L466) | Phase 4 | `v2-inquiry-configuration` | - |
-| 511 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans` | [src/server/v2InquiryConfigurationRoutes.ts:418](../../src/server/v2InquiryConfigurationRoutes.ts#L418) | Phase 4 | `v2-inquiry-configuration` | - |
-| 512 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId` | [src/server/v2InquiryConfigurationRoutes.ts:488](../../src/server/v2InquiryConfigurationRoutes.ts#L488) | Phase 4 | `v2-inquiry-configuration` | - |
-| 513 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/confirm` | [src/server/v2InquiryConfigurationRoutes.ts:450](../../src/server/v2InquiryConfigurationRoutes.ts#L450) | Phase 4 | `v2-inquiry-configuration` | - |
-| 514 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/handoff` | [src/server/v2InquiryConfigurationRoutes.ts:499](../../src/server/v2InquiryConfigurationRoutes.ts#L499) | Phase 4 | `v2-inquiry-configuration` | - |
-| 515 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/validate` | [src/server/v2InquiryConfigurationRoutes.ts:434](../../src/server/v2InquiryConfigurationRoutes.ts#L434) | Phase 4 | `v2-inquiry-configuration` | - |
-| 516 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/current` | [src/server/v2InquiryConfigurationRoutes.ts:477](../../src/server/v2InquiryConfigurationRoutes.ts#L477) | Phase 4 | `v2-inquiry-configuration` | - |
-| 517 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/candidates` | [src/server/v2InquiryConfigurationRoutes.ts:388](../../src/server/v2InquiryConfigurationRoutes.ts#L388) | Phase 4 | `v2-inquiry-configuration` | - |
-| 518 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/context` | [src/server/v2InquiryConfigurationRoutes.ts:370](../../src/server/v2InquiryConfigurationRoutes.ts#L370) | Phase 4 | `v2-inquiry-configuration` | - |
-| 519 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/preview` | [src/server/v2InquiryConfigurationRoutes.ts:407](../../src/server/v2InquiryConfigurationRoutes.ts#L407) | Phase 4 | `v2-inquiry-configuration` | - |
-| 520 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/snapshots` | [src/server/v2InquiryConfigurationRoutes.ts:239](../../src/server/v2InquiryConfigurationRoutes.ts#L239) | Phase 4 | `v2-inquiry-configuration` | - |
-| 521 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/snapshots` | [src/server/v2InquiryConfigurationRoutes.ts:223](../../src/server/v2InquiryConfigurationRoutes.ts#L223) | Phase 4 | `v2-inquiry-configuration` | - |
-| 522 | `GET` | `/api/v2/inquiries/:id/quotation` | [src/server/v2InquiryConfigurationRoutes.ts:604](../../src/server/v2InquiryConfigurationRoutes.ts#L604) | Phase 4 | `v2-inquiry-configuration` | - |
-| 523 | `POST` | `/api/v2/inquiries/:id/quotation` | [src/server/v2InquiryConfigurationRoutes.ts:636](../../src/server/v2InquiryConfigurationRoutes.ts#L636) | Phase 4 | `v2-inquiry-configuration` | - |
-| 524 | `POST` | `/api/v2/inquiries/:id/quotation/approve` | [src/server/v2InquiryConfigurationRoutes.ts:662](../../src/server/v2InquiryConfigurationRoutes.ts#L662) | Phase 4 | `v2-inquiry-configuration` | - |
-| 525 | `POST` | `/api/v2/inquiries/:id/quotation/customer-decision` | [src/server/v2InquiryConfigurationRoutes.ts:687](../../src/server/v2InquiryConfigurationRoutes.ts#L687) | Phase 4 | `v2-inquiry-configuration` | - |
-| 526 | `POST` | `/api/v2/inquiries/:id/quotation/issue` | [src/server/v2InquiryConfigurationRoutes.ts:706](../../src/server/v2InquiryConfigurationRoutes.ts#L706) | Phase 4 | `v2-inquiry-configuration` | - |
-| 527 | `GET` | `/api/v2/inquiries/:id/quotation/pdf` | [src/server/v2InquiryConfigurationRoutes.ts:730](../../src/server/v2InquiryConfigurationRoutes.ts#L730) | Phase 4 | `v2-inquiry-configuration` | - |
-| 528 | `POST` | `/api/v2/inquiries/:id/quotation/price` | [src/server/v2InquiryConfigurationRoutes.ts:649](../../src/server/v2InquiryConfigurationRoutes.ts#L649) | Phase 4 | `v2-inquiry-configuration` | - |
-| 529 | `GET` | `/api/v2/inquiries/:id/quotation/readiness` | [src/server/v2InquiryConfigurationRoutes.ts:588](../../src/server/v2InquiryConfigurationRoutes.ts#L588) | Phase 4 | `v2-inquiry-configuration` | - |
-| 530 | `POST` | `/api/v2/inquiries/:id/quotation/return` | [src/server/v2InquiryConfigurationRoutes.ts:674](../../src/server/v2InquiryConfigurationRoutes.ts#L674) | Phase 4 | `v2-inquiry-configuration` | - |
-| 531 | `POST` | `/api/v2/inquiries/:id/quotation/revise` | [src/server/v2InquiryConfigurationRoutes.ts:718](../../src/server/v2InquiryConfigurationRoutes.ts#L718) | Phase 4 | `v2-inquiry-configuration` | - |
-| 532 | `POST` | `/api/v2/inquiries/:id/shipment-groups` | [src/server/v2InquiryConfigurationRoutes.ts:766](../../src/server/v2InquiryConfigurationRoutes.ts#L766) | Phase 4 | `v2-inquiry-configuration` | - |
-| 533 | `POST` | `/api/v2/inquiries/:id/submit` | [src/server/v2InquiryConfigurationRoutes.ts:250](../../src/server/v2InquiryConfigurationRoutes.ts#L250) | Phase 4 | `v2-inquiry-configuration` | - |
-| 534 | `GET` | `/api/v2/inquiries/:inquiryId/container-studies` | [src/server/containerStudyRoutes.ts:317](../../src/server/containerStudyRoutes.ts#L317) | Phase 4 | `v2-inquiry-configuration` | - |
-| 535 | `POST` | `/api/v2/inquiries/:inquiryId/container-studies` | [src/server/containerStudyRoutes.ts:292](../../src/server/containerStudyRoutes.ts#L292) | Phase 4 | `v2-inquiry-configuration` | - |
-| 536 | `GET` | `/api/v2/inquiries/:inquiryId/container-study-workspace` | [src/server/containerStudyRoutes.ts:254](../../src/server/containerStudyRoutes.ts#L254) | Phase 4 | `v2-inquiry-configuration` | - |
-| 537 | `POST` | `/api/v2/inquiries/:inquiryId/container-study-workspace/calculate` | [src/server/containerStudyRoutes.ts:265](../../src/server/containerStudyRoutes.ts#L265) | Phase 4 | `v2-inquiry-configuration` | - |
-| 538 | `POST` | `/api/v2/inquiries/:inquiryId/container-study-workspace/select` | [src/server/containerStudyRoutes.ts:276](../../src/server/containerStudyRoutes.ts#L276) | Phase 4 | `v2-inquiry-configuration` | - |
-| 539 | `GET` | `/api/v2/inquiries/:inquiryId/customer-container-study` | [src/server/financialOfferSnapshotRoutes.ts:116](../../src/server/financialOfferSnapshotRoutes.ts#L116) | Phase 4 | `v2-inquiry-configuration` | - |
-| 540 | `GET` | `/api/v2/inquiries/:inquiryId/customer-financial-offer` | [src/server/financialOfferSnapshotRoutes.ts:106](../../src/server/financialOfferSnapshotRoutes.ts#L106) | Phase 4 | `v2-inquiry-configuration` | - |
-| 541 | `GET` | `/api/v2/inquiries/:inquiryId/financial-offer-snapshot` | [src/server/financialOfferSnapshotRoutes.ts:86](../../src/server/financialOfferSnapshotRoutes.ts#L86) | Phase 4 | `v2-inquiry-configuration` | - |
-| 542 | `GET` | `/api/v2/inquiries/:inquiryId/shipment-groups` | [src/server/containerStudyRoutes.ts:169](../../src/server/containerStudyRoutes.ts#L169) | Phase 4 | `v2-inquiry-configuration` | - |
-| 543 | `POST` | `/api/v2/inquiries/:inquiryId/shipment-groups` | [src/server/containerStudyRoutes.ts:224](../../src/server/containerStudyRoutes.ts#L224) | Phase 4 | `v2-inquiry-configuration` | - |
-| 544 | `GET` | `/api/v2/integrations/status` | [src/server/v2PlatformRoutes.ts:383](../../src/server/v2PlatformRoutes.ts#L383) | Phase 4 | `v2-platform` | - |
-| 545 | `GET` | `/api/v2/master-data-sot` | [src/server/v2PlatformRoutes.ts:150](../../src/server/v2PlatformRoutes.ts#L150) | Phase 4 | `v2-platform` | - |
-| 546 | `GET` | `/api/v2/metadata/fields` | [src/server/v2PlatformRoutes.ts:174](../../src/server/v2PlatformRoutes.ts#L174) | Phase 4 | `v2-platform` | - |
-| 547 | `POST` | `/api/v2/metadata/fields` | [src/server/v2PlatformRoutes.ts:197](../../src/server/v2PlatformRoutes.ts#L197) | Phase 4 | `v2-platform` | - |
-| 548 | `GET` | `/api/v2/modules` | [src/server/v2PlatformRoutes.ts:113](../../src/server/v2PlatformRoutes.ts#L113) | Phase 4 | `v2-platform` | - |
-| 549 | `GET` | `/api/v2/modules/:moduleId` | [src/server/v2PlatformRoutes.ts:136](../../src/server/v2PlatformRoutes.ts#L136) | Phase 4 | `v2-platform` | - |
-| 550 | `GET` | `/api/v2/modules/navigable` | [src/server/v2PlatformRoutes.ts:130](../../src/server/v2PlatformRoutes.ts#L130) | Phase 4 | `v2-platform` | - |
-| 551 | `GET` | `/api/v2/number-sequences` | [src/server/v2PlatformRoutes.ts:209](../../src/server/v2PlatformRoutes.ts#L209) | Phase 4 | `v2-platform` | - |
-| 552 | `POST` | `/api/v2/number-sequences` | [src/server/v2PlatformRoutes.ts:228](../../src/server/v2PlatformRoutes.ts#L228) | Phase 4 | `v2-platform` | - |
-| 553 | `POST` | `/api/v2/number-sequences/:code/allocate` | [src/server/v2PlatformRoutes.ts:240](../../src/server/v2PlatformRoutes.ts#L240) | Phase 4 | `v2-platform` | - |
-| 554 | `POST` | `/api/v2/packing-profiles` | [src/server/containerStudyRoutes.ts:139](../../src/server/containerStudyRoutes.ts#L139) | Phase 6 | `container-study` | - |
-| 555 | `GET` | `/api/v2/packing-profiles/:id` | [src/server/containerStudyRoutes.ts:149](../../src/server/containerStudyRoutes.ts#L149) | Phase 6 | `container-study` | - |
-| 556 | `POST` | `/api/v2/packing-profiles/:id/versions` | [src/server/containerStudyRoutes.ts:159](../../src/server/containerStudyRoutes.ts#L159) | Phase 6 | `container-study` | - |
-| 557 | `POST` | `/api/v2/security/effective-access/evaluate` | [src/server/v2PlatformRoutes.ts:252](../../src/server/v2PlatformRoutes.ts#L252) | Phase 4 | `v2-platform` | - |
-| 558 | `GET` | `/api/v2/security/effective-access/explain` | [src/server/v2PlatformRoutes.ts:277](../../src/server/v2PlatformRoutes.ts#L277) | Phase 4 | `v2-platform` | - |
-| 559 | `GET` | `/api/v2/security/users/:userId/access-profile` | [src/server/v2PlatformRoutes.ts:347](../../src/server/v2PlatformRoutes.ts#L347) | Phase 4 | `v2-platform` | - |
-| 560 | `POST` | `/api/v2/shipment-cost-snapshots` | [src/server/shipmentCostSnapshotRoutes.ts:48](../../src/server/shipmentCostSnapshotRoutes.ts#L48) | Phase 6 | `shipping` | - |
-| 561 | `GET` | `/api/v2/shipment-cost-snapshots/:id` | [src/server/shipmentCostSnapshotRoutes.ts:69](../../src/server/shipmentCostSnapshotRoutes.ts#L69) | Phase 6 | `shipping` | - |
-| 562 | `POST` | `/api/v2/shipment-groups` | [src/server/containerStudyRoutes.ts:209](../../src/server/containerStudyRoutes.ts#L209) | Phase 6 | `container-study` | - |
-| 563 | `GET` | `/api/v2/shipment-groups/:id` | [src/server/containerStudyRoutes.ts:199](../../src/server/containerStudyRoutes.ts#L199) | Phase 6 | `container-study` | - |
-| 564 | `PATCH` | `/api/v2/shipment-groups/:id` | [src/server/containerStudyRoutes.ts:179](../../src/server/containerStudyRoutes.ts#L179) | Phase 6 | `container-study` | - |
-| 565 | `POST` | `/api/v2/shipment-groups/:id/confirm` | [src/server/containerStudyRoutes.ts:244](../../src/server/containerStudyRoutes.ts#L244) | Phase 6 | `container-study` | - |
-| 566 | `POST` | `/api/v2/shipment-groups/:id/supersede` | [src/server/containerStudyRoutes.ts:189](../../src/server/containerStudyRoutes.ts#L189) | Phase 6 | `container-study` | - |
-| 567 | `POST` | `/api/v2/shipment-groups/:id/validate` | [src/server/containerStudyRoutes.ts:234](../../src/server/containerStudyRoutes.ts#L234) | Phase 6 | `container-study` | - |
-| 568 | `GET` | `/api/v2/shipping-cost-rates` | [src/server/shippingCostRoutes.ts:142](../../src/server/shippingCostRoutes.ts#L142) | Phase 6 | `shipping` | - |
-| 569 | `POST` | `/api/v2/shipping-cost-rates` | [src/server/shippingCostRoutes.ts:177](../../src/server/shippingCostRoutes.ts#L177) | Phase 6 | `shipping` | - |
-| 570 | `GET` | `/api/v2/shipping-cost-rates/:id` | [src/server/shippingCostRoutes.ts:187](../../src/server/shippingCostRoutes.ts#L187) | Phase 6 | `shipping` | - |
-| 571 | `PATCH` | `/api/v2/shipping-cost-rates/:id` | [src/server/shippingCostRoutes.ts:197](../../src/server/shippingCostRoutes.ts#L197) | Phase 6 | `shipping` | - |
-| 572 | `GET` | `/api/v2/shipping-cost-rates/resolve` | [src/server/shippingCostRoutes.ts:161](../../src/server/shippingCostRoutes.ts#L161) | Phase 6 | `shipping` | - |
-| 573 | `GET` | `/api/v2/workflows/by-entity/:entityType/:entityId` | [src/server/workflowRoutes.ts:104](../../src/server/workflowRoutes.ts#L104) | Phase 7 | `workflows` | - |
-| 574 | `GET` | `/api/v2/workflows/instances/:instanceId` | [src/server/workflowRoutes.ts:64](../../src/server/workflowRoutes.ts#L64) | Phase 7 | `workflows` | - |
-| 575 | `POST` | `/api/v2/workflows/instances/:instanceId/cancel` | [src/server/workflowRoutes.ts:157](../../src/server/workflowRoutes.ts#L157) | Phase 7 | `workflows` | - |
-| 576 | `GET` | `/api/v2/workflows/instances/:instanceId/current-step` | [src/server/workflowRoutes.ts:74](../../src/server/workflowRoutes.ts#L74) | Phase 7 | `workflows` | - |
-| 577 | `GET` | `/api/v2/workflows/instances/:instanceId/tasks` | [src/server/workflowRoutes.ts:84](../../src/server/workflowRoutes.ts#L84) | Phase 7 | `workflows` | - |
-| 578 | `POST` | `/api/v2/workflows/instances/:instanceId/transition` | [src/server/workflowRoutes.ts:115](../../src/server/workflowRoutes.ts#L115) | Phase 7 | `workflows` | - |
-| 579 | `GET` | `/api/v2/workflows/my-tasks` | [src/server/workflowRoutes.ts:94](../../src/server/workflowRoutes.ts#L94) | Phase 7 | `workflows` | - |
-| 580 | `GET` | `/api/v2/workflows/presentation` | [src/server/workflowRoutes.ts:190](../../src/server/workflowRoutes.ts#L190) | Phase 7 | `workflows` | - |
-| 581 | `POST` | `/api/v2/workflows/start` | [src/server/workflowRoutes.ts:46](../../src/server/workflowRoutes.ts#L46) | Phase 7 | `workflows` | - |
-| 582 | `POST` | `/api/v2/workflows/tasks/:taskId/assign` | [src/server/workflowRoutes.ts:130](../../src/server/workflowRoutes.ts#L130) | Phase 7 | `workflows` | - |
-| 583 | `POST` | `/api/v2/workflows/tasks/:taskId/complete` | [src/server/workflowRoutes.ts:147](../../src/server/workflowRoutes.ts#L147) | Phase 7 | `workflows` | - |
-| 584 | `GET` | `/api/v2/workflows/templates` | [src/server/workflowRoutes.ts:167](../../src/server/workflowRoutes.ts#L167) | Phase 7 | `workflows` | - |
-| 585 | `POST` | `/api/v2/workflows/templates` | [src/server/workflowRoutes.ts:177](../../src/server/workflowRoutes.ts#L177) | Phase 7 | `workflows` | - |
+| # | Method | Path | Legacy Handler File:Line | Target Phase | Target NestJS Module | Nest | Middlewares / Guards |
+|---|---|---|---|---|---|---|---|
+| 1 | `GET` | `/api/admin/costing/approval-queue` | [src/server/costingAdminRoutes.ts:1663](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1663) | Phase 5 | `costing` | - | - |
+| 2 | `GET` | `/api/admin/costing/audit` | [src/server/costingAdminRoutes.ts:1645](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1645) | Phase 5 | `costing` | - | - |
+| 3 | `GET` | `/api/admin/costing/bom-scrap` | [src/server/costingAdminRoutes.ts:1238](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1238) | Phase 5 | `costing` | - | - |
+| 4 | `PUT` | `/api/admin/costing/bom-scrap` | [src/server/costingAdminRoutes.ts:1257](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1257) | Phase 5 | `costing` | - | - |
+| 5 | `GET` | `/api/admin/costing/bom-scrap/cables` | [src/server/costingAdminRoutes.ts:1163](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1163) | Phase 5 | `costing` | - | - |
+| 6 | `POST` | `/api/admin/costing/bom-scrap/import/commit` | [src/server/costingAdminRoutes.ts:1219](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1219) | Phase 5 | `costing` | - | - |
+| 7 | `POST` | `/api/admin/costing/bom-scrap/import/preview` | [src/server/costingAdminRoutes.ts:1200](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1200) | Phase 5 | `costing` | - | - |
+| 8 | `GET` | `/api/admin/costing/bom-scrap/template` | [src/server/costingAdminRoutes.ts:1179](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1179) | Phase 5 | `costing` | - | - |
+| 9 | `POST` | `/api/admin/costing/bulk-import/commit` | [src/server/costingAdminRoutes.ts:640](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L640) | Phase 5 | `costing` | - | - |
+| 10 | `POST` | `/api/admin/costing/bulk-import/preview` | [src/server/costingAdminRoutes.ts:598](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L598) | Phase 5 | `costing` | - | - |
+| 11 | `GET` | `/api/admin/costing/bulk-import/template/:kind` | [src/server/costingAdminRoutes.ts:580](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L580) | Phase 5 | `costing` | - | - |
+| 12 | `POST` | `/api/admin/costing/calculator/preview` | [src/server/costingAdminRoutes.ts:1626](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1626) | Phase 5 | `costing` | - | - |
+| 13 | `GET` | `/api/admin/costing/components` | [src/server/costingAdminRoutes.ts:830](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L830) | Phase 5 | `costing` | - | - |
+| 14 | `POST` | `/api/admin/costing/components` | [src/server/costingAdminRoutes.ts:848](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L848) | Phase 5 | `costing` | - | - |
+| 15 | `PATCH` | `/api/admin/costing/components/:id` | [src/server/costingAdminRoutes.ts:863](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L863) | Phase 5 | `costing` | - | - |
+| 16 | `GET` | `/api/admin/costing/configurations` | [src/server/costingAdminRoutes.ts:710](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L710) | Phase 5 | `costing` | - | - |
+| 17 | `POST` | `/api/admin/costing/configurations` | [src/server/costingAdminRoutes.ts:725](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L725) | Phase 5 | `costing` | - | - |
+| 18 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/activate` | [src/server/costingAdminRoutes.ts:759](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L759) | Phase 5 | `costing` | - | - |
+| 19 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/approve` | [src/server/costingAdminRoutes.ts:1110](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1110) | Phase 5 | `costing` | - | - |
+| 20 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/submit` | [src/server/costingAdminRoutes.ts:1095](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1095) | Phase 5 | `costing` | - | - |
+| 21 | `POST` | `/api/admin/costing/configurations/:configId/versions/:versionId/validate` | [src/server/costingAdminRoutes.ts:1080](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1080) | Phase 5 | `costing` | - | - |
+| 22 | `POST` | `/api/admin/costing/configurations/:id/versions` | [src/server/costingAdminRoutes.ts:744](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L744) | Phase 5 | `costing` | - | - |
+| 23 | `GET` | `/api/admin/costing/currencies` | [src/server/costingAdminRoutes.ts:247](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L247) | Phase 5 | `costing` | - | - |
+| 24 | `POST` | `/api/admin/costing/currencies` | [src/server/costingAdminRoutes.ts:264](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L264) | Phase 5 | `costing` | - | - |
+| 25 | `DELETE` | `/api/admin/costing/currencies/:code` | [src/server/costingAdminRoutes.ts:299](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L299) | Phase 5 | `costing` | - | - |
+| 26 | `PATCH` | `/api/admin/costing/currencies/:code` | [src/server/costingAdminRoutes.ts:283](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L283) | Phase 5 | `costing` | - | - |
+| 27 | `POST` | `/api/admin/costing/currencies/:code/actions` | [src/server/costingAdminRoutes.ts:315](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L315) | Phase 5 | `costing` | - | - |
+| 28 | `POST` | `/api/admin/costing/decision-5/sign-off` | [src/server/costingAdminRoutes.ts:1763](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1763) | Phase 5 | `costing` | - | - |
+| 29 | `GET` | `/api/admin/costing/exchange-rates` | [src/server/costingAdminRoutes.ts:1460](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1460) | Phase 5 | `costing` | - | - |
+| 30 | `POST` | `/api/admin/costing/exchange-rates` | [src/server/costingAdminRoutes.ts:1493](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1493) | Phase 5 | `costing` | - | - |
+| 31 | `GET` | `/api/admin/costing/exchange-rates/:id` | [src/server/costingAdminRoutes.ts:1477](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1477) | Phase 5 | `costing` | - | - |
+| 32 | `PATCH` | `/api/admin/costing/exchange-rates/:id` | [src/server/costingAdminRoutes.ts:1512](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1512) | Phase 5 | `costing` | - | - |
+| 33 | `POST` | `/api/admin/costing/exchange-rates/:id/activate` | [src/server/costingAdminRoutes.ts:1588](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1588) | Phase 5 | `costing` | - | - |
+| 34 | `POST` | `/api/admin/costing/exchange-rates/:id/approve` | [src/server/costingAdminRoutes.ts:1573](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1573) | Phase 5 | `costing` | - | - |
+| 35 | `POST` | `/api/admin/costing/exchange-rates/:id/submit` | [src/server/costingAdminRoutes.ts:1542](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1542) | Phase 5 | `costing` | - | - |
+| 36 | `POST` | `/api/admin/costing/exchange-rates/:id/validate` | [src/server/costingAdminRoutes.ts:1527](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1527) | Phase 5 | `costing` | - | - |
+| 37 | `POST` | `/api/admin/costing/exchange-rates/bulk-approve` | [src/server/costingAdminRoutes.ts:1557](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1557) | Phase 5 | `costing` | - | - |
+| 38 | `GET` | `/api/admin/costing/formulas` | [src/server/costingAdminRoutes.ts:882](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L882) | Phase 5 | `costing` | - | - |
+| 39 | `POST` | `/api/admin/costing/formulas` | [src/server/costingAdminRoutes.ts:963](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L963) | Phase 5 | `costing` | - | - |
+| 40 | `GET` | `/api/admin/costing/formulas/:id` | [src/server/costingAdminRoutes.ts:947](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L947) | Phase 5 | `costing` | - | - |
+| 41 | `PATCH` | `/api/admin/costing/formulas/:id` | [src/server/costingAdminRoutes.ts:982](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L982) | Phase 5 | `costing` | - | - |
+| 42 | `POST` | `/api/admin/costing/formulas/:id/activate` | [src/server/costingAdminRoutes.ts:1005](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1005) | Phase 5 | `costing` | - | - |
+| 43 | `POST` | `/api/admin/costing/formulas/:id/approve` | [src/server/costingAdminRoutes.ts:1144](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1144) | Phase 5 | `costing` | - | - |
+| 44 | `POST` | `/api/admin/costing/formulas/:id/deactivate` | [src/server/costingAdminRoutes.ts:1020](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1020) | Phase 5 | `costing` | - | - |
+| 45 | `POST` | `/api/admin/costing/formulas/:id/submit` | [src/server/costingAdminRoutes.ts:1129](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1129) | Phase 5 | `costing` | - | - |
+| 46 | `POST` | `/api/admin/costing/formulas/preview` | [src/server/costingAdminRoutes.ts:923](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L923) | Phase 5 | `costing` | - | - |
+| 47 | `POST` | `/api/admin/costing/formulas/validate` | [src/server/costingAdminRoutes.ts:900](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L900) | Phase 5 | `costing` | - | - |
+| 48 | `GET` | `/api/admin/costing/layers` | [src/server/costingAdminRoutes.ts:1058](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1058) | Phase 5 | `costing` | - | - |
+| 49 | `GET` | `/api/admin/costing/lookups` | [src/server/costingAdminRoutes.ts:1285](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1285) | Phase 5 | `costing` | - | - |
+| 50 | `GET` | `/api/admin/costing/market-metal-price-defaults` | [src/server/costingAdminRoutes.ts:352](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L352) | Phase 5 | `costing` | - | - |
+| 51 | `POST` | `/api/admin/costing/market-metal-price-defaults` | [src/server/costingAdminRoutes.ts:385](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L385) | Phase 5 | `costing` | - | - |
+| 52 | `GET` | `/api/admin/costing/market-metal-price-defaults/:id` | [src/server/costingAdminRoutes.ts:400](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L400) | Phase 5 | `costing` | - | - |
+| 53 | `PATCH` | `/api/admin/costing/market-metal-price-defaults/:id` | [src/server/costingAdminRoutes.ts:431](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L431) | Phase 5 | `costing` | - | - |
+| 54 | `POST` | `/api/admin/costing/market-metal-price-defaults/:id/actions` | [src/server/costingAdminRoutes.ts:446](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L446) | Phase 5 | `costing` | - | - |
+| 55 | `GET` | `/api/admin/costing/market-metal-price-defaults/:id/audit` | [src/server/costingAdminRoutes.ts:416](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L416) | Phase 5 | `costing` | - | - |
+| 56 | `GET` | `/api/admin/costing/market-metal-price-defaults/active` | [src/server/costingAdminRoutes.ts:370](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L370) | Phase 5 | `costing` | - | - |
+| 57 | `GET` | `/api/admin/costing/metal-cost-components` | [src/server/costingAdminRoutes.ts:469](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L469) | Phase 5 | `costing` | - | - |
+| 58 | `POST` | `/api/admin/costing/metal-cost-components` | [src/server/costingAdminRoutes.ts:496](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L496) | Phase 5 | `costing` | - | - |
+| 59 | `GET` | `/api/admin/costing/metal-cost-components/:id` | [src/server/costingAdminRoutes.ts:511](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L511) | Phase 5 | `costing` | - | - |
+| 60 | `PATCH` | `/api/admin/costing/metal-cost-components/:id` | [src/server/costingAdminRoutes.ts:542](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L542) | Phase 5 | `costing` | - | - |
+| 61 | `POST` | `/api/admin/costing/metal-cost-components/:id/actions` | [src/server/costingAdminRoutes.ts:557](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L557) | Phase 5 | `costing` | - | - |
+| 62 | `GET` | `/api/admin/costing/metal-cost-components/:id/audit` | [src/server/costingAdminRoutes.ts:527](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L527) | Phase 5 | `costing` | - | - |
+| 63 | `GET` | `/api/admin/costing/methods` | [src/server/costingAdminRoutes.ts:1039](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1039) | Phase 5 | `costing` | - | - |
+| 64 | `POST` | `/api/admin/costing/preview` | [src/server/costingAdminRoutes.ts:1607](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1607) | Phase 5 | `costing` | - | - |
+| 65 | `GET` | `/api/admin/costing/production-readiness` | [src/server/costingAdminRoutes.ts:1778](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1778) | Phase 5 | `costing` | - | - |
+| 66 | `GET` | `/api/admin/costing/raw-material-prices` | [src/server/costingAdminRoutes.ts:1693](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1693) | Phase 5 | `costing` | - | - |
+| 67 | `POST` | `/api/admin/costing/raw-material-prices` | [src/server/costingAdminRoutes.ts:1712](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1712) | Phase 5 | `costing` | - | - |
+| 68 | `POST` | `/api/admin/costing/raw-material-prices/:id/actions` | [src/server/costingAdminRoutes.ts:1743](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1743) | Phase 5 | `costing` | - | - |
+| 69 | `POST` | `/api/admin/costing/raw-material-prices/bulk-approve` | [src/server/costingAdminRoutes.ts:1727](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1727) | Phase 5 | `costing` | - | - |
+| 70 | `GET` | `/api/admin/costing/raw-material-prices/workbook-candidates` | [src/server/costingAdminRoutes.ts:1678](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1678) | Phase 5 | `costing` | - | - |
+| 71 | `POST` | `/api/admin/costing/raw-materials/classify-suggested` | [src/server/costingAdminRoutes.ts:335](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L335) | Phase 5 | `costing` | - | - |
+| 72 | `GET` | `/api/admin/costing/readiness` | [src/server/costingAdminRoutes.ts:1864](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1864) | Phase 5 | `costing` | - | - |
+| 73 | `GET` | `/api/admin/costing/readiness/cables` | [src/server/costingAdminRoutes.ts:1826](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1826) | Phase 5 | `costing` | - | - |
+| 74 | `GET` | `/api/admin/costing/readiness/cables/:materialNumber` | [src/server/costingAdminRoutes.ts:1806](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1806) | Phase 5 | `costing` | - | - |
+| 75 | `GET` | `/api/admin/costing/readiness/golden-regression` | [src/server/costingAdminRoutes.ts:1850](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1850) | Phase 5 | `costing` | - | - |
+| 76 | `GET` | `/api/admin/costing/readiness/summary` | [src/server/costingAdminRoutes.ts:1792](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1792) | Phase 5 | `costing` | - | - |
+| 77 | `GET` | `/api/admin/costing/scrap-rules` | [src/server/costingAdminRoutes.ts:1307](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1307) | Phase 5 | `costing` | - | - |
+| 78 | `POST` | `/api/admin/costing/scrap-rules` | [src/server/costingAdminRoutes.ts:1346](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1346) | Phase 5 | `costing` | - | - |
+| 79 | `GET` | `/api/admin/costing/scrap-rules/:id` | [src/server/costingAdminRoutes.ts:1330](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1330) | Phase 5 | `costing` | - | - |
+| 80 | `PATCH` | `/api/admin/costing/scrap-rules/:id` | [src/server/costingAdminRoutes.ts:1365](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1365) | Phase 5 | `costing` | - | - |
+| 81 | `POST` | `/api/admin/costing/scrap-rules/:id/activate` | [src/server/costingAdminRoutes.ts:1441](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1441) | Phase 5 | `costing` | - | - |
+| 82 | `POST` | `/api/admin/costing/scrap-rules/:id/approve` | [src/server/costingAdminRoutes.ts:1426](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1426) | Phase 5 | `costing` | - | - |
+| 83 | `POST` | `/api/admin/costing/scrap-rules/:id/submit` | [src/server/costingAdminRoutes.ts:1395](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1395) | Phase 5 | `costing` | - | - |
+| 84 | `POST` | `/api/admin/costing/scrap-rules/:id/validate` | [src/server/costingAdminRoutes.ts:1380](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1380) | Phase 5 | `costing` | - | - |
+| 85 | `POST` | `/api/admin/costing/scrap-rules/bulk-approve` | [src/server/costingAdminRoutes.ts:1410](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1410) | Phase 5 | `costing` | - | - |
+| 86 | `POST` | `/api/admin/costing/validate` | [src/server/costingAdminRoutes.ts:1885](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L1885) | Phase 5 | `costing` | - | - |
+| 87 | `GET` | `/api/admin/costing/variables` | [src/server/costingAdminRoutes.ts:778](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L778) | Phase 5 | `costing` | - | - |
+| 88 | `POST` | `/api/admin/costing/variables` | [src/server/costingAdminRoutes.ts:796](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L796) | Phase 5 | `costing` | - | - |
+| 89 | `PATCH` | `/api/admin/costing/variables/:id` | [src/server/costingAdminRoutes.ts:811](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L811) | Phase 5 | `costing` | - | - |
+| 90 | `GET` | `/api/admin/costing/workspace/dashboard` | [src/server/costingAdminRoutes.ts:232](file:///H:/Eland-Cables/src/server/costingAdminRoutes.ts#L232) | Phase 5 | `costing` | - | - |
+| 91 | `GET` | `/api/admin/customer-reference-masters` | [src/server/adminCustomerRoutes.ts:66](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L66) | Phase 1 | `admin-customers` | yes | - |
+| 92 | `GET` | `/api/admin/customer-users` | [src/server/adminCustomerRoutes.ts:152](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L152) | Phase 1 | `admin-customers` | yes | - |
+| 93 | `POST` | `/api/admin/customer-users` | [src/server/adminCustomerRoutes.ts:167](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L167) | Phase 1 | `admin-customers` | yes | - |
+| 94 | `PATCH` | `/api/admin/customer-users/:id` | [src/server/adminCustomerRoutes.ts:183](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L183) | Phase 1 | `admin-customers` | yes | - |
+| 95 | `POST` | `/api/admin/customer-users/:id/unassign` | [src/server/adminCustomerRoutes.ts:195](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L195) | Phase 1 | `admin-customers` | yes | - |
+| 96 | `GET` | `/api/admin/customers` | [src/server/adminCustomerRoutes.ts:37](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L37) | Phase 1 | `admin-customers` | yes | - |
+| 97 | `POST` | `/api/admin/customers` | [src/server/adminCustomerRoutes.ts:76](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L76) | Phase 1 | `admin-customers` | yes | - |
+| 98 | `DELETE` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:140](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L140) | Phase 1 | `admin-customers` | yes | - |
+| 99 | `GET` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:97](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L97) | Phase 1 | `admin-customers` | yes | - |
+| 100 | `PATCH` | `/api/admin/customers/:id` | [src/server/adminCustomerRoutes.ts:107](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L107) | Phase 1 | `admin-customers` | yes | - |
+| 101 | `POST` | `/api/admin/customers/:id/activate` | [src/server/adminCustomerRoutes.ts:118](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L118) | Phase 1 | `admin-customers` | yes | - |
+| 102 | `GET` | `/api/admin/customers/:id/audit` | [src/server/adminCustomerRoutes.ts:87](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L87) | Phase 1 | `admin-customers` | yes | - |
+| 103 | `POST` | `/api/admin/customers/:id/deactivate` | [src/server/adminCustomerRoutes.ts:129](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L129) | Phase 1 | `admin-customers` | yes | - |
+| 104 | `GET` | `/api/admin/customers/export` | [src/server/adminCustomerRoutes.ts:52](file:///H:/Eland-Cables/src/server/adminCustomerRoutes.ts#L52) | Phase 1 | `admin-customers` | yes | - |
+| 105 | `GET` | `/api/admin/permissions` | [src/server/adminIdentityRoutes.ts:264](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L264) | Phase 1 | `admin-identity` | yes | - |
+| 106 | `GET` | `/api/admin/permissions/matrix` | [src/server/adminIdentityRoutes.ts:274](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L274) | Phase 1 | `admin-identity` | yes | - |
+| 107 | `GET` | `/api/admin/platform/costing/logistics-rules` | [src/server/platformAdminRoutes.ts:82](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L82) | Phase 5 | `costing` | - | - |
+| 108 | `POST` | `/api/admin/platform/costing/logistics-rules` | [src/server/platformAdminRoutes.ts:93](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L93) | Phase 5 | `costing` | - | - |
+| 109 | `GET` | `/api/admin/platform/costing/metal-rates` | [src/server/platformAdminRoutes.ts:59](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L59) | Phase 5 | `costing` | - | - |
+| 110 | `POST` | `/api/admin/platform/costing/metal-rates` | [src/server/platformAdminRoutes.ts:70](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L70) | Phase 5 | `costing` | - | - |
+| 111 | `GET` | `/api/admin/platform/costing/packing-rules` | [src/server/platformAdminRoutes.ts:105](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L105) | Phase 5 | `costing` | - | - |
+| 112 | `POST` | `/api/admin/platform/costing/packing-rules` | [src/server/platformAdminRoutes.ts:116](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L116) | Phase 5 | `costing` | - | - |
+| 113 | `GET` | `/api/admin/platform/dashboard/kpis` | [src/server/platformAdminRoutes.ts:47](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L47) | Phase 5 | `costing` | - | - |
+| 114 | `GET` | `/api/admin/platform/fields` | [src/server/platformAdminRoutes.ts:128](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L128) | Phase 5 | `costing` | - | - |
+| 115 | `POST` | `/api/admin/platform/fields` | [src/server/platformAdminRoutes.ts:140](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L140) | Phase 5 | `costing` | - | - |
+| 116 | `GET` | `/api/admin/platform/notifications/rules` | [src/server/platformAdminRoutes.ts:152](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L152) | Phase 5 | `costing` | - | - |
+| 117 | `POST` | `/api/admin/platform/notifications/rules` | [src/server/platformAdminRoutes.ts:163](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L163) | Phase 5 | `costing` | - | - |
+| 118 | `GET` | `/api/admin/platform/reports` | [src/server/platformAdminRoutes.ts:175](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L175) | Phase 5 | `costing` | - | - |
+| 119 | `POST` | `/api/admin/platform/reports` | [src/server/platformAdminRoutes.ts:186](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L186) | Phase 5 | `costing` | - | - |
+| 120 | `POST` | `/api/admin/platform/reports/:code/run` | [src/server/platformAdminRoutes.ts:197](file:///H:/Eland-Cables/src/server/platformAdminRoutes.ts#L197) | Phase 5 | `costing` | - | - |
+| 121 | `GET` | `/api/admin/roles` | [src/server/adminIdentityRoutes.ts:171](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L171) | Phase 1 | `admin-identity` | yes | - |
+| 122 | `POST` | `/api/admin/roles` | [src/server/adminIdentityRoutes.ts:181](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L181) | Phase 1 | `admin-identity` | yes | - |
+| 123 | `GET` | `/api/admin/roles/:id` | [src/server/adminIdentityRoutes.ts:191](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L191) | Phase 1 | `admin-identity` | yes | - |
+| 124 | `PATCH` | `/api/admin/roles/:id` | [src/server/adminIdentityRoutes.ts:203](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L203) | Phase 1 | `admin-identity` | yes | - |
+| 125 | `POST` | `/api/admin/roles/:id/activate` | [src/server/adminIdentityRoutes.ts:212](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L212) | Phase 1 | `admin-identity` | yes | - |
+| 126 | `POST` | `/api/admin/roles/:id/deactivate` | [src/server/adminIdentityRoutes.ts:221](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L221) | Phase 1 | `admin-identity` | yes | - |
+| 127 | `GET` | `/api/admin/roles/:id/permissions` | [src/server/adminIdentityRoutes.ts:242](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L242) | Phase 1 | `admin-identity` | yes | - |
+| 128 | `PUT` | `/api/admin/roles/:id/permissions` | [src/server/adminIdentityRoutes.ts:254](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L254) | Phase 1 | `admin-identity` | yes | - |
+| 129 | `GET` | `/api/admin/roles/:id/users` | [src/server/adminIdentityRoutes.ts:230](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L230) | Phase 1 | `admin-identity` | yes | - |
+| 130 | `GET` | `/api/admin/security` | [src/server/adminIdentityRoutes.ts:288](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L288) | Phase 1 | `admin-identity` | yes | - |
+| 131 | `GET` | `/api/admin/users` | [src/server/adminIdentityRoutes.ts:40](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L40) | Phase 1 | `admin-identity` | yes | - |
+| 132 | `POST` | `/api/admin/users` | [src/server/adminIdentityRoutes.ts:59](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L59) | Phase 1 | `admin-identity` | yes | - |
+| 133 | `GET` | `/api/admin/users/:id` | [src/server/adminIdentityRoutes.ts:85](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L85) | Phase 1 | `admin-identity` | yes | - |
+| 134 | `PATCH` | `/api/admin/users/:id` | [src/server/adminIdentityRoutes.ts:97](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L97) | Phase 1 | `admin-identity` | yes | - |
+| 135 | `POST` | `/api/admin/users/:id/activate` | [src/server/adminIdentityRoutes.ts:107](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L107) | Phase 1 | `admin-identity` | yes | - |
+| 136 | `POST` | `/api/admin/users/:id/deactivate` | [src/server/adminIdentityRoutes.ts:116](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L116) | Phase 1 | `admin-identity` | yes | - |
+| 137 | `POST` | `/api/admin/users/:id/lock` | [src/server/adminIdentityRoutes.ts:125](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L125) | Phase 1 | `admin-identity` | yes | - |
+| 138 | `POST` | `/api/admin/users/:id/reset-password` | [src/server/adminIdentityRoutes.ts:143](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L143) | Phase 1 | `admin-identity` | yes | - |
+| 139 | `POST` | `/api/admin/users/:id/roles` | [src/server/adminIdentityRoutes.ts:152](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L152) | Phase 1 | `admin-identity` | yes | - |
+| 140 | `DELETE` | `/api/admin/users/:id/roles/:roleCode` | [src/server/adminIdentityRoutes.ts:162](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L162) | Phase 1 | `admin-identity` | yes | - |
+| 141 | `POST` | `/api/admin/users/:id/unlock` | [src/server/adminIdentityRoutes.ts:134](file:///H:/Eland-Cables/src/server/adminIdentityRoutes.ts#L134) | Phase 1 | `admin-identity` | yes | - |
+| 142 | `GET` | `/api/advaris/mes-status` | [server.ts:123](file:///H:/Eland-Cables/server.ts#L123) | Phase 8 | `enterprise-integrations` | - | - |
+| 143 | `GET` | `/api/agreement-releases/:id` | [src/server/commercialCommitmentRoutes.ts:370](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L370) | Phase 7 | `commercial-commitments` | - | - |
+| 144 | `POST` | `/api/ai/assistant` | [server.ts:53](file:///H:/Eland-Cables/server.ts#L53) | Phase 8 | `ai-assistant` | - | - |
+| 145 | `POST` | `/api/auth/assign-role` | [src/server/identityAuthRoutes.ts:138](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L138) | Phase 1 | `auth` | yes | - |
+| 146 | `POST` | `/api/auth/change-password` | [src/server/identityAuthRoutes.ts:95](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L95) | Phase 1 | `auth` | yes | - |
+| 147 | `POST` | `/api/auth/forgot-password` | [src/server/identityAuthRoutes.ts:66](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L66) | Phase 1 | `auth` | yes | - |
+| 148 | `POST` | `/api/auth/login` | [src/server/identityAuthRoutes.ts:26](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L26) | Phase 1 | `auth` | yes | `loginRateLimit` |
+| 149 | `POST` | `/api/auth/logout` | [src/server/identityAuthRoutes.ts:43](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L43) | Phase 1 | `auth` | yes | - |
+| 150 | `GET` | `/api/auth/me` | [src/server/identityAuthRoutes.ts:73](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L73) | Phase 1 | `auth` | yes | - |
+| 151 | `POST` | `/api/auth/refresh-token` | [src/server/identityAuthRoutes.ts:55](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L55) | Phase 1 | `auth` | yes | - |
+| 152 | `POST` | `/api/auth/register` | [src/server/identityAuthRoutes.ts:128](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L128) | Phase 1 | `auth` | yes | - |
+| 153 | `POST` | `/api/auth/reset-password` | [src/server/identityAuthRoutes.ts:117](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L117) | Phase 1 | `auth` | yes | - |
+| 154 | `GET` | `/api/auth/roles` | [src/server/identityAuthRoutes.ts:145](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L145) | Phase 1 | `auth` | yes | - |
+| 155 | `POST` | `/api/auth/roles` | [src/server/identityAuthRoutes.ts:135](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L135) | Phase 1 | `auth` | yes | - |
+| 156 | `GET` | `/api/auth/users` | [src/server/identityAuthRoutes.ts:141](file:///H:/Eland-Cables/src/server/identityAuthRoutes.ts#L141) | Phase 1 | `auth` | yes | - |
+| 157 | `GET` | `/api/cables/compatibility` | [src/server/cableAuthorityRoutes.ts:60](file:///H:/Eland-Cables/src/server/cableAuthorityRoutes.ts#L60) | Phase 3 | `cable-authority` | - | - |
+| 158 | `POST` | `/api/cables/evaluate` | [src/server/cableAuthorityRoutes.ts:68](file:///H:/Eland-Cables/src/server/cableAuthorityRoutes.ts#L68) | Phase 3 | `cable-authority` | - | - |
+| 159 | `GET` | `/api/cables/search` | [src/server/cableAuthorityRoutes.ts:30](file:///H:/Eland-Cables/src/server/cableAuthorityRoutes.ts#L30) | Phase 3 | `cable-authority` | - | - |
+| 160 | `GET` | `/api/commercial-commitments` | [src/server/commercialCommitmentRoutes.ts:174](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L174) | Phase 7 | `commercial-commitments` | - | - |
+| 161 | `POST` | `/api/commercial-commitments` | [src/server/commercialCommitmentRoutes.ts:188](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L188) | Phase 7 | `commercial-commitments` | - | - |
+| 162 | `GET` | `/api/commercial-commitments/:id` | [src/server/commercialCommitmentRoutes.ts:205](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L205) | Phase 7 | `commercial-commitments` | - | - |
+| 163 | `POST` | `/api/commercial-commitments/:id/sales-agreements` | [src/server/commercialCommitmentRoutes.ts:230](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L230) | Phase 7 | `commercial-commitments` | - | - |
+| 164 | `POST` | `/api/commercial-commitments/:id/sales-orders` | [src/server/commercialCommitmentRoutes.ts:216](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L216) | Phase 7 | `commercial-commitments` | - | - |
+| 165 | `POST` | `/api/commercial-pricing/calculate` | [src/server/commercialPricingRoutes.ts:257](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L257) | Phase 4 | `commercial-pricing` | - | - |
+| 166 | `GET` | `/api/costing` | [src/server/costingRoutes.ts:70](file:///H:/Eland-Cables/src/server/costingRoutes.ts#L70) | Phase 5 | `costing` | - | - |
+| 167 | `GET` | `/api/costing/:id` | [src/server/costingRoutes.ts:88](file:///H:/Eland-Cables/src/server/costingRoutes.ts#L88) | Phase 5 | `costing` | - | - |
+| 168 | `POST` | `/api/costing/:id/recalculate` | [src/server/costingRoutes.ts:141](file:///H:/Eland-Cables/src/server/costingRoutes.ts#L141) | Phase 5 | `costing` | - | - |
+| 169 | `POST` | `/api/costing/calculate` | [src/server/costingRoutes.ts:100](file:///H:/Eland-Cables/src/server/costingRoutes.ts#L100) | Phase 5 | `costing` | - | - |
+| 170 | `GET` | `/api/costing/readiness/:materialNumber` | [src/server/costingRoutes.ts:60](file:///H:/Eland-Cables/src/server/costingRoutes.ts#L60) | Phase 5 | `costing` | - | - |
+| 171 | `GET` | `/api/customer-service/cases` | [src/server/customerServiceRoutes.ts:199](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L199) | Phase 7 | `customer-service` | - | - |
+| 172 | `POST` | `/api/customer-service/cases` | [src/server/customerServiceRoutes.ts:220](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L220) | Phase 7 | `customer-service` | - | - |
+| 173 | `GET` | `/api/customer-service/cases/:id` | [src/server/customerServiceRoutes.ts:232](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L232) | Phase 7 | `customer-service` | - | - |
+| 174 | `POST` | `/api/customer-service/cases/:id/assign` | [src/server/customerServiceRoutes.ts:294](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L294) | Phase 7 | `customer-service` | - | - |
+| 175 | `POST` | `/api/customer-service/cases/:id/attachments` | [src/server/customerServiceRoutes.ts:256](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L256) | Phase 7 | `customer-service` | - | - |
+| 176 | `GET` | `/api/customer-service/cases/:id/attachments/:attachmentId` | [src/server/customerServiceRoutes.ts:268](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L268) | Phase 7 | `customer-service` | - | - |
+| 177 | `POST` | `/api/customer-service/cases/:id/comments` | [src/server/customerServiceRoutes.ts:244](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L244) | Phase 7 | `customer-service` | - | - |
+| 178 | `POST` | `/api/customer-service/cases/:id/confirm-resolution` | [src/server/customerServiceRoutes.ts:318](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L318) | Phase 7 | `customer-service` | - | - |
+| 179 | `POST` | `/api/customer-service/cases/:id/request-reopen` | [src/server/customerServiceRoutes.ts:331](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L331) | Phase 7 | `customer-service` | - | - |
+| 180 | `POST` | `/api/customer-service/cases/:id/resolve` | [src/server/customerServiceRoutes.ts:306](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L306) | Phase 7 | `customer-service` | - | - |
+| 181 | `POST` | `/api/customer-service/cases/:id/status` | [src/server/customerServiceRoutes.ts:282](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L282) | Phase 7 | `customer-service` | - | - |
+| 182 | `GET` | `/api/customer-service/cases/summary` | [src/server/customerServiceRoutes.ts:187](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L187) | Phase 7 | `customer-service` | - | - |
+| 183 | `GET` | `/api/customer-service/categories` | [src/server/customerServiceRoutes.ts:71](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L71) | Phase 7 | `customer-service` | - | - |
+| 184 | `GET` | `/api/customer-service/chat` | [src/server/customerServiceRoutes.ts:148](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L148) | Phase 7 | `customer-service` | - | - |
+| 185 | `POST` | `/api/customer-service/chat/messages` | [src/server/customerServiceRoutes.ts:163](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L163) | Phase 7 | `customer-service` | - | - |
+| 186 | `POST` | `/api/customer-service/chat/request-engineer` | [src/server/customerServiceRoutes.ts:175](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L175) | Phase 7 | `customer-service` | - | - |
+| 187 | `GET` | `/api/customer-service/meta` | [src/server/customerServiceRoutes.ts:83](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L83) | Phase 7 | `customer-service` | - | - |
+| 188 | `GET` | `/api/customer-service/references/inquiries` | [src/server/customerServiceRoutes.ts:95](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L95) | Phase 7 | `customer-service` | - | - |
+| 189 | `GET` | `/api/customer-service/references/inquiries/:inquiryId/lines` | [src/server/customerServiceRoutes.ts:112](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L112) | Phase 7 | `customer-service` | - | - |
+| 190 | `GET` | `/api/customer-service/references/resolve` | [src/server/customerServiceRoutes.ts:130](file:///H:/Eland-Cables/src/server/customerServiceRoutes.ts#L130) | Phase 7 | `customer-service` | - | - |
+| 191 | `GET` | `/api/d365/sync-status` | [server.ts:111](file:///H:/Eland-Cables/server.ts#L111) | Phase 8 | `enterprise-integrations` | - | - |
+| 192 | `GET` | `/api/inquiries` | [src/server/commercialRoutes.ts:146](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L146) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 193 | `POST` | `/api/inquiries` | [src/server/commercialRoutes.ts:285](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L285) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 194 | `GET` | `/api/inquiries/:id` | [src/server/commercialRoutes.ts:231](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L231) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 195 | `PATCH` | `/api/inquiries/:id` | [src/server/commercialRoutes.ts:304](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L304) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 196 | `GET` | `/api/inquiries/:id/activity` | [src/server/commercialRoutes.ts:620](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L620) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 197 | `GET` | `/api/inquiries/:id/attachments` | [src/server/commercialRoutes.ts:564](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L564) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 198 | `POST` | `/api/inquiries/:id/attachments` | [src/server/commercialRoutes.ts:577](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L577) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 199 | `DELETE` | `/api/inquiries/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:606](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L606) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 200 | `GET` | `/api/inquiries/:id/attachments/:attachmentId` | [src/server/commercialRoutes.ts:591](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L591) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 201 | `POST` | `/api/inquiries/:id/calculate-cost` | [src/server/commercialRoutes.ts:472](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L472) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 202 | `POST` | `/api/inquiries/:id/cancel` | [src/server/commercialRoutes.ts:687](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L687) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 203 | `GET` | `/api/inquiries/:id/export` | [src/server/commercialRoutes.ts:267](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L267) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 204 | `POST` | `/api/inquiries/:id/lines` | [src/server/commercialRoutes.ts:318](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L318) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 205 | `DELETE` | `/api/inquiries/:id/lines/:lineId` | [src/server/commercialRoutes.ts:387](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L387) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 206 | `PATCH` | `/api/inquiries/:id/lines/:lineId` | [src/server/commercialRoutes.ts:354](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L354) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 207 | `GET` | `/api/inquiries/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:416](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L416) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 208 | `POST` | `/api/inquiries/:id/lines/:lineId/attachments` | [src/server/commercialRoutes.ts:429](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L429) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 209 | `DELETE` | `/api/inquiries/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:458](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L458) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 210 | `GET` | `/api/inquiries/:id/lines/:lineId/attachments/:attachmentId` | [src/server/commercialRoutes.ts:443](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L443) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 211 | `POST` | `/api/inquiries/:id/lines/:lineId/calculate-cost` | [src/server/commercialRoutes.ts:503](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L503) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 212 | `GET` | `/api/inquiries/:id/lines/:lineId/costing` | [src/server/commercialRoutes.ts:541](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L541) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 213 | `POST` | `/api/inquiries/:id/lines/:lineId/drum-schedule/confirm` | [src/server/commercialRoutes.ts:367](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L367) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 214 | `POST` | `/api/inquiries/:id/lines/:lineId/duplicate` | [src/server/commercialRoutes.ts:400](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L400) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 215 | `POST` | `/api/inquiries/:id/lines/reorder` | [src/server/commercialRoutes.ts:341](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L341) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 216 | `POST` | `/api/inquiries/:id/new-version` | [src/server/commercialRoutes.ts:671](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L671) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 217 | `POST` | `/api/inquiries/:id/quotation` | [src/server/commercialRoutes.ts:699](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L699) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 218 | `POST` | `/api/inquiries/:id/submit` | [src/server/commercialRoutes.ts:634](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L634) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 219 | `GET` | `/api/inquiries/:id/versions` | [src/server/commercialRoutes.ts:218](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L218) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 220 | `GET` | `/api/inquiries/meta/field-definitions` | [src/server/commercialRoutes.ts:176](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L176) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 221 | `GET` | `/api/master/bom-conflicts` | [src/server/masterDataRoutes.ts:1305](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1305) | Phase 2 | `master-data` | - | - |
+| 222 | `GET` | `/api/master/bom-conflicts-export` | [src/server/masterDataRoutes.ts:1330](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1330) | Phase 2 | `master-data` | - | - |
+| 223 | `POST` | `/api/master/bom-conflicts/:conflictId/actions` | [src/server/masterDataRoutes.ts:1411](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1411) | Phase 2 | `master-data` | - | - |
+| 224 | `GET` | `/api/master/bom-duplicate-observations` | [src/server/masterDataRoutes.ts:1512](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1512) | Phase 2 | `master-data` | - | - |
+| 225 | `GET` | `/api/master/boms` | [src/server/masterDataRoutes.ts:370](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L370) | Phase 2 | `master-data` | yes | - |
+| 226 | `POST` | `/api/master/boms/excel-commit` | [src/server/masterDataRoutes.ts:380](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L380) | Phase 2 | `master-data` | - | - |
+| 227 | `POST` | `/api/master/cable-scrap-import/commit` | [src/server/masterDataRoutes.ts:625](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L625) | Phase 2 | `master-data` | - | - |
+| 228 | `POST` | `/api/master/cable-scrap-import/preview` | [src/server/masterDataRoutes.ts:605](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L605) | Phase 2 | `master-data` | - | - |
+| 229 | `GET` | `/api/master/cable-scrap-template-export` | [src/server/masterDataRoutes.ts:582](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L582) | Phase 2 | `master-data` | - | - |
+| 230 | `GET` | `/api/master/cables` | [src/server/masterDataRoutes.ts:217](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L217) | Phase 2 | `master-data` | yes | - |
+| 231 | `POST` | `/api/master/cables` | [src/server/masterDataRoutes.ts:272](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L272) | Phase 2 | `master-data` | - | - |
+| 232 | `GET` | `/api/master/cables/:materialNumber` | [src/server/masterDataRoutes.ts:260](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L260) | Phase 2 | `master-data` | yes | - |
+| 233 | `PUT` | `/api/master/cables/:materialNumber` | [src/server/masterDataRoutes.ts:310](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L310) | Phase 2 | `master-data` | - | - |
+| 234 | `GET` | `/api/master/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:322](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L322) | Phase 2 | `master-data` | yes | - |
+| 235 | `POST` | `/api/master/cables/:materialNumber/attachments` | [src/server/masterDataRoutes.ts:331](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L331) | Phase 2 | `master-data` | yes | - |
+| 236 | `DELETE` | `/api/master/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:357](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L357) | Phase 2 | `master-data` | yes | - |
+| 237 | `GET` | `/api/master/cables/:materialNumber/attachments/:attachmentId` | [src/server/masterDataRoutes.ts:345](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L345) | Phase 2 | `master-data` | yes | - |
+| 238 | `GET` | `/api/master/commercial-pricing-rules` | [src/server/commercialPricingRoutes.ts:38](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L38) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 239 | `POST` | `/api/master/commercial-pricing-rules` | [src/server/commercialPricingRoutes.ts:67](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L67) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 240 | `POST` | `/api/master/commercial-pricing-rules/:id/actions` | [src/server/commercialPricingRoutes.ts:146](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L146) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 241 | `GET` | `/api/master/commercial-pricing-rules/:id/history` | [src/server/commercialPricingRoutes.ts:103](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L103) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 242 | `POST` | `/api/master/commercial-pricing-rules/:id/versions` | [src/server/commercialPricingRoutes.ts:120](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L120) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 243 | `GET` | `/api/master/commercial-pricing-rules/export` | [src/server/commercialPricingRoutes.ts:182](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L182) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 244 | `GET` | `/api/master/commercial-pricing-rules/options` | [src/server/commercialPricingRoutes.ts:87](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L87) | Phase 2 | `commercial-pricing-rules` | - | - |
+| 245 | `GET` | `/api/master/costing-readiness` | [src/server/masterDataRoutes.ts:1450](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1450) | Phase 2 | `master-data` | - | - |
+| 246 | `GET` | `/api/master/drums` | [src/server/masterDataRoutes.ts:833](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L833) | Phase 2 | `master-data` | yes | - |
+| 247 | `POST` | `/api/master/drums` | [src/server/masterDataCutoverRoutes.ts:184](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L184) | Phase 2 | `master-data-export` | - | - |
+| 248 | `DELETE` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:160](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L160) | Phase 2 | `master-data-export` | - | - |
+| 249 | `GET` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:172](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L172) | Phase 2 | `master-data-export` | yes | - |
+| 250 | `PUT` | `/api/master/drums/:drumCode` | [src/server/masterDataCutoverRoutes.ts:226](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L226) | Phase 2 | `master-data-export` | - | - |
+| 251 | `POST` | `/api/master/drums/candidates` | [src/server/masterDataRoutes.ts:874](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L874) | Phase 2 | `master-data` | yes | - |
+| 252 | `POST` | `/api/master/drums/capacity` | [src/server/masterDataRoutes.ts:843](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L843) | Phase 2 | `master-data` | yes | - |
+| 253 | `POST` | `/api/master/drums/excel-commit` | [src/server/masterDataCutoverRoutes.ts:141](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L141) | Phase 2 | `master-data-export` | - | - |
+| 254 | `POST` | `/api/master/drums/excel-preview` | [src/server/masterDataCutoverRoutes.ts:126](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L126) | Phase 2 | `master-data-export` | - | - |
+| 255 | `POST` | `/api/master/drums/optimize` | [src/server/masterDataRoutes.ts:982](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L982) | Phase 2 | `master-data` | yes | - |
+| 256 | `POST` | `/api/master/drums/validate` | [src/server/masterDataRoutes.ts:951](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L951) | Phase 2 | `master-data` | yes | - |
+| 257 | `GET` | `/api/master/engineering-mappings` | [src/server/masterDataRoutes.ts:1060](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1060) | Phase 2 | `master-data` | - | - |
+| 258 | `GET` | `/api/master/engineering-mappings-export` | [src/server/masterDataRoutes.ts:1073](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1073) | Phase 2 | `master-data` | - | - |
+| 259 | `GET` | `/api/master/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1119](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1119) | Phase 2 | `master-data` | - | - |
+| 260 | `PUT` | `/api/master/engineering-mappings/:materialNumber` | [src/server/masterDataRoutes.ts:1131](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1131) | Phase 2 | `master-data` | - | - |
+| 261 | `POST` | `/api/master/engineering-mappings/:materialNumber/actions` | [src/server/masterDataRoutes.ts:1263](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1263) | Phase 2 | `master-data` | - | - |
+| 262 | `POST` | `/api/master/engineering-mappings/bulk/actions` | [src/server/masterDataRoutes.ts:1166](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1166) | Phase 2 | `master-data` | - | - |
+| 263 | `POST` | `/api/master/engineering-mappings/bulk/validate` | [src/server/masterDataRoutes.ts:1149](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1149) | Phase 2 | `master-data` | - | - |
+| 264 | `POST` | `/api/master/engineering-mappings/import/commit` | [src/server/masterDataRoutes.ts:1240](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1240) | Phase 2 | `master-data` | - | - |
+| 265 | `POST` | `/api/master/engineering-mappings/import/preview` | [src/server/masterDataRoutes.ts:1206](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1206) | Phase 2 | `master-data` | - | - |
+| 266 | `GET` | `/api/master/export/:entity` | [src/server/masterDataExportRoutes.ts:34](file:///H:/Eland-Cables/src/server/masterDataExportRoutes.ts#L34) | Phase 2 | `master-data-export` | - | - |
+| 267 | `GET` | `/api/master/imports` | [src/server/masterDataRoutes.ts:1522](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1522) | Phase 2 | `master-data` | - | - |
+| 268 | `POST` | `/api/master/imports/commit` | [src/server/masterDataRoutes.ts:1679](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1679) | Phase 2 | `master-data` | - | - |
+| 269 | `POST` | `/api/master/imports/preview` | [src/server/masterDataRoutes.ts:1652](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1652) | Phase 2 | `master-data` | - | - |
+| 270 | `GET` | `/api/master/keys` | [src/server/masterDataRoutes.ts:1491](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1491) | Phase 2 | `master-data` | yes | - |
+| 271 | `GET` | `/api/master/market-metals/imports` | [src/server/marketMetalImportRoutes.ts:28](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L28) | Phase 2 | `market-metal` | - | - |
+| 272 | `POST` | `/api/master/market-metals/imports` | [src/server/marketMetalImportRoutes.ts:69](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L69) | Phase 2 | `market-metal` | - | - |
+| 273 | `GET` | `/api/master/market-metals/imports/:id` | [src/server/marketMetalImportRoutes.ts:38](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L38) | Phase 2 | `market-metal` | - | - |
+| 274 | `POST` | `/api/master/market-metals/imports/:id/approve` | [src/server/marketMetalImportRoutes.ts:93](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L93) | Phase 2 | `market-metal` | - | - |
+| 275 | `GET` | `/api/master/market-metals/imports/:id/image` | [src/server/marketMetalImportRoutes.ts:56](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L56) | Phase 2 | `market-metal` | - | - |
+| 276 | `POST` | `/api/master/market-metals/imports/:id/publish` | [src/server/marketMetalImportRoutes.ts:104](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L104) | Phase 2 | `market-metal` | - | - |
+| 277 | `PATCH` | `/api/master/market-metals/imports/:id/rows/:code` | [src/server/marketMetalImportRoutes.ts:82](file:///H:/Eland-Cables/src/server/marketMetalImportRoutes.ts#L82) | Phase 2 | `market-metal` | - | - |
+| 278 | `GET` | `/api/master/raw-material-price-readiness` | [src/server/masterDataRoutes.ts:1469](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1469) | Phase 2 | `master-data` | - | - |
+| 279 | `GET` | `/api/master/raw-material-prices` | [src/server/masterDataRoutes.ts:431](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L431) | Phase 2 | `master-data` | - | - |
+| 280 | `POST` | `/api/master/raw-material-prices` | [src/server/masterDataRoutes.ts:465](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L465) | Phase 2 | `master-data` | - | - |
+| 281 | `GET` | `/api/master/raw-material-prices-export` | [src/server/masterDataRoutes.ts:522](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L522) | Phase 2 | `master-data` | - | - |
+| 282 | `POST` | `/api/master/raw-material-prices/:id/actions` | [src/server/masterDataRoutes.ts:483](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L483) | Phase 2 | `master-data` | - | - |
+| 283 | `GET` | `/api/master/raw-material-prices/:rawMaterialCode` | [src/server/masterDataRoutes.ts:452](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L452) | Phase 2 | `master-data` | - | - |
+| 284 | `POST` | `/api/master/raw-material-prices/import/commit` | [src/server/masterDataRoutes.ts:799](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L799) | Phase 2 | `master-data` | - | - |
+| 285 | `POST` | `/api/master/raw-material-prices/import/preview` | [src/server/masterDataRoutes.ts:645](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L645) | Phase 2 | `master-data` | - | - |
+| 286 | `GET` | `/api/master/raw-materials` | [src/server/masterDataRoutes.ts:421](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L421) | Phase 2 | `master-data` | yes | - |
+| 287 | `POST` | `/api/master/raw-materials` | [src/server/masterDataRoutes.ts:1532](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1532) | Phase 2 | `master-data` | - | - |
+| 288 | `PUT` | `/api/master/raw-materials/:code` | [src/server/masterDataRoutes.ts:1564](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1564) | Phase 2 | `master-data` | - | - |
+| 289 | `POST` | `/api/master/raw-materials/:code/prices` | [src/server/masterDataRoutes.ts:1576](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1576) | Phase 2 | `master-data` | - | - |
+| 290 | `GET` | `/api/master/readiness` | [src/server/masterDataRoutes.ts:1050](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1050) | Phase 2 | `master-data` | - | - |
+| 291 | `GET` | `/api/master/reference` | [src/server/masterDataRoutes.ts:1040](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1040) | Phase 2 | `master-data` | yes | - |
+| 292 | `GET` | `/api/master/sot-status` | [src/server/masterDataCutoverRoutes.ts:103](file:///H:/Eland-Cables/src/server/masterDataCutoverRoutes.ts#L103) | Phase 2 | `master-data-export` | yes | - |
+| 293 | `GET` | `/api/master/uniqueness` | [src/server/masterDataRoutes.ts:1502](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L1502) | Phase 2 | `master-data` | yes | - |
+| 294 | `GET` | `/api/notifications` | [src/server/notificationRoutes.ts:40](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L40) | Phase 7 | `notifications` | - | - |
+| 295 | `POST` | `/api/notifications/:id/read` | [src/server/notificationRoutes.ts:65](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L65) | Phase 7 | `notifications` | - | - |
+| 296 | `GET` | `/api/notifications/catalog` | [src/server/notificationRoutes.ts:25](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L25) | Phase 7 | `notifications` | - | - |
+| 297 | `GET` | `/api/notifications/emails` | [src/server/notificationRoutes.ts:85](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L85) | Phase 7 | `notifications` | - | - |
+| 298 | `POST` | `/api/notifications/emails/:id/retry` | [src/server/notificationRoutes.ts:101](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L101) | Phase 7 | `notifications` | - | - |
+| 299 | `POST` | `/api/notifications/read-all` | [src/server/notificationRoutes.ts:75](file:///H:/Eland-Cables/src/server/notificationRoutes.ts#L75) | Phase 7 | `notifications` | - | - |
+| 300 | `GET` | `/api/platform/db` | [src/server/masterDataRoutes.ts:208](file:///H:/Eland-Cables/src/server/masterDataRoutes.ts#L208) | Phase 2 | `master-data` | yes | - |
+| 301 | `GET` | `/api/platform/health` | [server.ts:55](file:///H:/Eland-Cables/server.ts#L55) | Phase 0 | `platform-health` | - | - |
+| 302 | `GET` | `/api/platform/status` | [server.ts:65](file:///H:/Eland-Cables/server.ts#L65) | Phase 0 | `platform-health` | - | - |
+| 303 | `GET` | `/api/quotations` | [src/server/commercialRoutes.ts:720](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L720) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 304 | `POST` | `/api/quotations` | [src/server/commercialRoutes.ts:797](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L797) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 305 | `GET` | `/api/quotations/:id` | [src/server/commercialRoutes.ts:759](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L759) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 306 | `POST` | `/api/quotations/:id/approve-commercial` | [src/server/commercialCommitmentRoutes.ts:148](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L148) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 307 | `POST` | `/api/quotations/:id/approve-pricing` | [src/server/commercialPricingRoutes.ts:358](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L358) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 308 | `POST` | `/api/quotations/:id/commitments` | [src/server/commercialCommitmentRoutes.ts:162](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L162) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 309 | `GET` | `/api/quotations/:id/costing` | [src/server/commercialRoutes.ts:831](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L831) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 310 | `POST` | `/api/quotations/:id/price` | [src/server/commercialPricingRoutes.ts:306](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L306) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 311 | `POST` | `/api/quotations/:id/submit-for-approval` | [src/server/commercialPricingRoutes.ts:341](file:///H:/Eland-Cables/src/server/commercialPricingRoutes.ts#L341) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 312 | `POST` | `/api/quotations/:id/versions` | [src/server/commercialRoutes.ts:817](file:///H:/Eland-Cables/src/server/commercialRoutes.ts#L817) | Phase 4 | `commercial-inquiries-quotations` | - | - |
+| 313 | `GET` | `/api/sales-agreements` | [src/server/commercialCommitmentRoutes.ts:302](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L302) | Phase 7 | `commercial-commitments` | - | - |
+| 314 | `GET` | `/api/sales-agreements/:id` | [src/server/commercialCommitmentRoutes.ts:333](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L333) | Phase 7 | `commercial-commitments` | - | - |
+| 315 | `GET` | `/api/sales-agreements/:id/releases` | [src/server/commercialCommitmentRoutes.ts:344](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L344) | Phase 7 | `commercial-commitments` | - | - |
+| 316 | `POST` | `/api/sales-agreements/:id/releases` | [src/server/commercialCommitmentRoutes.ts:355](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L355) | Phase 7 | `commercial-commitments` | - | - |
+| 317 | `POST` | `/api/sales-agreements/from-quotation/:quotationRevisionId` | [src/server/commercialCommitmentRoutes.ts:315](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L315) | Phase 7 | `commercial-commitments` | - | - |
+| 318 | `GET` | `/api/sales-orders` | [src/server/commercialCommitmentRoutes.ts:244](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L244) | Phase 7 | `commercial-commitments` | - | - |
+| 319 | `GET` | `/api/sales-orders/:id` | [src/server/commercialCommitmentRoutes.ts:291](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L291) | Phase 7 | `commercial-commitments` | - | - |
+| 320 | `POST` | `/api/sales-orders/direct-mts` | [src/server/commercialCommitmentRoutes.ts:276](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L276) | Phase 7 | `commercial-commitments` | - | - |
+| 321 | `POST` | `/api/sales-orders/from-quotation/:quotationRevisionId` | [src/server/commercialCommitmentRoutes.ts:257](file:///H:/Eland-Cables/src/server/commercialCommitmentRoutes.ts#L257) | Phase 7 | `commercial-commitments` | - | - |
+| 322 | `GET` | `/api/technical-office/requests` | [src/server/cableAuthorityRoutes.ts:120](file:///H:/Eland-Cables/src/server/cableAuthorityRoutes.ts#L120) | Phase 3 | `cable-authority` | - | - |
+| 323 | `POST` | `/api/technical-office/requests` | [src/server/cableAuthorityRoutes.ts:91](file:///H:/Eland-Cables/src/server/cableAuthorityRoutes.ts#L91) | Phase 3 | `cable-authority` | - | - |
+| 324 | `GET` | `/api/v2/algorithm-configurations` | [src/server/containerStudyRoutes.ts:119](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L119) | Phase 6 | `container-study` | - | - |
+| 325 | `POST` | `/api/v2/algorithm-configurations/:id/activate` | [src/server/containerStudyRoutes.ts:129](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L129) | Phase 6 | `container-study` | - | - |
+| 326 | `GET` | `/api/v2/algorithm-versions` | [src/server/containerStudyRoutes.ts:109](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L109) | Phase 6 | `container-study` | - | - |
+| 327 | `GET` | `/api/v2/audit/events` | [src/server/v2PlatformRoutes.ts:360](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L360) | Phase 4 | `v2-platform` | - | - |
+| 328 | `GET` | `/api/v2/audit/migration` | [src/server/v2PlatformRoutes.ts:377](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L377) | Phase 4 | `v2-platform` | - | - |
+| 329 | `GET` | `/api/v2/boundary` | [src/server/v2PlatformRoutes.ts:88](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L88) | Phase 4 | `v2-platform` | - | - |
+| 330 | `GET` | `/api/v2/cables/products` | [src/server/v2CableSearchRoutes.ts:143](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L143) | Phase 3 | `cable-authority` | yes | - |
+| 331 | `GET` | `/api/v2/cables/products/export` | [src/server/v2CableSearchRoutes.ts:86](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L86) | Phase 3 | `cable-authority` | - | - |
+| 332 | `GET` | `/api/v2/cables/products/facets` | [src/server/v2CableSearchRoutes.ts:76](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L76) | Phase 3 | `cable-authority` | yes | - |
+| 333 | `GET` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:161](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L161) | Phase 3 | `cable-authority` | - | - |
+| 334 | `POST` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:195](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L195) | Phase 3 | `cable-authority` | - | - |
+| 335 | `GET` | `/api/v2/cables/search/facets` | [src/server/v2CableSearchRoutes.ts:183](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L183) | Phase 3 | `cable-authority` | - | - |
+| 336 | `POST` | `/api/v2/container-studies` | [src/server/containerStudyRoutes.ts:302](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L302) | Phase 6 | `container-study` | - | - |
+| 337 | `GET` | `/api/v2/container-studies/:id` | [src/server/containerStudyRoutes.ts:327](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L327) | Phase 6 | `container-study` | - | - |
+| 338 | `POST` | `/api/v2/container-studies/:id/calculate` | [src/server/containerStudyRoutes.ts:449](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L449) | Phase 6 | `container-study` | - | - |
+| 339 | `POST` | `/api/v2/container-studies/:id/confirm` | [src/server/containerStudyRoutes.ts:397](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L397) | Phase 6 | `container-study` | - | - |
+| 340 | `GET` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:347](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L347) | Phase 6 | `container-study` | - | - |
+| 341 | `PATCH` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:363](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L363) | Phase 6 | `container-study` | - | - |
+| 342 | `POST` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:337](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L337) | Phase 6 | `container-study` | - | - |
+| 343 | `PUT` | `/api/v2/container-studies/:id/input-snapshot` | [src/server/containerStudyRoutes.ts:357](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L357) | Phase 6 | `container-study` | - | - |
+| 344 | `GET` | `/api/v2/container-studies/:id/results` | [src/server/containerStudyRoutes.ts:417](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L417) | Phase 6 | `container-study` | - | - |
+| 345 | `GET` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:427](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L427) | Phase 6 | `container-study` | - | - |
+| 346 | `PATCH` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:443](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L443) | Phase 6 | `container-study` | - | - |
+| 347 | `PUT` | `/api/v2/container-studies/:id/results/:resultId` | [src/server/containerStudyRoutes.ts:437](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L437) | Phase 6 | `container-study` | - | - |
+| 348 | `POST` | `/api/v2/container-studies/:id/snapshots` | [src/server/containerStudyRoutes.ts:369](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L369) | Phase 6 | `container-study` | - | - |
+| 349 | `POST` | `/api/v2/container-studies/:id/supersede` | [src/server/containerStudyRoutes.ts:407](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L407) | Phase 6 | `container-study` | - | - |
+| 350 | `POST` | `/api/v2/container-studies/:id/validate` | [src/server/containerStudyRoutes.ts:387](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L387) | Phase 6 | `container-study` | - | - |
+| 351 | `GET` | `/api/v2/container-study-results/:resultId/shipment-cost-snapshot` | [src/server/shipmentCostSnapshotRoutes.ts:79](file:///H:/Eland-Cables/src/server/shipmentCostSnapshotRoutes.ts#L79) | Phase 6 | `container-study` | - | - |
+| 352 | `GET` | `/api/v2/container-types` | [src/server/containerStudyRoutes.ts:88](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L88) | Phase 6 | `container-study` | - | - |
+| 353 | `POST` | `/api/v2/container-types/:id/versions` | [src/server/containerStudyRoutes.ts:98](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L98) | Phase 6 | `container-study` | - | - |
+| 354 | `GET` | `/api/v2/customer-financial-offers/:id` | [src/server/financialOfferSnapshotRoutes.ts:96](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L96) | Phase 6 | `financial-offer` | - | - |
+| 355 | `GET` | `/api/v2/customer-shipping-cost-rates` | [src/server/customerShippingCostRoutes.ts:95](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L95) | Phase 6 | `shipping` | - | - |
+| 356 | `POST` | `/api/v2/customer-shipping-cost-rates` | [src/server/customerShippingCostRoutes.ts:108](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L108) | Phase 6 | `shipping` | - | - |
+| 357 | `PATCH` | `/api/v2/customer-shipping-cost-rates/:id` | [src/server/customerShippingCostRoutes.ts:118](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L118) | Phase 6 | `shipping` | - | - |
+| 358 | `GET` | `/api/v2/customer-shipping-cost-rates/history` | [src/server/customerShippingCostRoutes.ts:61](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L61) | Phase 6 | `shipping` | - | - |
+| 359 | `GET` | `/api/v2/customer-shipping-cost-rates/options` | [src/server/customerShippingCostRoutes.ts:51](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L51) | Phase 6 | `shipping` | - | - |
+| 360 | `GET` | `/api/v2/customer-shipping-cost-rates/resolve` | [src/server/customerShippingCostRoutes.ts:77](file:///H:/Eland-Cables/src/server/customerShippingCostRoutes.ts#L77) | Phase 6 | `shipping` | - | - |
+| 361 | `GET` | `/api/v2/data-ownership` | [src/server/v2PlatformRoutes.ts:144](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L144) | Phase 4 | `v2-platform` | - | - |
+| 362 | `GET` | `/api/v2/destination-ports` | [src/server/shippingCostRoutes.ts:58](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L58) | Phase 6 | `shipping` | - | - |
+| 363 | `POST` | `/api/v2/destination-ports` | [src/server/shippingCostRoutes.ts:70](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L70) | Phase 6 | `shipping` | - | - |
+| 364 | `GET` | `/api/v2/destination-ports/:id` | [src/server/shippingCostRoutes.ts:80](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L80) | Phase 6 | `shipping` | - | - |
+| 365 | `PATCH` | `/api/v2/destination-ports/:id` | [src/server/shippingCostRoutes.ts:90](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L90) | Phase 6 | `shipping` | - | - |
+| 366 | `POST` | `/api/v2/financial-offer-snapshots` | [src/server/financialOfferSnapshotRoutes.ts:56](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L56) | Phase 6 | `financial-offer` | - | - |
+| 367 | `GET` | `/api/v2/financial-offer-snapshots/:id` | [src/server/financialOfferSnapshotRoutes.ts:76](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L76) | Phase 6 | `financial-offer` | - | - |
+| 368 | `GET` | `/api/v2/ia/master-data/ownership` | [src/server/v2PlatformRoutes.ts:437](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L437) | Phase 4 | `v2-platform` | - | - |
+| 369 | `GET` | `/api/v2/ia/modules/:moduleId/workspace` | [src/server/v2PlatformRoutes.ts:394](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L394) | Phase 4 | `v2-platform` | - | - |
+| 370 | `GET` | `/api/v2/ia/navigator` | [src/server/v2PlatformRoutes.ts:415](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L415) | Phase 4 | `v2-platform` | - | - |
+| 371 | `GET` | `/api/v2/ia/service-boundaries` | [src/server/v2PlatformRoutes.ts:451](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L451) | Phase 4 | `v2-platform` | - | - |
+| 372 | `GET` | `/api/v2/incoterms` | [src/server/shippingCostRoutes.ts:100](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L100) | Phase 6 | `shipping` | - | - |
+| 373 | `POST` | `/api/v2/incoterms` | [src/server/shippingCostRoutes.ts:112](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L112) | Phase 6 | `shipping` | - | - |
+| 374 | `GET` | `/api/v2/incoterms/:id` | [src/server/shippingCostRoutes.ts:122](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L122) | Phase 6 | `shipping` | - | - |
+| 375 | `PATCH` | `/api/v2/incoterms/:id` | [src/server/shippingCostRoutes.ts:132](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L132) | Phase 6 | `shipping` | - | - |
+| 376 | `GET` | `/api/v2/inquiries` | [src/server/v2InquiryConfigurationRoutes.ts:175](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L175) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 377 | `POST` | `/api/v2/inquiries` | [src/server/v2InquiryConfigurationRoutes.ts:164](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L164) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 378 | `GET` | `/api/v2/inquiries/:id` | [src/server/v2InquiryConfigurationRoutes.ts:190](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L190) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 379 | `POST` | `/api/v2/inquiries/:id/calculate` | [src/server/v2InquiryConfigurationRoutes.ts:622](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L622) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 380 | `GET` | `/api/v2/inquiries/:id/container-studies` | [src/server/v2InquiryConfigurationRoutes.ts:790](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L790) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 381 | `POST` | `/api/v2/inquiries/:id/container-studies` | [src/server/v2InquiryConfigurationRoutes.ts:778](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L778) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 382 | `POST` | `/api/v2/inquiries/:id/engineering-status` | [src/server/v2InquiryConfigurationRoutes.ts:261](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L261) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 383 | `GET` | `/api/v2/inquiries/:id/lines` | [src/server/v2InquiryConfigurationRoutes.ts:212](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L212) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 384 | `POST` | `/api/v2/inquiries/:id/lines` | [src/server/v2InquiryConfigurationRoutes.ts:201](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L201) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 385 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/commercial-pricing/preview` | [src/server/v2InquiryConfigurationRoutes.ts:575](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L575) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 386 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/:calculationId/lineage` | [src/server/v2InquiryConfigurationRoutes.ts:555](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L555) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 387 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/calculate` | [src/server/v2InquiryConfigurationRoutes.ts:527](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L527) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 388 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/current` | [src/server/v2InquiryConfigurationRoutes.ts:543](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L543) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 389 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/costing-runs/preview` | [src/server/v2InquiryConfigurationRoutes.ts:515](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L515) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 390 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans` | [src/server/v2InquiryConfigurationRoutes.ts:332](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L332) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 391 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans` | [src/server/v2InquiryConfigurationRoutes.ts:273](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L273) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 392 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/:planId/handoff` | [src/server/v2InquiryConfigurationRoutes.ts:354](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L354) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 393 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/current` | [src/server/v2InquiryConfigurationRoutes.ts:343](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L343) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 394 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-plans/preview` | [src/server/v2InquiryConfigurationRoutes.ts:289](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L289) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 395 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/cutting-requirements` | [src/server/v2InquiryConfigurationRoutes.ts:321](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L321) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 396 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/cutting-requirements` | [src/server/v2InquiryConfigurationRoutes.ts:305](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L305) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 397 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans` | [src/server/v2InquiryConfigurationRoutes.ts:466](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L466) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 398 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans` | [src/server/v2InquiryConfigurationRoutes.ts:418](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L418) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 399 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId` | [src/server/v2InquiryConfigurationRoutes.ts:488](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L488) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 400 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/confirm` | [src/server/v2InquiryConfigurationRoutes.ts:450](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L450) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 401 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/handoff` | [src/server/v2InquiryConfigurationRoutes.ts:499](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L499) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 402 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/:planId/validate` | [src/server/v2InquiryConfigurationRoutes.ts:434](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L434) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 403 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-plans/current` | [src/server/v2InquiryConfigurationRoutes.ts:477](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L477) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 404 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/candidates` | [src/server/v2InquiryConfigurationRoutes.ts:388](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L388) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 405 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/context` | [src/server/v2InquiryConfigurationRoutes.ts:370](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L370) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 406 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/drum-selection/preview` | [src/server/v2InquiryConfigurationRoutes.ts:407](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L407) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 407 | `GET` | `/api/v2/inquiries/:id/lines/:lineId/snapshots` | [src/server/v2InquiryConfigurationRoutes.ts:239](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L239) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 408 | `POST` | `/api/v2/inquiries/:id/lines/:lineId/snapshots` | [src/server/v2InquiryConfigurationRoutes.ts:223](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L223) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 409 | `GET` | `/api/v2/inquiries/:id/quotation` | [src/server/v2InquiryConfigurationRoutes.ts:604](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L604) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 410 | `POST` | `/api/v2/inquiries/:id/quotation` | [src/server/v2InquiryConfigurationRoutes.ts:636](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L636) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 411 | `POST` | `/api/v2/inquiries/:id/quotation/approve` | [src/server/v2InquiryConfigurationRoutes.ts:662](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L662) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 412 | `POST` | `/api/v2/inquiries/:id/quotation/customer-decision` | [src/server/v2InquiryConfigurationRoutes.ts:687](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L687) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 413 | `POST` | `/api/v2/inquiries/:id/quotation/issue` | [src/server/v2InquiryConfigurationRoutes.ts:706](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L706) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 414 | `GET` | `/api/v2/inquiries/:id/quotation/pdf` | [src/server/v2InquiryConfigurationRoutes.ts:730](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L730) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 415 | `POST` | `/api/v2/inquiries/:id/quotation/price` | [src/server/v2InquiryConfigurationRoutes.ts:649](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L649) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 416 | `GET` | `/api/v2/inquiries/:id/quotation/readiness` | [src/server/v2InquiryConfigurationRoutes.ts:588](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L588) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 417 | `POST` | `/api/v2/inquiries/:id/quotation/return` | [src/server/v2InquiryConfigurationRoutes.ts:674](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L674) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 418 | `POST` | `/api/v2/inquiries/:id/quotation/revise` | [src/server/v2InquiryConfigurationRoutes.ts:718](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L718) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 419 | `POST` | `/api/v2/inquiries/:id/shipment-groups` | [src/server/v2InquiryConfigurationRoutes.ts:766](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L766) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 420 | `POST` | `/api/v2/inquiries/:id/submit` | [src/server/v2InquiryConfigurationRoutes.ts:250](file:///H:/Eland-Cables/src/server/v2InquiryConfigurationRoutes.ts#L250) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 421 | `GET` | `/api/v2/inquiries/:inquiryId/container-studies` | [src/server/containerStudyRoutes.ts:317](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L317) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 422 | `POST` | `/api/v2/inquiries/:inquiryId/container-studies` | [src/server/containerStudyRoutes.ts:292](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L292) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 423 | `GET` | `/api/v2/inquiries/:inquiryId/container-study-workspace` | [src/server/containerStudyRoutes.ts:254](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L254) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 424 | `POST` | `/api/v2/inquiries/:inquiryId/container-study-workspace/calculate` | [src/server/containerStudyRoutes.ts:265](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L265) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 425 | `POST` | `/api/v2/inquiries/:inquiryId/container-study-workspace/select` | [src/server/containerStudyRoutes.ts:276](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L276) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 426 | `GET` | `/api/v2/inquiries/:inquiryId/customer-container-study` | [src/server/financialOfferSnapshotRoutes.ts:116](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L116) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 427 | `GET` | `/api/v2/inquiries/:inquiryId/customer-financial-offer` | [src/server/financialOfferSnapshotRoutes.ts:106](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L106) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 428 | `GET` | `/api/v2/inquiries/:inquiryId/financial-offer-snapshot` | [src/server/financialOfferSnapshotRoutes.ts:86](file:///H:/Eland-Cables/src/server/financialOfferSnapshotRoutes.ts#L86) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 429 | `GET` | `/api/v2/inquiries/:inquiryId/shipment-groups` | [src/server/containerStudyRoutes.ts:169](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L169) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 430 | `POST` | `/api/v2/inquiries/:inquiryId/shipment-groups` | [src/server/containerStudyRoutes.ts:224](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L224) | Phase 4 | `v2-inquiry-configuration` | - | - |
+| 431 | `GET` | `/api/v2/integrations/status` | [src/server/v2PlatformRoutes.ts:383](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L383) | Phase 4 | `v2-platform` | - | - |
+| 432 | `GET` | `/api/v2/master-data-sot` | [src/server/v2PlatformRoutes.ts:150](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L150) | Phase 4 | `v2-platform` | - | - |
+| 433 | `GET` | `/api/v2/metadata/fields` | [src/server/v2PlatformRoutes.ts:174](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L174) | Phase 4 | `v2-platform` | - | - |
+| 434 | `POST` | `/api/v2/metadata/fields` | [src/server/v2PlatformRoutes.ts:197](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L197) | Phase 4 | `v2-platform` | - | - |
+| 435 | `GET` | `/api/v2/modules` | [src/server/v2PlatformRoutes.ts:113](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L113) | Phase 4 | `v2-platform` | - | - |
+| 436 | `GET` | `/api/v2/modules/:moduleId` | [src/server/v2PlatformRoutes.ts:136](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L136) | Phase 4 | `v2-platform` | - | - |
+| 437 | `GET` | `/api/v2/modules/navigable` | [src/server/v2PlatformRoutes.ts:130](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L130) | Phase 4 | `v2-platform` | - | - |
+| 438 | `GET` | `/api/v2/number-sequences` | [src/server/v2PlatformRoutes.ts:209](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L209) | Phase 4 | `v2-platform` | - | - |
+| 439 | `POST` | `/api/v2/number-sequences` | [src/server/v2PlatformRoutes.ts:228](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L228) | Phase 4 | `v2-platform` | - | - |
+| 440 | `POST` | `/api/v2/number-sequences/:code/allocate` | [src/server/v2PlatformRoutes.ts:240](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L240) | Phase 4 | `v2-platform` | - | - |
+| 441 | `POST` | `/api/v2/packing-profiles` | [src/server/containerStudyRoutes.ts:139](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L139) | Phase 6 | `container-study` | - | - |
+| 442 | `GET` | `/api/v2/packing-profiles/:id` | [src/server/containerStudyRoutes.ts:149](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L149) | Phase 6 | `container-study` | - | - |
+| 443 | `POST` | `/api/v2/packing-profiles/:id/versions` | [src/server/containerStudyRoutes.ts:159](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L159) | Phase 6 | `container-study` | - | - |
+| 444 | `POST` | `/api/v2/security/effective-access/evaluate` | [src/server/v2PlatformRoutes.ts:252](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L252) | Phase 4 | `v2-platform` | - | - |
+| 445 | `GET` | `/api/v2/security/effective-access/explain` | [src/server/v2PlatformRoutes.ts:277](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L277) | Phase 4 | `v2-platform` | - | - |
+| 446 | `GET` | `/api/v2/security/users/:userId/access-profile` | [src/server/v2PlatformRoutes.ts:347](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L347) | Phase 4 | `v2-platform` | - | - |
+| 447 | `POST` | `/api/v2/shipment-cost-snapshots` | [src/server/shipmentCostSnapshotRoutes.ts:48](file:///H:/Eland-Cables/src/server/shipmentCostSnapshotRoutes.ts#L48) | Phase 6 | `shipping` | - | - |
+| 448 | `GET` | `/api/v2/shipment-cost-snapshots/:id` | [src/server/shipmentCostSnapshotRoutes.ts:69](file:///H:/Eland-Cables/src/server/shipmentCostSnapshotRoutes.ts#L69) | Phase 6 | `shipping` | - | - |
+| 449 | `POST` | `/api/v2/shipment-groups` | [src/server/containerStudyRoutes.ts:209](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L209) | Phase 6 | `container-study` | - | - |
+| 450 | `GET` | `/api/v2/shipment-groups/:id` | [src/server/containerStudyRoutes.ts:199](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L199) | Phase 6 | `container-study` | - | - |
+| 451 | `PATCH` | `/api/v2/shipment-groups/:id` | [src/server/containerStudyRoutes.ts:179](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L179) | Phase 6 | `container-study` | - | - |
+| 452 | `POST` | `/api/v2/shipment-groups/:id/confirm` | [src/server/containerStudyRoutes.ts:244](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L244) | Phase 6 | `container-study` | - | - |
+| 453 | `POST` | `/api/v2/shipment-groups/:id/supersede` | [src/server/containerStudyRoutes.ts:189](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L189) | Phase 6 | `container-study` | - | - |
+| 454 | `POST` | `/api/v2/shipment-groups/:id/validate` | [src/server/containerStudyRoutes.ts:234](file:///H:/Eland-Cables/src/server/containerStudyRoutes.ts#L234) | Phase 6 | `container-study` | - | - |
+| 455 | `GET` | `/api/v2/shipping-cost-rates` | [src/server/shippingCostRoutes.ts:142](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L142) | Phase 6 | `shipping` | - | - |
+| 456 | `POST` | `/api/v2/shipping-cost-rates` | [src/server/shippingCostRoutes.ts:177](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L177) | Phase 6 | `shipping` | - | - |
+| 457 | `GET` | `/api/v2/shipping-cost-rates/:id` | [src/server/shippingCostRoutes.ts:187](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L187) | Phase 6 | `shipping` | - | - |
+| 458 | `PATCH` | `/api/v2/shipping-cost-rates/:id` | [src/server/shippingCostRoutes.ts:197](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L197) | Phase 6 | `shipping` | - | - |
+| 459 | `GET` | `/api/v2/shipping-cost-rates/resolve` | [src/server/shippingCostRoutes.ts:161](file:///H:/Eland-Cables/src/server/shippingCostRoutes.ts#L161) | Phase 6 | `shipping` | - | - |
+| 460 | `GET` | `/api/v2/workflows/by-entity/:entityType/:entityId` | [src/server/workflowRoutes.ts:104](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L104) | Phase 7 | `workflows` | - | - |
+| 461 | `GET` | `/api/v2/workflows/instances/:instanceId` | [src/server/workflowRoutes.ts:64](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L64) | Phase 7 | `workflows` | - | - |
+| 462 | `POST` | `/api/v2/workflows/instances/:instanceId/cancel` | [src/server/workflowRoutes.ts:157](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L157) | Phase 7 | `workflows` | - | - |
+| 463 | `GET` | `/api/v2/workflows/instances/:instanceId/current-step` | [src/server/workflowRoutes.ts:74](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L74) | Phase 7 | `workflows` | - | - |
+| 464 | `GET` | `/api/v2/workflows/instances/:instanceId/tasks` | [src/server/workflowRoutes.ts:84](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L84) | Phase 7 | `workflows` | - | - |
+| 465 | `POST` | `/api/v2/workflows/instances/:instanceId/transition` | [src/server/workflowRoutes.ts:115](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L115) | Phase 7 | `workflows` | - | - |
+| 466 | `GET` | `/api/v2/workflows/my-tasks` | [src/server/workflowRoutes.ts:94](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L94) | Phase 7 | `workflows` | - | - |
+| 467 | `GET` | `/api/v2/workflows/presentation` | [src/server/workflowRoutes.ts:190](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L190) | Phase 7 | `workflows` | - | - |
+| 468 | `POST` | `/api/v2/workflows/start` | [src/server/workflowRoutes.ts:46](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L46) | Phase 7 | `workflows` | - | - |
+| 469 | `POST` | `/api/v2/workflows/tasks/:taskId/assign` | [src/server/workflowRoutes.ts:130](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L130) | Phase 7 | `workflows` | - | - |
+| 470 | `POST` | `/api/v2/workflows/tasks/:taskId/complete` | [src/server/workflowRoutes.ts:147](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L147) | Phase 7 | `workflows` | - | - |
+| 471 | `GET` | `/api/v2/workflows/templates` | [src/server/workflowRoutes.ts:167](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L167) | Phase 7 | `workflows` | - | - |
+| 472 | `POST` | `/api/v2/workflows/templates` | [src/server/workflowRoutes.ts:177](file:///H:/Eland-Cables/src/server/workflowRoutes.ts#L177) | Phase 7 | `workflows` | - | - |

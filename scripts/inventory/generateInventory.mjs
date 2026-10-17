@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { isNestRoute } from '../parity/nestRoutes.mjs';
 
 const rootDir = process.cwd();
 const serverTsPath = path.resolve(rootDir, 'server.ts');
@@ -54,18 +55,16 @@ function parseServer() {
   const content = fs.readFileSync(serverTsPath, 'utf-8');
   const lines = content.split('\n');
 
-  // Find imports: import { router1, router2 } from './src/server/...'
-  const importMap = new Map(); // routerName -> relative path
-  for (const line of lines) {
-    const impMatch = line.match(/import\s*\{([^}]+)\}\s*from\s*['"]([^'"]+)['"]/);
-    if (impMatch) {
-      const vars = impMatch[1].split(',').map((s) => s.trim().replace(/^.*as\s+/, ''));
-      let rel = impMatch[2];
-      if (!rel.endsWith('.ts')) rel += '.ts';
-      const absPath = path.resolve(rootDir, rel);
-      for (const v of vars) {
-        if (v) importMap.set(v, absPath);
-      }
+  // Find imports: import { router1, router2 } from './src/server/...' (may span several lines)
+  const importMap = new Map(); // local name -> { absPath, exportedName }
+  for (const impMatch of content.matchAll(/import\s*\{([^}]+)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+    let rel = impMatch[2];
+    if (!rel.startsWith('.')) continue;
+    if (!rel.endsWith('.ts')) rel += '.ts';
+    const absPath = path.resolve(rootDir, rel);
+    for (const spec of impMatch[1].split(',').map((s) => s.trim()).filter(Boolean)) {
+      const [exportedName, localName = exportedName] = spec.split(/\s+as\s+/).map((s) => s.trim());
+      importMap.set(localName, { absPath, exportedName });
     }
   }
 
@@ -82,14 +81,14 @@ function parseServer() {
     if (mountMatch) {
       const mountPath = mountMatch[1];
       const routerVar = mountMatch[2];
-      const sourceFile = importMap.get(routerVar);
-      if (sourceFile) {
-        mounts.push({ mountPath, routerVar, sourceFile });
+      const source = importMap.get(routerVar);
+      if (source) {
+        mounts.push({ mountPath, routerVar: source.exportedName, sourceFile: source.absPath });
       }
     }
 
     // Direct app endpoints: app.get('/api/...', ...)
-    const directMatch = line.match(/app\.(get|post|put|patch|delete)\(\s*['"]([^'"]+)['"]/);
+    const directMatch = line.match(/app\.(get|post|put|patch|delete)\(\s*['"](\/api[^'"]*)['"]/);
     if (directMatch) {
       const method = directMatch[1].toUpperCase();
       const routePath = directMatch[2];
@@ -117,21 +116,19 @@ function parseRouteFile(filePath, mountPath, targetRouterName) {
   const lines = content.split('\n');
   const endpoints = [];
 
-  // Look for router calls: [a-zA-Z0-9_]+\.(get|post|put|patch|delete)\(\s*['"`]([^'"`]+)['"`]
-  // Also handle chained .route('/path').get(...).post(...)
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lineNum = i + 1;
-
-    // Direct router method call
-    const regex = /(?:[a-zA-Z0-9_]+)\.(get|post|put|patch|delete)\(\s*['"`]([^'"`]+)['"`]/g;
+  // Only calls on the router variable that is actually mounted: a file can export several routers
+  // mounted on different prefixes (e.g. masterDataRouter and platformDbRouter).
+  const regex = new RegExp(`\\b${targetRouterName}\\.(get|post|put|patch|delete)\\(\\s*['"\`]([^'"\`]+)['"\`]`, 'g');
+  {
     let match;
-    while ((match = regex.exec(line)) !== null) {
+    while ((match = regex.exec(content)) !== null) {
       const method = match[1].toUpperCase();
       const routePath = match[2];
+      const lineNum = content.slice(0, match.index).split('\n').length;
+      const line = lines[lineNum - 1];
 
       // Extract middlewares from remainder of the line or arguments
-      const argSub = line.slice(match.index + match[0].length);
+      const argSub = line.slice(line.indexOf(routePath) + routePath.length);
       const middlewares = [];
       if (argSub.includes('requirePermission')) {
         const permMatch = argSub.match(/requirePermission\(([^)]+)\)/);
@@ -199,17 +196,22 @@ export function run() {
 
   // Summary by Phase
   const byPhase = {};
+  const nestByPhase = {};
   for (const ep of uniqueEndpoints) {
+    ep.servedByNest = isNestRoute(ep.method, ep.fullPath.replace(/:[^/]+/g, 'x'));
     byPhase[ep.targetPhase] = (byPhase[ep.targetPhase] || 0) + 1;
+    if (ep.servedByNest) nestByPhase[ep.targetPhase] = (nestByPhase[ep.targetPhase] || 0) + 1;
   }
+  const nestTotal = uniqueEndpoints.filter((ep) => ep.servedByNest).length;
 
   let md = `# Energya Connect: جرد الـ Endpoints الكامل (Endpoint Inventory)\n\n`;
   md += `> تم إنشاء هذا الجرد آلياً من فحص \`server.ts\` وجميع ملفات \`src/server/*Routes.ts\`.\n`;
-  md += `> إجمالي الـ Endpoints المحصورة: **${uniqueEndpoints.length}** endpoint.\n\n`;
+  md += `> إجمالي الـ Endpoints المحصورة: **${uniqueEndpoints.length}** endpoint.\n`;
+  md += `> المخدومة من NestJS حسب \`scripts/parity/nestRoutes.mjs\`: **${nestTotal}** endpoint.\n\n`;
 
   md += `## 1. توزيع الـ Endpoints حسب المراحل (Phases)\n\n`;
-  md += `| Phase | الوصف | عدد الـ Endpoints | النسبة | المستهدف في NestJS |\n`;
-  md += `|---|---|---|---|---|\n`;
+  md += `| Phase | الوصف | عدد الـ Endpoints | النسبة | على NestJS | المستهدف في NestJS |\n`;
+  md += `|---|---|---|---|---|---|\n`;
 
   const phaseDescriptions = {
     0: { desc: 'الأساس والأمان وفحص الصحة', target: 'platform-health / common' },
@@ -227,17 +229,17 @@ export function run() {
     const count = byPhase[p] || 0;
     const pct = ((count / uniqueEndpoints.length) * 100).toFixed(1);
     const info = phaseDescriptions[p];
-    md += `| Phase ${p} | ${info.desc} | **${count}** | ${pct}% | \`${info.target}\` |\n`;
+    md += `| Phase ${p} | ${info.desc} | **${count}** | ${pct}% | ${nestByPhase[p] || 0} | \`${info.target}\` |\n`;
   }
-  md += `| **الإجمالي** | **جميع المراحل** | **${uniqueEndpoints.length}** | **100%** | - |\n\n`;
+  md += `| **الإجمالي** | **جميع المراحل** | **${uniqueEndpoints.length}** | **100%** | **${nestTotal}** | - |\n\n`;
 
   md += `## 2. جدول الـ Endpoints المفصل\n\n`;
-  md += `| # | Method | Path | Legacy Handler File:Line | Target Phase | Target NestJS Module | Middlewares / Guards |\n`;
-  md += `|---|---|---|---|---|---|---|\n`;
+  md += `| # | Method | Path | Legacy Handler File:Line | Target Phase | Target NestJS Module | Nest | Middlewares / Guards |\n`;
+  md += `|---|---|---|---|---|---|---|---|\n`;
 
   uniqueEndpoints.forEach((ep, idx) => {
     const mw = ep.middlewares.length > 0 ? ep.middlewares.map((m) => `\`${m}\``).join(', ') : '-';
-    md += `| ${idx + 1} | \`${ep.method}\` | \`${ep.fullPath}\` | [${ep.legacyFile}:${ep.lineNumber}](file:///${path.resolve(rootDir, ep.legacyFile).replace(/\\/g, '/')}#L${ep.lineNumber}) | Phase ${ep.targetPhase} | \`${ep.targetModule}\` | ${mw} |\n`;
+    md += `| ${idx + 1} | \`${ep.method}\` | \`${ep.fullPath}\` | [${ep.legacyFile}:${ep.lineNumber}](file:///${path.resolve(rootDir, ep.legacyFile).replace(/\\/g, '/')}#L${ep.lineNumber}) | Phase ${ep.targetPhase} | \`${ep.targetModule}\` | ${ep.servedByNest ? 'yes' : '-'} | ${mw} |\n`;
   });
 
   const outPath = path.resolve(rootDir, 'docs/MIGRATION/ENDPOINT_INVENTORY.md');
@@ -246,6 +248,7 @@ export function run() {
 
   console.log(`Endpoint Inventory written successfully: ${uniqueEndpoints.length} endpoints -> ${outPath}`);
   console.log('Breakdown by phase:', byPhase);
+  console.log(`Served by Nest: ${nestTotal}`, nestByPhase);
 }
 
 run();

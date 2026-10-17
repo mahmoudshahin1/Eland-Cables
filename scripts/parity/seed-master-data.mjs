@@ -19,15 +19,15 @@ function assertSafeDatabaseUrl(rawUrl, allowedDbNames) {
 }
 
 export async function seedMasterDataDatabases() {
-  const legacyUrl = process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public';
-  const targetUrl = process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public';
+  const legacyUrl = process.env.DATABASE_URL_LEGACY || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public&connect_timeout=60';
+  const targetUrl = process.env.DATABASE_URL_TARGET || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public&connect_timeout=60';
 
   // Strict safety check before any DB instantiation or TRUNCATE execution
   assertSafeDatabaseUrl(legacyUrl, ['energya_legacy']);
   assertSafeDatabaseUrl(targetUrl, ['energya_nest']);
 
   const source = new LegacyPrisma({
-    datasources: { db: { url: process.env.DATABASE_URL_SOURCE || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_connect?schema=public' } }
+    datasources: { db: { url: process.env.DATABASE_URL_SOURCE || 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_connect?schema=public&connect_timeout=60' } }
   });
   const legacy = new LegacyPrisma({
     datasources: { db: { url: legacyUrl } }
