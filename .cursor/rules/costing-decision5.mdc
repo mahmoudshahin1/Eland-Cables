@@ -1,0 +1,12 @@
+---
+description: Costing Decision 5 guard — metal price is LME/Base only (Option B) until the user signs off. Applies to costing code and tests.
+globs: src/**/costing*/**, src/**/*costing*.ts, src/**/*Costing*.ts, energya-backend/src/**/costing*/**, energya-backend/test/**/*costing*
+alwaysApply: false
+---
+
+# Costing Decision 5 (open)
+
+- Work with Option B: metal price = LME/Base only.
+- Do not merge Premium, Clearance or Shipping into Direct RM (Option A) before the user signs Decision 5.
+- Optional components SHIPPING, PREMIUM, CLEARANCE, SURCHARGE, CONTAINER_SHIPMENT port as-is: value 0 with a warning when missing. No silent defaults beyond that.
+- Same formulas, rounding and operation order as legacy. Phase 5 requires golden numeric tests (>= 30 real cases) with zero numeric difference.

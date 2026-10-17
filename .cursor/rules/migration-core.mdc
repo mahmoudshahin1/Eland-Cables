@@ -1,0 +1,35 @@
+---
+description: Core rules for the Express -> NestJS feature-parity migration. Always applies to every task in this repository.
+alwaysApply: true
+---
+
+# Migration core rules
+
+Goal: feature parity first. Every legacy endpoint, rule, calculation and screen must behave identically on NestJS. No new features until Phase 10 is signed off.
+
+## Non-negotiable
+1. Legacy (`src/`, `server.ts`, `prisma/`) is frozen. Edit only to unblock execution, and log file, line, reason in `docs/MIGRATION/MIGRATION_STATUS.md` §5 in the same commit.
+2. Same URLs, methods, request/response JSON, status codes and error messages as legacy. Any difference is a bug unless the user approved it and it is listed under "Intentional differences".
+3. Never invent endpoints, aliases, fields, permissions, enums or business rules. A route exists only if the running legacy app mounts it (`server.ts` mounts + router file). Unclear -> search legacy, then ask.
+4. No mock data, demo users, hardcoded secrets or silent DB fallbacks. Only `DEMO_MODE=true`, never in production.
+5. Port, do not redesign. Large legacy files move as-is (PORT-FIRST), get registered in the domain registry, and are split only after tests pass and the user approves.
+6. One module at a time, in plan order. A module is done only when G1-G5 pass with evidence.
+7. Every number in a report comes from real command output, pasted verbatim. "Done" without output is not accepted.
+8. No new dependencies, tools, MCP servers, CI or Docker changes without asking the user first.
+9. Branch per phase (`migration/phase-N`). Small focused commits. Never commit or push to `main`. Never force-push.
+10. A new phase starts only after the exact phrase: "تمت المراجعة والـ UAT، ابدأ Phase <N+1>". Each phase ends with the closing bundle (`REVIEW`, `SECURITY_REVIEW`, `RUNBOOK`, `UAT`) in `docs/MIGRATION/phase-<N>/`, then push and stop.
+11. Legacy vulnerabilities are not fixed silently: port 1:1, log in Security Findings with severity and decision owner.
+12. Costing Decision 5 is open: work with Option B (metal price = LME/Base only). Never merge Premium/Clearance/Shipping into Direct RM. Optional components (SHIPPING, PREMIUM, CLEARANCE, SURCHARGE, CONTAINER_SHIPMENT) port as-is: 0 with a warning when missing.
+
+## UI decision
+The target UI is the existing React 19 app via the Vite proxy (`vite.config.ts`). Ignore Vue references in older docs.
+
+## Stop and ask when
+- legacy behaviour is ambiguous or contradicts the plan
+- a gate cannot be satisfied
+- a dependency, schema change or destructive command is needed
+- a security issue is found (report immediately)
+- the task would touch more than one module
+
+## Report format (Arabic)
+1. Summary (3 lines). 2. Table: endpoints done/total + G1..G5 with evidence. 3. Differences from legacy and why. 4. Decisions needed. 5. Proposed next step (not started).

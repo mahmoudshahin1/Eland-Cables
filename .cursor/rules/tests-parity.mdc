@@ -1,0 +1,26 @@
+---
+description: Rules for porting legacy tests and for parity harness scripts (legacy :3847 vs Nest :3000) and Playwright G3 checks.
+globs: scripts/parity/**, energya-backend/test/**, energya-backend/**/*.spec.ts
+alwaysApply: false
+---
+
+# Tests and parity
+
+## Porting tests
+- Port legacy tests 1:1 with the same names. Keep an old -> new mapping table with counts taken from real output.
+- Deferred tests are `it.todo('<same legacy name>')` with the target phase in the status file. No fake passing tests.
+- No `if (...) return` or try/catch that skips assertions. No `.skip` without a logged reason.
+
+## Parity harness
+- Compare real serialized responses from both servers: status code AND body AND the expected status for the persona.
+- Personas for every guarded route: no token, customer, internal without permission, internal with partial permission, authorized internal.
+- Do not ignore fields to make a check pass. Normalise volatile fields (ids, timestamps, tokens) to stable placeholders instead of dropping them. Error messages are compared.
+- Keep the negative tests that prove the harness fails on intentional drift.
+- Never edit the harness to turn a failure green. A legitimate harness bug fix must be described in the report.
+- Seeds (`seed-master-data.mjs`, `seed-auth.mjs`) TRUNCATE the parity DBs `energya_legacy` / `energya_nest` only. Never point them at another DB.
+
+## G3 (UI)
+- Run the React UI on `:5173` through the Vite proxy. Assert that migrated routes carry `X-Served-By: nest` and that no request returns 4xx/5xx unexpectedly. The script must exit non-zero on failure.
+
+## Evidence
+Paste the verbatim output of: `npm test`, `npm run test:e2e`, `npm run build`, `npm run lint` (energya-backend), `npm run verify:domain` and the parity run.

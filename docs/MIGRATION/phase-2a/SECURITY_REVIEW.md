@@ -1,8 +1,8 @@
 # Phase 2a Security Review & Audit Report (SECURITY_REVIEW.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a (All 36 Endpoints: 19 `/api/master/*` + 17 `/api/platform/*` Aliases)  
-**Date:** 2026-10-16  
-**Status:** ⚠️ **Findings Transferred for 1:1 Parity — No Silent Tightening — Ready for Review**  
+**Scope:** Phase 2a real mounted routes: 19. Alias rows below are withdrawn; those paths are not mounted.  
+**Date:** 2026-10-16, corrected 2026-10-17  
+**Status:** ⚠️ **Findings SEC-MD-01 and SEC-MD-02 stay ported 1:1. This file is not a fresh 2026-10-17 audit.**  
 **Protocol:** Conforms strictly to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.2)
 
 ---

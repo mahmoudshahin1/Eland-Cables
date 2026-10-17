@@ -7,3 +7,5 @@ coverage/
 .env*
 !.env.example
 logs/
+*.tsbuildinfo
+.cursor/mcp.json

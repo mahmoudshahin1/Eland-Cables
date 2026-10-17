@@ -1,6 +1,6 @@
 # Migration Status (حالة الترحيل)
 
-Last updated: 2026-10-16  
+Last updated: 2026-10-17  
 Active Branch: `migration/phase-2`  
 Source of Truth Schema: `/prisma/schema.prisma`
 
@@ -12,17 +12,15 @@ Source of Truth Schema: `/prisma/schema.prisma`
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومعتمدة**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| **Phase 2a** | **Master Data Read & Drums** | **36 / 36** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة 100%**: Parity موسع (95/95 فحصاً مطابقاً 100%)، 36 مساراً (/master و/platform)، 5 شخصيات، فلاتر وترقيم، ملف 5MB بايت ببايت، واختبارات كسر متعمد، وPlaywright على 5173 عبر Vite proxy مع X-Served-By: nest (55/103 طلب من Nest)، وحزمة الإغلاق الأربعة في phase-2a/ جاهزة للمراجعة |
-
-| Phase 2b | Master Data CRUD, Imports, Metals | 0 / 52 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | بانتظار الاعتماد للبدء (ممنوع البدء قبل قرار المستخدم) |
-| Phase 2c | Governance & Workflow Engines | 0 / 42 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | بانتظار الاعتماد للبدء (ممنوع البدء قبل قرار المستخدم) |
-| Phase 3 | Cable Authority & Configurator | 0 / 16 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
-| Phase 4 | Commercial (Inquiries & Quotations) | 0 / 182 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
+| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | **غير معتمدة.** المسارات المركّبة فعلاً 19 وليس 36. أرقام 36 و95 و585 أُلغيت. دليل G1: `phase-2a/parity_results.json` بتاريخ 2026-10-17T14:48:38.283Z = 159 نجحت / 0 فشلت / 159. G3 أُعيدت كتابة سكربته ولم يُعد تشغيله. حزمة 2026-10-16 تصف النطاق القديم. |
+| Phase 2 المتبقي | CRUD والاستيراد والحوكمة | 0 / 55 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 55 = 74 − 19 من `ENDPOINT_INVENTORY.md`. التقسيم القديم 52 + 42 غير معتمد. ممنوع البدء قبل عبارة المستخدم. |
+| Phase 3 | Cable Authority & Configurator | 2 / 11 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مسارا المنتجات والـ facets على Nest مبكراً. المرحلة نفسها لم تبدأ. |
+| Phase 4 | Commercial (Inquiries & Quotations) | 0 / 116 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
 | Phase 5 | Costing & Pricing Engine | 0 / 109 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | أعلى مخاطرة - Golden tests رقمية |
 | Phase 6 | Container Study & Logistics | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | يعيد استخدام منطق البراميل من `shared/domain` |
-| Phase 7 | Workflows & Commitments | 0 / 39 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
-| Phase 8 | Integrations (D365, Advaris, AI) | 0 / 4 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
-| **الإجمالي** | **الكلي** | **87 / 585** | - | - | - | - | - | |
+| Phase 7 | Workflows & Commitments | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
+| Phase 8 | Integrations (D365, Advaris, AI) | 0 / 3 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
+| **الإجمالي** | **الكلي** | **70 / 472** | - | - | - | - | - | المصدر: `ENDPOINT_INVENTORY.md` المعاد توليده من المسارات المركّبة فقط |
 
 ---
 
@@ -80,12 +78,16 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `vite.config.ts` | تصحيح الـ Regex لمسار البروكسي: `^/api/(auth\|admin/(users\|roles\|...))(\\?\|/\|$)` | إضافة دعم للـ Query Parameters (`?`). في السابق كان النمط `($\|/)` يسقط أي استدعاء يحوي معاملات استعلام (مثل `/api/admin/users?sort=createdAt`) ليتجه إلى خادم Express القديم بدلاً من NestJS. |
 | `src/server/masterDataRoutes.ts:350` | تغليف `row.content` بـ `Buffer.from(row.content)` عند إرسال المرفقات الثنائية | تصحيح خلل في Express 4؛ حيث أن كائن `row.content` المسترجع من Prisma هو `Uint8Array` وليس Node.js `Buffer`. عدم التغليف جعل Express يعامله ككائن عادي ويسلسله بصيغة JSON (`{"0":197,"1":170,...}`) بحجم 70MB بدلاً من إرسال البايتات الثنائية الخام بحجم 5MB. |
 | `.env` | توجيه `DATABASE_URL` القديم إلى قاعدة `energya_legacy` | عزل بيئة الاختبارات القديمة وقاعدة الـ Parity عن قاعدة NestJS (`energya_nest`) وقاعدة التشغيل الأساسية، وضمان تطابق كلمات المرور والبيانات المزروعة. |
+| `server.ts` | حذف `app.use('/api/platform', masterDataRouter)` و`app.use('/api/master', platformDbRouter)` | المساران كانا أسماءً مستعارة غير موجودة في السلوك المطلوب. `platformDbRouter` يبقى على `/api/platform` و`masterDataRouter` يبقى على `/api/master`. |
+| `vite.config.ts` | استبدال بروكسي الـ regex بجدول `scripts/parity/nestRoutes.mjs` حسب الميثود والمسار | الطلبات المنقولة فقط تذهب إلى Nest `:3000`، وباقي `/api` يبقى على Express `:3847`. |
 
 ---
 
 ## 6. إنجازات Phase 2a (Code & Parity Completion)
 
-1. **نقل وتطوير مسارات Phase 2a الـ 36 بالكامل:**
+تصحيح 2026-10-17: الفقرات التالية كُتبت عندما كان النطاق يُحسب 36 مساراً. النطاق المعتمد الآن هو 19 مساراً مركّباً. دليل المطابقة الحالي هو `docs/MIGRATION/phase-2a/parity_results.json`: `passed=159` و`failed=0` و`total=159` و`generatedAt=2026-10-17T14:48:38.283Z`. المرحلة ليست معتمدة.
+
+1. **مسارات Phase 2a المركّبة:**
    - **Cables (4 مسارات):** `GET /api/master/cables`، `GET /api/master/cables/:mat`، `GET /api/v2/cables/products`، `GET /api/v2/cables/products/facets`.
    - **Attachments (4 مسارات):** `GET .../attachments`، `GET .../attachments/:id`، `POST .../attachments`، `DELETE .../attachments/:id`.
    - **Raw Materials (مسار واحد):** `GET /api/master/raw-materials` (مع فحص حجب حقول التكلفة للعميل).

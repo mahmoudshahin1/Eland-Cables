@@ -1,8 +1,8 @@
 # Phase 2a Closing Evidence & Review Report (REVIEW.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a (All 36 Endpoints: 19 `/api/master/*` + 17 `/api/platform/*` Aliases)  
-**Date:** 2026-10-16  
-**Status:** ✅ **Phase 2a Complete & Fully Verified — Frozen Pending User UAT & Sign-off**  
+**Scope:** Phase 2a real mounted routes: 19. The 17 `/api/platform/*` aliases were removed on 2026-10-17.  
+**Date:** 2026-10-16, corrected 2026-10-17  
+**Status:** ⬜ **Not accepted.** G1 evidence is `parity_results.json` (`passed=159`, `failed=0`, `total=159`, `generatedAt=2026-10-17T14:48:38.283Z`). The verbatim blocks below are the 2026-10-16 run and are not the current close evidence. G3 has not been re-run after the proxy change.  
 **Protocol:** Conforms strictly to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.1)
 
 ---

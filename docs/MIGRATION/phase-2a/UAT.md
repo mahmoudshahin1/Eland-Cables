@@ -1,7 +1,7 @@
 # Phase 2a User Acceptance Testing Guide (UAT.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a (36 endpoints)  
-**Date:** 2026-10-16  
+**Scope:** Phase 2a (19 mounted routes)  
+**Date:** 2026-10-16, corrected 2026-10-17  
 **Status:** ⏳ **Awaiting User Manual Execution & Results**  
 **Protocol:** Conforms to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Sections 3.4 & 5)
 

@@ -1,0 +1,41 @@
+---
+description: NestJS backend architecture, layering, size limits and typing rules for energya-backend source files.
+globs: energya-backend/src/**
+alwaysApply: false
+---
+
+# NestJS architecture
+
+## Layering
+- Controller: routing + DTO binding only. No Prisma, no business logic.
+- Service: business logic. Calls repositories and `shared/domain`.
+- Repository: Prisma only. Decimal -> number conversion happens here (`dec`, `decOrNull`).
+- `src/shared/domain/`: pure logic copied from legacy. No Nest, Express or React imports.
+- Never import from the legacy tree (`../../../../src/...`, `server.ts`, legacy `db`/`identityService`). Use `PrismaService` and Nest providers.
+
+## Routes
+- One path per legacy route. `@Controller('api/master')`, not `@Controller(['api/master','api/platform'])`, unless legacy mounts the same router on both prefixes (check `server.ts` on `origin/main`).
+- Every route has a guard and the same permission helper as legacy (`requireSignedIn` vs `requireMasterReadAuth` vs `requireWriteAuth` differ: copy the exact one).
+- Public routes only where legacy is public, and they must appear in `SECURITY_REVIEW.md`.
+
+## Typing and validation
+- Every body/query/param has a DTO with class-validator.
+- No `any` in controllers, DTOs or public service signatures. Use DTO types, `unknown` + narrowing, or Prisma types.
+- Request actor type: `RequestActor` from `src/common/interfaces/request-actor.interface`.
+
+## Size limits (new code)
+controller 200 lines, service/repository 300, DTO 200, module 60, function 50. Ported legacy files in `shared/domain` are exempt but must not grow.
+
+## Domain copies
+Any file copied into `shared/domain` must be registered in `scripts/parity/verify-domain-sync.mjs` and in `MIGRATION_STATUS.md` §3. Body must stay byte-identical to legacy except import lines.
+
+## Example
+```ts
+// ❌ BAD
+@Controller(['api/master', 'api/platform'])
+async list(@Req() req: any) { ... }
+
+// ✅ GOOD
+@Controller('api/master')
+async list(@Req() req: AuthenticatedRequest, @Query() query: ListCablesQueryDto) { ... }
+```

@@ -1,0 +1,15 @@
+---
+description: Security rules — secrets, destructive commands, legacy findings and data exposure. Always applies.
+alwaysApply: true
+---
+
+# Security
+
+- Never write secrets in code, docs, commits or MCP config. Use env vars; in `.cursor/mcp.json` use `${env:VAR}`.
+- Never read or print `.env` values. Refer to variable names only.
+- `JWT_SECRET` (>= 32 chars) and `DATABASE_URL` are validated at Nest startup; do not weaken `src/common/config/env.validation.ts`.
+- Destructive commands need explicit user approval in the same conversation: `DROP`, `TRUNCATE`, `prisma migrate reset`, `prisma db push --force-reset`, `git reset --hard`, `git clean`, `git push --force`, recursive deletes.
+- Legacy findings (e.g. SEC-MD-01, SEC-MD-02) are ported 1:1 and logged with severity, origin, status and decision owner. Tightening happens only as a user-approved intentional difference.
+- Check every new response for: password hashes, tokens, cost/price fields for customers, cross-customer data.
+- Report any new High finding immediately and stop.
+- Phase security review uses the checklist in `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` §3.2 and §4 (skill `security-review`).
