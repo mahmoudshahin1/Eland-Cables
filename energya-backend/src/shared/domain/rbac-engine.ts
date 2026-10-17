@@ -18,9 +18,6 @@ export function hasPermission(
   resource: string,
   action: string
 ): boolean {
-  if (actor.userType === 'superadmin' || actor.roles?.includes('SUPERADMIN') || actor.permissionCodes?.includes('SUPERADMIN:ALL')) {
-    return true;
-  }
   const code = permissionCode({ module, resource, action });
   if (actor.permissionCodes?.includes(code)) return true;
   if (actor.permissionCodes && actor.permissionCodes.length > 0) return false;

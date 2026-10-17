@@ -12,14 +12,14 @@ import {
   type CableEngineeringInput,
   type DrumCapacityResult,
   type DrumGeometryInput,
-} from './drumCapacityCalculator';
+} from './drumCapacityCalculator.js';
 import {
   computeCuttingLengthToleranceBand,
   cuttingLengthRequirementsFromSchedule,
   positiveScheduleNumber,
   summarizeUnsuitableReasons,
   type DrumScheduleLengthInput,
-} from './drumOptimizationPresentation';
+} from './drumOptimizationPresentation.js';
 
 export {
   applyAutomaticPlanToCuttingRequirements,
@@ -36,7 +36,7 @@ export {
   resolveManualFocusRow,
   summarizeUnsuitableReasons,
   totalCableLengthFromDrumSchedule,
-} from './drumOptimizationPresentation';
+} from './drumOptimizationPresentation.js';
 export type {
   AutomaticDrumRequirement,
   CuttingLengthToleranceBand,
@@ -44,7 +44,7 @@ export type {
   ManualCandidateFetchFailureKind,
   ManualCandidateListUiKind,
   ManualCandidateListUiState,
-} from './drumOptimizationPresentation';
+} from './drumOptimizationPresentation.js';
 
 export type DrumPlanValidationStatus = 'VALID' | 'NOT_SUITABLE' | 'INCOMPLETE';
 

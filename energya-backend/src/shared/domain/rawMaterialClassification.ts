@@ -1,7 +1,4 @@
-export type RawMaterialPricingCategory =
-  | 'MARKET_METAL_COPPER'
-  | 'MARKET_METAL_ALUMINIUM'
-  | 'STANDARD_RAW_MATERIAL';
+import { RawMaterialPricingCategory } from './inquiryMetalPricing.types.js';
 
 export const PRICING_CATEGORIES = [
   'MARKET_METAL_COPPER',
@@ -73,7 +70,7 @@ export function isOperationalRawMaterialCode(code?: string | null): boolean {
 export function suggestedClassificationFromCode(
   code?: string | null,
   description?: string | null,
-  uom?: string | null,
+  uom?: string | null
 ): { pricingCategory: RawMaterialPricingCategory; metalType: MetalType } {
   const c = (code || '').trim().toUpperCase();
   const d = (description || '').trim().toUpperCase();
@@ -101,7 +98,7 @@ export function suggestedClassificationFromCode(
 export function isExcludedFromDirectRawMaterialCost(
   code?: string | null,
   description?: string | null,
-  uom?: string | null,
+  uom?: string | null
 ): boolean {
   const c = (code || '').trim().toUpperCase();
   const d = (description || '').trim().toUpperCase();
@@ -112,7 +109,7 @@ export function isExcludedFromDirectRawMaterialCost(
 
 export function suggestedClassificationForPair(
   pricingCategory: RawMaterialPricingCategory,
-  metalType: MetalType,
+  metalType: MetalType
 ): { pricingCategory: RawMaterialPricingCategory; metalType: MetalType } {
   if (pricingCategory === 'MARKET_METAL_COPPER') return { pricingCategory, metalType: 'COPPER' };
   if (pricingCategory === 'MARKET_METAL_ALUMINIUM') return { pricingCategory, metalType: 'ALUMINIUM' };

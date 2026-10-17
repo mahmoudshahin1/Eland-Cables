@@ -99,6 +99,7 @@ export class AdminIdentityService {
     }
 
     const row = await this.repo.findUserById(user.id);
+    if (!row) throw new NotFoundException('User not found');
     const permCodes = await this.loadPermissionCodes(user.id);
     return toSafeUser({ ...row, permissionCodes: permCodes });
   }

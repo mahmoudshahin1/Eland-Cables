@@ -1,7 +1,7 @@
-import { issue } from '../errors/domainError';
-import { assertCustomerBusinessScope } from './customerScope';
-import { hasPermission } from './rbac-engine';
-import { RequestActor } from '../../common/interfaces/request-actor.interface';
+import { issue } from '../errors/domainError.js';
+import { assertCustomerBusinessScope } from './customerScope.js';
+import { hasPermission } from './rbac-engine.js';
+import { RequestActor } from '../../common/interfaces/request-actor.interface.js';
 
 function denyIfMissingGranular(actor: RequestActor, allowed: Array<[string, string, string]>): boolean {
   if (!actor.permissionCodes || actor.permissionCodes.length === 0) return false;
@@ -1120,4 +1120,3 @@ export function assertCanViewCustomerContainerStudy(actor: RequestActor): void {
     throw issue('UNAUTHORIZED', 'Your role is not authorized to view customer shipment status.');
   }
 }
-

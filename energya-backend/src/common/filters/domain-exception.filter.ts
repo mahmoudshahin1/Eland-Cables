@@ -124,7 +124,10 @@ export class DomainExceptionFilter implements ExceptionFilter {
           : (customObj.error ? customObj.error : exception.message);
         const formattedMsg = msg.endsWith('.') ? msg : `${msg}.`;
 
-        if (request.method === 'GET' && (formattedMsg === 'User not found.' || formattedMsg === 'Role not found.')) {
+        if (
+          request.method === 'GET' &&
+          (formattedMsg === 'User not found.' || formattedMsg === 'Role not found.' || formattedMsg === 'Attachment not found.')
+        ) {
           return response.status(HttpStatus.NOT_FOUND).json({ error: formattedMsg });
         }
         return response.status(HttpStatus.NOT_FOUND).json({

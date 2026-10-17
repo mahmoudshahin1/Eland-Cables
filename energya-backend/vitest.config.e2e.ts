@@ -7,6 +7,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    // All e2e files share the energya_nest database and boot the full AppModule.
+    fileParallelism: false,
+    hookTimeout: 120_000,
     env: {
       DATABASE_URL: 'postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public',
       JWT_SECRET: 'energya_connect_dotnet9_super_secret_jwt_key_2026_x89f_long_enough',

@@ -5,12 +5,14 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { PrismaService } from '../prisma.service.js';
 import { AuthRepository } from './auth.repository.js';
 import { RequestActor, CustomerScopeStatus } from '../common/interfaces/request-actor.interface.js';
 import { deriveLegacyPermissions } from '../shared/domain/rbac-compatibility.js';
+import { ANON_MESSAGE_KEY } from '../common/decorators/anon-message.decorator.js';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -18,7 +20,15 @@ export class JwtAuthGuard implements CanActivate {
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuthRepository) private readonly authRepo: AuthRepository,
+    @Inject(Reflector) private readonly reflector: Reflector,
   ) {}
+
+  private anonMessage(context: ExecutionContext): string {
+    return (
+      this.reflector.getAllAndOverride<string>(ANON_MESSAGE_KEY, [context.getHandler(), context.getClass()]) ||
+      'Sign in is required.'
+    );
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -33,7 +43,7 @@ export class JwtAuthGuard implements CanActivate {
       if (url.includes('/admin/customers/export')) {
         throw new UnauthorizedException('Sign in is required to export master data.');
       }
-      throw new UnauthorizedException('Sign in is required.');
+      throw new UnauthorizedException({ error: this.anonMessage(context), code: 'UNAUTHORIZED' });
     }
 
     let payload: any;
@@ -46,7 +56,7 @@ export class JwtAuthGuard implements CanActivate {
       if (url.includes('/admin/customers/export')) {
         throw new UnauthorizedException('Sign in is required to export master data.');
       }
-      throw new UnauthorizedException('Sign in is required.');
+      throw new UnauthorizedException({ error: this.anonMessage(context), code: 'UNAUTHORIZED' });
     }
 
     const actor: RequestActor = {
@@ -73,7 +83,7 @@ export class JwtAuthGuard implements CanActivate {
       if (url.includes('/auth/me') || url.includes('/auth/change-password')) {
         throw new UnauthorizedException('Invalid or expired session.');
       }
-      throw new UnauthorizedException('Sign in is required.');
+      throw new UnauthorizedException({ error: this.anonMessage(context), code: 'UNAUTHORIZED' });
     }
 
     (request as any).user = hydrated;

@@ -3,7 +3,7 @@
  * There is no Product Category column. Do not rewrite master rows.
  */
 
-import { CABLE_SEARCH_FORBIDDEN_RESULT_KEYS } from './v2AdvancedCableSearch';
+import { CABLE_SEARCH_FORBIDDEN_RESULT_KEYS } from './v2AdvancedCableSearch.js';
 
 export const CUSTOMER_CATALOG_CATEGORIES = [
   'POWER',

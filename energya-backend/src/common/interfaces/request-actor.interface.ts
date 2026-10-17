@@ -1,3 +1,5 @@
+import type { LegacyModulePermissions } from '../../shared/domain/rbac-compatibility.js';
+
 export type CustomerScopeStatus = 'resolved' | 'none' | 'ambiguous' | 'internal';
 
 export interface RequestActor {
@@ -7,7 +9,7 @@ export interface RequestActor {
   userType?: string;
   role?: string;
   roles?: string[];
-  permissions?: Record<string, boolean>;
+  permissions?: LegacyModulePermissions | Record<string, boolean>;
   permissionCodes?: string[];
   customerId?: string;
   customerCode?: string;

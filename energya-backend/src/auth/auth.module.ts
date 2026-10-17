@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaService } from '../prisma.service.js';
 
 @Global()
 @Module({
@@ -28,7 +27,7 @@ import { PrismaService } from '../prisma.service.js';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, PrismaService, AuthRepository],
+  providers: [AuthService, AuthRepository],
   controllers: [AuthController],
   exports: [AuthService, AuthRepository],
 })

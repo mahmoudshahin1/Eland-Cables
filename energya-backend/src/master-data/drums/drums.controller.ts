@@ -14,8 +14,9 @@ import {
 import { DrumsService } from './drums.service.js';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
 import { MasterReadAuthGuard, DrumComputeAuthGuard } from '../../common/guards/master-data-auth.guard.js';
+import { AnonMessage } from '../../common/decorators/anon-message.decorator.js';
 
-@Controller(['api/master', 'api/platform'])
+@Controller('api/master')
 @UsePipes(new ValidationPipe({ whitelist: false, forbidNonWhitelisted: false }))
 export class DrumsController {
   constructor(
@@ -24,6 +25,7 @@ export class DrumsController {
   ) {}
 
   @UseGuards(JwtAuthGuard, MasterReadAuthGuard)
+  @AnonMessage('Sign in is required to view drums.')
   @Get('drums')
   async listDrums() {
     return this.drumsService.listDrums();
@@ -36,6 +38,7 @@ export class DrumsController {
   }
 
   @UseGuards(JwtAuthGuard, DrumComputeAuthGuard)
+  @AnonMessage('Sign in is required for drum optimization.')
   @HttpCode(HttpStatus.OK)
   @Post('drums/capacity')
   async calculateCapacity(@Body() body: any) {
@@ -43,6 +46,7 @@ export class DrumsController {
   }
 
   @UseGuards(JwtAuthGuard, DrumComputeAuthGuard)
+  @AnonMessage('Sign in is required for drum optimization.')
   @HttpCode(HttpStatus.OK)
   @Post('drums/candidates')
   async listCandidates(@Body() body: any) {
@@ -54,6 +58,7 @@ export class DrumsController {
   }
 
   @UseGuards(JwtAuthGuard, DrumComputeAuthGuard)
+  @AnonMessage('Sign in is required for drum optimization.')
   @HttpCode(HttpStatus.OK)
   @Post('drums/validate')
   async validatePlan(@Body() body: any) {
@@ -66,6 +71,7 @@ export class DrumsController {
   }
 
   @UseGuards(JwtAuthGuard, DrumComputeAuthGuard)
+  @AnonMessage('Sign in is required for drum optimization.')
   @HttpCode(HttpStatus.OK)
   @Post('drums/optimize')
   async optimizePlan(@Body() body: any) {

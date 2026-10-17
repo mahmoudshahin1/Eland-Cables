@@ -18,7 +18,7 @@ export class CreateUserDto {
   password!: string;
 
   @IsOptional()
-  @IsEnum(['internal', 'customer', 'superadmin'])
+  @IsEnum(['internal', 'customer'])
   userType?: string;
 
   @IsString()

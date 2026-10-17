@@ -1,7 +1,7 @@
-import { getPrisma } from '../../../../src/server/db';
-import { RequestActor } from '../../common/interfaces/request-actor.interface';
-import { issue } from '../errors/domainError';
-import { writeAudit } from '../../../../src/server/identityService';
+import { getPrisma } from '../infra/legacy-ports.js';
+import { RequestActor } from '../../common/interfaces/request-actor.interface.js';
+import { issue } from '../errors/domainError.js';
+import { writeAudit } from '../infra/legacy-ports.js';
 
 export type CustomerScope = {
   matchKeys: string[];
@@ -170,5 +170,3 @@ export async function resolveCustomerMasterIdForActor(actor: RequestActor): Prom
   if (assigned.length > 1) return null;
   return lookupCustomerMasterId(account.customerId);
 }
-
-

@@ -46,7 +46,7 @@ export class AdminIdentityRepository {
     return this.prisma.userRole.findUnique({ where: { userId_roleId: { userId, roleId } } });
   }
 
-  async createUserRole(userId: string, roleId: string, assignedBy: string) {
+  async createUserRole(userId: string, roleId: string, assignedBy?: string) {
     return this.prisma.userRole.create({ data: { userId, roleId, assignedBy } });
   }
 
@@ -120,7 +120,7 @@ export class AdminIdentityRepository {
     return this.prisma.role.update({ where: { id }, data });
   }
 
-  async updateRolePermissionsTransaction(roleId: string, permissionIds: string[], assignedBy: string) {
+  async updateRolePermissionsTransaction(roleId: string, permissionIds: string[], assignedBy?: string) {
     return this.prisma.$transaction(async (tx) => {
       await tx.rolePermission.deleteMany({ where: { roleId } });
       if (permissionIds.length > 0) {

@@ -76,8 +76,6 @@ app.get('/api/platform/status', async (_req, res) => {
 });
 
 app.use('/api/platform', platformDbRouter);
-app.use('/api/platform', masterDataRouter);
-app.use('/api/master', platformDbRouter);
 app.use('/api/master', masterDataRouter);
 app.use('/api/master', marketMetalImportRouter);
 app.use('/api/master', masterDataCutoverRouter);

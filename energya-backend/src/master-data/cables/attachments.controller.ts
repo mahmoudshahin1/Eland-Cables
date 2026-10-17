@@ -18,9 +18,10 @@ import type { Response } from 'express';
 import { AttachmentsService } from './attachments.service.js';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
 import { MasterWriteAuthGuard } from '../../common/guards/master-data-auth.guard.js';
+import { AnonMessage } from '../../common/decorators/anon-message.decorator.js';
 import { RequestActor } from '../../common/interfaces/request-actor.interface.js';
 
-@Controller(['api/master', 'api/platform'])
+@Controller('api/master')
 @UsePipes(new ValidationPipe({ whitelist: false, forbidNonWhitelisted: false }))
 export class AttachmentsController {
   constructor(@Inject(AttachmentsService) private readonly attachmentsService: AttachmentsService) {}
@@ -45,6 +46,7 @@ export class AttachmentsController {
   }
 
   @UseGuards(JwtAuthGuard, MasterWriteAuthGuard)
+  @AnonMessage('Sign in is required to change Cable Master.')
   @HttpCode(HttpStatus.CREATED)
   @Post('cables/:materialNumber/attachments')
   async uploadAttachment(
@@ -56,6 +58,7 @@ export class AttachmentsController {
   }
 
   @UseGuards(JwtAuthGuard, MasterWriteAuthGuard)
+  @AnonMessage('Sign in is required to change Cable Master.')
   @Delete('cables/:materialNumber/attachments/:attachmentId')
   async deleteAttachment(
     @Param('materialNumber') materialNumber: string,
