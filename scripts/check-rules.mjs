@@ -201,6 +201,7 @@ function allowedPath(rel) {
     'energya-backend/.env.example',
     'scripts/parity/nestRoutes.mjs',
     'scripts/parity/run-phase2a-parity.mjs',
+    'scripts/parity/verify-g3-phase2a-coverage.mjs',
     'energya-backend/test/master-data/customerCableCatalog.server.e2e-spec.ts',
     '.env.example',
     'docs/MIGRATION/MIGRATION_STATUS.md',
