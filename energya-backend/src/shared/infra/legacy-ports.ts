@@ -20,6 +20,12 @@ export function getPrisma(): PrismaClient | null {
 
 function redactSecrets(value: unknown): unknown {
   if (value == null) return value;
+  if (typeof (value as any)?.toNumber === 'function') {
+    return (value as any).toNumber();
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
   if (typeof value !== 'object') return value;
   const banned = /password|token|secret|hash/i;
   if (Array.isArray(value)) return value.map(redactSecrets);

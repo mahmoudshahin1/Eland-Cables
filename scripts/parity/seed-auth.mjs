@@ -187,6 +187,10 @@ export async function seedAuthDatabases() {
     });
     for (const c of nonStdCusts) {
       await db.customerUser.deleteMany({ where: { customerId: c.id } });
+      await db.customerDeliveryCombination.deleteMany({ where: { customerId: c.id } });
+      await db.customerAddress.deleteMany({ where: { customerId: c.id } });
+      await db.customerContact.deleteMany({ where: { customerId: c.id } });
+      await db.customerExternalMapping.deleteMany({ where: { customerId: c.id } });
       await db.customer.delete({ where: { id: c.id } });
     }
 

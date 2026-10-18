@@ -23,6 +23,30 @@ export const NEST_ROUTES = [
   { phase: '2a', methods: ['GET'], path: /^\/api\/master\/drums\/[^/]+$/ },
   { phase: '2a', methods: ['GET'], path: /^\/api\/master\/(reference|keys|uniqueness|sot-status)$/ },
   { phase: '2a', methods: ['GET'], path: /^\/api\/platform\/db$/ },
+
+  // Phase 2b: master data mutations, excel imports, exports, market metals
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/cables$/ },
+  { phase: '2b', methods: ['PUT'], path: /^\/api\/master\/cables\/[^/]+$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/raw-materials$/ },
+  { phase: '2b', methods: ['PUT'], path: /^\/api\/master\/raw-materials\/[^/]+$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/raw-materials\/[^/]+\/prices$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/drums$/ },
+  { phase: '2b', methods: ['PUT', 'DELETE'], path: /^\/api\/master\/drums\/[^/]+$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/drums\/(excel-preview|excel-commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/boms\/excel-commit$/ },
+  { phase: '2b', methods: ['GET', 'POST'], path: /^\/api\/master\/market-metals\/imports$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/market-metals\/imports\/[^/]+$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/market-metals\/imports\/[^/]+\/image$/ },
+  { phase: '2b', methods: ['PATCH'], path: /^\/api\/master\/market-metals\/imports\/[^/]+\/rows\/[^/]+$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/market-metals\/imports\/[^/]+\/(approve|publish)$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/export\/[^/]+$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/(cable-scrap-template-export|raw-material-prices-export|engineering-mappings-export|bom-conflicts-export)$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/commercial-pricing-rules\/export$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/master\/imports$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/imports\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/cable-scrap-import\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/raw-material-prices\/import\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/master\/engineering-mappings\/import\/(preview|commit)$/ },
 ];
 
 export function isNestRoute(method, url) {
