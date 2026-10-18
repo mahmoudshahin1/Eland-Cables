@@ -1,155 +1,128 @@
-# Phase 2a review evidence
+# Phase 2a review evidence (2026-10-18)
 
-**Branch:** `migration/phase-2a-fix` from `ee98586`
-**Date:** 2026-10-18
-**Not accepted.** `node scripts/check-rules.mjs` exits 1. The clean clone stops because `DATABASE_URL` is absent. Parity was not re-run.
+Branch `migration/phase-2a-fix`. Catalog routes were removed from Nest registration. The phase 2a proxy table is still 19 routes. Nest total is 68, not 17.
+
+`node scripts/inventory/generateInventory.mjs`:
+
+```text
+Endpoint Inventory written successfully: 472 endpoints
+Served by Nest: 68 { '1': 49, '2': 19 }
+phase2aRoutes=19 notRouted=0
+products=false
+facets=false
+```
 
 ## npm test
 
-Working directory: `energya-backend`. Exit code 0.
+Exit code 0.
 
 ```text
 > energya-backend@0.0.1 test
 > vitest run
 
-The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
-
- RUN  v4.1.11 H:/Eland-Cables/energya-backend
-
-
  Test Files  7 passed (7)
       Tests  114 passed (114)
-   Start at  17:05:32
-   Duration  27.06s (transform 11.15s, setup 0ms, import 42.78s, tests 7.15s, environment 5ms)
+   Start at  17:32:49
+   Duration  35.43s (transform 17.36s, setup 0ms, import 55.21s, tests 11.22s, environment 1ms)
 ```
 
 ## npm run test:e2e
 
-Working directory: `energya-backend`. Exit code 0.
+Exit code 1. The five failures are `GET /api/v2/cables/products` and `/products/facets` returning 404 after the controller was unregistered. The test file was not changed.
 
 ```text
-> energya-backend@0.0.1 test:e2e
-> vitest run --config ./vitest.config.e2e.ts
+ ❯ test/master-data/customerCableCatalog.server.e2e-spec.ts (6 tests | 5 failed | 1 todo) 2525ms
+     × requires sign-in 60ms
+     × lists Cable Master rows with server-side pagination and no costing leak 27ms
+     × maps category=MV from family/voltage without rewriting masters 25ms
+     × maps POWER as LV ∪ MV family keys 23ms
+     × returns live facets from Cable Master and documents unmapped category field 15ms
 
-The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+ FAIL  ... > requires sign-in
+Error: expected 401 "Unauthorized", got 404 "Not Found"
 
- RUN  v4.1.11 H:/Eland-Cables/energya-backend
-
-
- Test Files  10 passed (10)
-      Tests  83 passed | 11 todo (94)
-   Start at  17:05:41
-   Duration  109.04s (transform 2.14s, setup 0ms, import 82.92s, tests 20.84s, environment 3ms)
+ Test Files  1 failed | 9 passed (10)
+      Tests  5 failed | 78 passed | 11 todo (94)
+   Start at  17:33:58
+   Duration  158.11s (transform 6.32s, setup 0ms, import 113.83s, tests 34.75s, environment 3ms)
 ```
-
-The 11 todo tests were already deferred in `MIGRATION_STATUS.md` section 4. No new `it.todo` was added.
 
 ## npm run build
 
-Working directory: `energya-backend`. Exit code 0.
+Exit code 0.
 
 ```text
 > energya-backend@0.0.1 build
 > tsc -p tsconfig.build.json
 ```
 
+## npm run lint
+
+Exit code 0. Warnings only. The rerun after removing the unused `parseCableDescriptionConstruction` import does not list `customer-catalog.repository.ts`.
+
+```text
+> energya-backend@0.0.1 lint
+> oxlint --type-aware src/ test/
+LINT_EXIT=0
+```
+
 ## node scripts/check-rules.mjs
 
-Working directory: repo root. Exit code 1.
+Exit code 0.
 
 ```text
-(b) energya-backend/src/admin-customers/admin-customers.service.ts has 314 lines, no spec, outside shared/domain
-(b) energya-backend/src/master-data/cables/customer-catalog.repository.ts has 306 lines, no spec, outside shared/domain
-check-rules failed: 2
+anyCount=140 baseline=140 previousAnyCount=143
+check-rules passed
+scopeBase=ee98586
 ```
 
-Rules (a), (c), and (d) produced no lines.
+The previous `any` count, before comments and strings were stripped, was 143.
 
-## npm audit --omit=dev (repo root)
+## npm run test:parity:phase2a
 
-Exit code 1.
+Printed before the run: `parity databases: energya_legacy and energya_nest`. Exit code 1. The harness and its tests were not edited.
 
 ```text
-13 vulnerabilities (3 moderate, 9 high, 1 critical)
+Summary: 147/159 checks passed, 12 failed.
+  FAIL anon GET /api/v2/cables/products?page=1&pageSize=10 [legacy 401 / nest 404 / expected 401] status differs; body differs
+  FAIL customer GET /api/v2/cables/products?page=1&pageSize=10 [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL limited GET /api/v2/cables/products?page=1&pageSize=10 [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL granular GET /api/v2/cables/products?page=1&pageSize=10 [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL writer GET /api/v2/cables/products?page=1&pageSize=10 [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL admin GET /api/v2/cables/products?page=1&pageSize=10 [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL anon GET /api/v2/cables/products/facets [legacy 401 / nest 404 / expected 401] status differs; body differs
+  FAIL customer GET /api/v2/cables/products/facets [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL limited GET /api/v2/cables/products/facets [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL granular GET /api/v2/cables/products/facets [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL writer GET /api/v2/cables/products/facets [legacy 200 / nest 404 / expected 200] status differs; body differs
+  FAIL admin GET /api/v2/cables/products/facets [legacy 200 / nest 404 / expected 200] status differs; body differs
+  PASS proxy table routes all 19 Phase 2a routes to Nest
 ```
 
-The critical advisory is `proxy-addr`. The high advisories include `@remix-run/router`, `react-router`, `react-router-dom`, `deepmerge-ts`, `@prisma/config`, `prisma`, `effect`, `source-map-js`, and `xlsx`. Full report is the command output from 2026-10-18. No package was upgraded.
+## npm run verify:domain
 
-## npm audit --omit=dev (energya-backend)
-
-Exit code 1.
+Exit code 0.
 
 ```text
-4 high severity vulnerabilities
+Verifying 11 domain copies (SHA-256)...
+SYNC OK  drumOptimizationService.ts [specifiers] 8c90d22d1a52
+SYNC OK  drumCapacityCalculator.ts [exact] e70c578d8db0
+SYNC OK  drumOptimizationPresentation.ts [exact] ec290cf2bdf2
+SYNC OK  customerCableCatalog.ts [specifiers] c3730d814f63
+SYNC OK  v2AdvancedCableSearch.ts [exact] 637a5055901c
+SYNC OK  masterDataSoT.ts [exact] b28715b6ffa3
+SYNC OK  rawMaterialClassification.ts [imports] b04a7794a47b
+SYNC OK  rbac.ts [imports] ef08feac8b4b
+SYNC OK  customerScope.ts [imports] ecafc3b125b7
+SYNC OK  permissionCatalog.ts [imports] bb5e01f39a5a
+SYNC OK  passwordService.ts [imports] b9f1ea661676
+All domain copies in sync.
 ```
 
-All four are `deepmerge-ts`, `effect`, `@prisma/config`, and `prisma`. No package was upgraded.
+## Not done
 
-## Source searches
-
-```text
-energya-backend/src\app.controller.spec.ts:10:    $queryRaw: vi.fn().mockResolvedValue([{ 1: 1 }]),
-energya-backend/src\app.controller.ts:12:      await this.prisma.$queryRaw`SELECT 1`;
-energya-backend/src\app.controller.ts:35:      await this.prisma.$queryRaw`SELECT 1`;
-energya-backend/src\master-data\reference\reference.repository.ts:88:      await this.prisma.$queryRaw`SELECT 1`;
-```
-
-No `$executeRaw`, `eval(`, `new Function`, or `child_process` in `energya-backend/src`. No `ALLOW_DEMO_USERS` or `DEMO_MODE` in `energya-backend/src`.
-
-```text
-energya-frontend\package-lock.json:167
-```
-
-That is `rg -c npmmirror -g "*lock*"`.
-
-## curl.exe -sI http://127.0.0.1:3000/api/master/cables
-
-Nest was started from this branch with the Nest `DATABASE_URL` (database name `energya_nest`). Response:
-
-```text
-HTTP/1.1 401 Unauthorized
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Resource-Policy: same-origin
-Origin-Agent-Cluster: ?1
-Referrer-Policy: strict-origin-when-cross-origin
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-X-Content-Type-Options: nosniff
-X-DNS-Prefetch-Control: off
-X-Download-Options: noopen
-X-Frame-Options: DENY
-X-Permitted-Cross-Domain-Policies: none
-X-XSS-Protection: 0
-Permissions-Policy: camera=(), microphone=(), geolocation=()
-X-Served-By: nest
-Vary: Origin
-Access-Control-Allow-Credentials: true
-Content-Type: application/json; charset=utf-8
-Content-Length: 75
-ETag: W/"4b-XTliK8V82D8OJ1GVtnJj4vN30QE"
-Date: Sun, 18 Oct 2026 14:09:07 GMT
-Connection: keep-alive
-Keep-Alive: timeout=5
-```
-
-## git diff --stat ee98586
-
-Before this review file was added:
-
-```text
- docs/MIGRATION/MIGRATION_STATUS.md          |   7 +-
- docs/MIGRATION/phase-2a/ANY_CLEANUP_PLAN.md |  36 ++++
- docs/MIGRATION/phase-2a/RUNBOOK.md          | 182 ++++++++-----------
- docs/MIGRATION/phase-2a/SECURITY_REVIEW.md  | 272 +++++++---------------------
- energya-backend/src/app.module.ts           |   2 -
- scripts/check-rules.baseline.json           |   7 +
- scripts/check-rules.mjs                     | 145 +++++++++++++++
- 7 files changed, 337 insertions(+), 314 deletions(-)
-```
-
-## What was not executed
-
-- `npm run test:parity:phase2a` was not run. The harness seeds with `TRUNCATE`.
-- `npm run prisma:seed` was not run.
-- The clean clone did not receive `.env` and did not start servers.
-- The two files named by `check-rules` were not split.
-- `GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` were not unregistered. Finding FIND-2A-01.
+- No package upgrade for FIND-2A-03.
+- Parity and the catalog e2e were not edited to expect 404.
+- Root `.env.example` was not rewritten (FIND-2A-04).
+- Commit `c3f708a` was not touched.
+- Phase 2b was not started.

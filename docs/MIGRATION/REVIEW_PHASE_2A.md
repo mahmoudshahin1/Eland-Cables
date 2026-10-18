@@ -22,11 +22,13 @@ Same table. Customer catalog reads follow `src/server/rbac.ts:710-711`. Attachme
 
 Not re-run on 2026-10-18. Reason: `scripts/parity/run-phase2a-parity.mjs` seeds with `TRUNCATE`, and this task did not approve that command. Last recorded result remains 159 passed, 0 failed, 159 total.
 
-## 5. Tests
+## 5. Tests (2026-10-18 rerun)
 
-`npm test` exit 0: Test Files 7 passed (7), Tests 114 passed (114), Duration 27.06s, start 17:05:32.
+`npm test` exit 0: Test Files 7 passed (7), Tests 114 passed (114), start 17:32:49, Duration 35.43s.
 
-`npm run test:e2e` exit 0: Test Files 10 passed (10), Tests 83 passed | 11 todo (94), Duration 109.04s, start 17:05:41.
+`npm run test:e2e` exit 1: Test Files 1 failed | 9 passed (10), Tests 5 failed | 78 passed | 11 todo (94). The five failures are 404 on `/api/v2/cables/products` and `/products/facets` after those controllers were unregistered. The test file was not changed.
+
+`npm run test:parity:phase2a` exit 1 on databases `energya_legacy` and `energya_nest`: Summary 147/159 checks passed, 12 failed. All 12 failures are those same two catalog paths. The harness was not changed.
 
 ## 6. Build and lint
 

@@ -6,7 +6,6 @@ import {
   catalogFilterAliases,
   catalogPrismaSort,
   catalogProductHasCostingLeak,
-  parseCableDescriptionConstruction,
   parseCatalogPage,
   parseCatalogPageSize,
   parseCatalogSortDir,

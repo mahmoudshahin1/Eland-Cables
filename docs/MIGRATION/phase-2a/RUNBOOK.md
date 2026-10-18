@@ -123,7 +123,47 @@ node scripts/check-rules.mjs
 
 Stop the three processes. On Windows, stop the process IDs listening on 5173, 3000, and 3847. Do not use `git clean` or a database reset unless the user approved that command.
 
-## 8. Clean-clone execution (2026-10-18)
+## 8. Clean-clone execution (2026-10-18, second run)
+
+Folder: `C:\Users\mahmo\AppData\Local\Temp\energya-2a-runbook-1810`. Database name printed before use: `energya_runbook_2a`. The connection string and `JWT_SECRET` were written only in that folder and are not copied here.
+
+```text
+CREATE DATABASE
+created_or_attempted energya_runbook_2a
+```
+
+`git pull --ff-only` moved the clone from `517f467` to `42a8b2c`.
+
+`npx prisma migrate deploy` exit 0:
+
+```text
+Datasource "db": PostgreSQL database "energya_runbook_2a", schema "public" at "127.0.0.1:5432"
+63 migrations found in prisma/migrations
+All migrations have been successfully applied.
+```
+
+`npm run prisma:seed` failed first because `prisma generate` had not run (`SyntaxError: The requested module '@prisma/client' does not provide an export named 'PrismaClient'`). After `npx prisma generate` (exit 0), seed exit 0:
+
+```text
+Seeded Eland shipping cost rates. customerId=cmvdxlza2006rl5to29kntivq DAP=incoterm-icc-dap CIF=incoterm-icc-cif created=6 skipped=0.
+```
+
+Servers from the clone: legacy `http://0.0.0.0:3857`, Nest `http://localhost:3010`. Curl:
+
+```text
+http://127.0.0.1:3857/api/platform/health status=200 served=
+http://127.0.0.1:3010/api/platform/health status=200 served=nest
+http://127.0.0.1:3857/api/master/cables status=401
+http://127.0.0.1:3010/api/master/cables status=401
+http://127.0.0.1:3857/api/platform/db status=200 served=
+http://127.0.0.1:3010/api/platform/db status=200 served=nest
+http://127.0.0.1:3857/api/v2/cables/products status=401
+http://127.0.0.1:3010/api/v2/cables/products status=404
+```
+
+The first clone attempt on the same day stopped at `P1012` because `DATABASE_URL` was missing. That attempt did not seed and did not start servers.
+
+## 9. Earlier clean-clone note
 
 Command, from `H:\Eland-Cables`:
 

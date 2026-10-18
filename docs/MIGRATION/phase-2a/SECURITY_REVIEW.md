@@ -4,7 +4,7 @@
 **Date:** 2026-10-18
 **Branch:** `migration/phase-2a-fix` from `ee98586`
 
-`GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` are mounted in `CustomerCatalogController`, but they are marked `3-early` in `nestRoutes.mjs`. They are not one of the 19. See Findings.
+`GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` are not mounted. `CustomerCatalogController` is not in `CablesSubModule.controllers`, and `nestRoutes.mjs` has no `3-early` entry. The files remain. A count of the phase `2a` table on 2026-10-18 was `phase2aRoutes=19` and `products=false`.
 
 ## أ. المسارات الـ 19
 
@@ -60,6 +60,7 @@ The same parity file records anonymous 401, customer, limited, granular, and wri
 |---|---|---|---|---|---|
 | SEC-MD-01 | `assertCanViewMasterDataCatalog` returns immediately for `userType === 'customer'` (`rbac.ts:710-711`), so a customer can read BOMs and raw materials. | High | Legacy, ported 1:1 | Open, not tightened | User |
 | SEC-MD-02 | Attachment list and download have no auth (`masterDataRoutes.ts:322` and `:345`). | High | Legacy, ported 1:1 | Open, not tightened | User |
-| FIND-2A-01 | `GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` are mounted in `CustomerCatalogController` and listed as `3-early` in `nestRoutes.mjs`. They are outside the 19. Not unregistered in this close. | Low | Nest, early Phase 3 | Open | User |
-| FIND-2A-02 | `admin-customers.service.ts` is 314 lines and `customer-catalog.repository.ts` is 306 lines. Neither has a spec. `scripts/check-rules.mjs` rule (b) fails on them. Not split in this close. | Low | Existing Nest files | Open | User |
-| FIND-2A-03 | `npm audit --omit=dev` on 2026-10-17 reported 4 high findings in `energya-backend`, all in the Prisma chain, and 13 at the repo root including critical `proxy-addr`. Not introduced by a Phase 2a route change. Not upgraded here (no new packages). | High (dependency) | Existing lockfiles | Open | User |
+| FIND-2A-01 | `GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` were removed from Nest registration and from `nestRoutes.mjs` by the user's decision on 2026-10-18. The controller and repository files remain. Legacy still serves them. Parity and e2e still call the Nest paths and now get 404. The harness and the e2e file were not edited. | Low | User decision | Registered removal done; tests still expect the old Nest routes | User |
+| FIND-2A-02 | `admin-customers.service.ts` was 314 lines and `customer-catalog.repository.ts` was 306 lines. Split on 2026-10-18 into presenters (98) and facets (171). The service is 221 lines and the repository is 146 lines after the unused import removal. `check-rules` then passed rule (b). | Low | Existing Nest files | Split, behavior unchanged | User |
+| FIND-2A-03 | `npm audit --omit=dev` on 2026-10-17 reported 4 high findings in `energya-backend`, all in the Prisma chain, and 13 at the repo root including critical `proxy-addr`. No package was upgraded in this round. | High (dependency) | Existing lockfiles | Open, recorded only | User |
+| FIND-2A-04 | Root `.env.example` already contains placeholder connection strings and passwords. It was not rewritten. `energya-backend/.env.example` was added with names only. | Low | Existing file | Open | User |

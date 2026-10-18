@@ -1,7 +1,7 @@
 # Migration Status (حالة الترحيل)
 
-Last updated: 2026-10-17  
-Active Branch: `migration/phase-2`  
+Last updated: 2026-10-18  
+Active Branch: `migration/phase-2a-fix`  
 Source of Truth Schema: `/prisma/schema.prisma`
 
 ---
@@ -12,15 +12,15 @@ Source of Truth Schema: `/prisma/schema.prisma`
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومعتمدة**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ✅ | ✅ | ✅ | ✅ | ⬜ | **UAT 9/9 في 2026-10-17.** G2: unit 114/114 وe2e 83 نجحت و11 مؤجلة. G3: 483 طلباً منها 375 من Nest و0 فشل في 2026-10-17T19:34:33.041Z. G4: build وlint خرجا 0، وdomain sync ‏11/11. G5 لم يكتمل: حزمة الإغلاق القديمة لم تُعد كتابتها، والـ Runbook لم يُنفَّذ في مجلد نظيف. غير معتمدة. |
+| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ⬜ | ⬜ | ⬜ | ✅ | ⬜ | **غير معتمدة.** جدول Nest لمرحلة 2a ما زال 19 مسارًا بعد شيل الكتالوج؛ الكتالوج كان زيادة وليس داخل الـ 19. `generateInventory.mjs` في 2026-10-18: 472 إجمالي، Nest 68، المرحلة 2 على Nest = 19. Parity على `energya_legacy` و`energya_nest`: 147 نجحت و12 فشلت، والفشل كله على مساري products. e2e: 5 فشلت و78 نجحت و11 مؤجلة. |
 | Phase 2 المتبقي | CRUD والاستيراد والحوكمة | 0 / 55 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 55 = 74 − 19 من `ENDPOINT_INVENTORY.md`. التقسيم القديم 52 + 42 غير معتمد. ممنوع البدء قبل عبارة المستخدم. |
-| Phase 3 | Cable Authority & Configurator | 2 / 11 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مسارا المنتجات والـ facets على Nest مبكراً. المرحلة نفسها لم تبدأ. |
+| Phase 3 | Cable Authority & Configurator | 0 / 11 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مسارا products وfacets لم يعودا على Nest. المرحلة لم تبدأ. |
 | Phase 4 | Commercial (Inquiries & Quotations) | 0 / 116 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
 | Phase 5 | Costing & Pricing Engine | 0 / 109 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | أعلى مخاطرة - Golden tests رقمية |
 | Phase 6 | Container Study & Logistics | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | يعيد استخدام منطق البراميل من `shared/domain` |
 | Phase 7 | Workflows & Commitments | 0 / 54 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
 | Phase 8 | Integrations (D365, Advaris, AI) | 0 / 3 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | |
-| **الإجمالي** | **الكلي** | **70 / 472** | - | - | - | - | - | المصدر: `ENDPOINT_INVENTORY.md` المعاد توليده من المسارات المركّبة فقط |
+| **الإجمالي** | **الكلي** | **68 / 472** | - | - | - | - | - | `generateInventory.mjs` في 2026-10-18: Served by Nest 68، منها المرحلة 1 = 49 والمرحلة 2 = 19 |
 
 ---
 
