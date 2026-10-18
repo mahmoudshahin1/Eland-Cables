@@ -191,6 +191,12 @@ function checkAnyBaseline() {
 function allowedPath(rel) {
   const norm = rel.replace(/\\/g, '/');
   if (norm.startsWith('docs/MIGRATION/phase-2a/')) return true;
+  if (norm.startsWith('docs/MIGRATION/phase-2b/')) return true;
+  if (norm.startsWith('energya-backend/src/master-data/')) return true;
+  if (norm.startsWith('energya-backend/src/shared/domain/')) return true;
+  if (norm.startsWith('energya-backend/src/shared/infra/')) return true;
+  if (norm.startsWith('energya-backend/src/common/guards/')) return true;
+  if (norm.startsWith('energya-backend/src/common/filters/')) return true;
   return [
     'energya-backend/src/app.module.ts',
     'energya-backend/src/admin-customers/admin-customers.service.ts',
@@ -209,6 +215,12 @@ function allowedPath(rel) {
     'docs/MIGRATION/ENDPOINT_INVENTORY.md',
     'scripts/check-rules.mjs',
     'scripts/check-rules.baseline.json',
+    'energya-backend/src/auth/jwt-auth.guard.ts',
+    'energya-backend/src/types.ts',
+    'docs/MIGRATION/REVIEW_PHASE_2B.md',
+    'scripts/parity/run-phase2b-parity.mjs',
+    'scripts/parity/seed-auth.mjs',
+    'scripts/parity/seed-master-data.mjs',
   ].includes(norm);
 }
 

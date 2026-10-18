@@ -4,6 +4,6 @@
   "previousRule": "word-boundary any including comments and strings",
   "root": "energya-backend/src",
   "pattern": "\\bany\\b after comments and strings are removed",
-  "scopeBase": "ee98586",
+  "scopeBase": "aaef4054ee5884f475db0d341ecf4742155c71fb",
   "countedOn": "2026-10-18"
 }
