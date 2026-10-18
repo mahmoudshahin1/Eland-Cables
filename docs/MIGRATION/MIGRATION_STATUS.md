@@ -86,6 +86,7 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `prisma/seed.ts` | استدعاء `seedGovernedElandCustomer()` ثم upsert لـ incoterm `DAP` و`CIF` | `seedElandCustomerShippingCostRates` في `src/server/customerShippingCostRepository.ts:671` يرمي خطأ إذا لم يكن DAP وCIF موجودين مسبقًا. عميل Eland المحكوم يُزرع قبل ذلك حتى يجد الـ seed العميل. أُضيف في `207a2cc`. |
 | `energya-backend/src/app.module.ts` | إزالة import وتسجيل `InquiriesModule` | نطاق Phase 4. ملفات `energya-backend/src/inquiries/` لم تُحذف. |
 | `energya-backend/src/master-data/cables/cables.module.ts` و`scripts/parity/nestRoutes.mjs` | إزالة `CustomerCatalogController` من `controllers` وحذف سطر `3-early` | قرار المستخدم: `GET /api/v2/cables/products` و`/products/facets` خارج Phase 2a. الملفات بقيت. البروكسي يقرأ `nestRoutes.mjs` فلا يحوّل هذين المسارين إلى Nest. |
+| `.env.example` | إفراغ كل القيم والإبقاء على الأسماء والتعليقات | القيم كانت placeholders. `JWT_SECRET` المكتوب كان بطول يقبله `AuthModule` (32 حرفًا أو أكثر). لا يُرفع سر حتى لو كان مؤقتًا. ملف `.env` نفسه لم يُمس. |
 
 ---
 
