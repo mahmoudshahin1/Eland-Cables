@@ -26,6 +26,30 @@ export const NEST_ROUTES = [
   { phase: '2a', methods: ['GET'], path: /^\/api\/master\/(reference|keys|uniqueness|sot-status)$/ },
   { phase: '2a', methods: ['GET'], path: /^\/api\/platform\/db$/ },
 
+  // Phase 2b: master data mutations, excel imports, exports, market metals
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/cables$/ },
+  { phase: '2b', methods: ['PUT'], path: new RegExp(`^/api/(master|platform)/cables/${SEG}$`) },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/raw-materials$/ },
+  { phase: '2b', methods: ['PUT'], path: new RegExp(`^/api/(master|platform)/raw-materials/${SEG}$`) },
+  { phase: '2b', methods: ['POST'], path: new RegExp(`^/api/(master|platform)/raw-materials/${SEG}/prices$`) },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/drums$/ },
+  { phase: '2b', methods: ['PUT', 'DELETE'], path: new RegExp(`^/api/(master|platform)/drums/${SEG}$`) },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/drums\/(excel-preview|excel-commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/boms\/excel-commit$/ },
+  { phase: '2b', methods: ['GET', 'POST'], path: /^\/api\/(master|platform)\/market-metals\/imports$/ },
+  { phase: '2b', methods: ['GET'], path: new RegExp(`^/api/(master|platform)/market-metals/imports/${SEG}$`) },
+  { phase: '2b', methods: ['GET'], path: new RegExp(`^/api/(master|platform)/market-metals/imports/${SEG}/image$`) },
+  { phase: '2b', methods: ['PATCH'], path: new RegExp(`^/api/(master|platform)/market-metals/imports/${SEG}/rows/${SEG}$`) },
+  { phase: '2b', methods: ['POST'], path: new RegExp(`^/api/(master|platform)/market-metals/imports/${SEG}/(approve|publish)$`) },
+  { phase: '2b', methods: ['GET'], path: new RegExp(`^/api/(master|platform)/export/${SEG}$`) },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/(master|platform)\/(cable-scrap-template-export|raw-material-prices-export|engineering-mappings-export|bom-conflicts-export)$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/(master|platform)\/commercial-pricing-rules\/export$/ },
+  { phase: '2b', methods: ['GET'], path: /^\/api\/(master|platform)\/imports$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/imports\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/cable-scrap-import\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/raw-material-prices\/import\/(preview|commit)$/ },
+  { phase: '2b', methods: ['POST'], path: /^\/api\/(master|platform)\/engineering-mappings\/import\/(preview|commit)$/ },
+
   // Phase 3 routes ported early with 2a (customer catalog); export stays on legacy
   { phase: '3-early', methods: ['GET'], path: /^\/api\/v2\/cables\/products(\/facets)?$/ },
 ];

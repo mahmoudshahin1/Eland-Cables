@@ -92,10 +92,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
             });
           }
           if ((resBody as any).code && (resBody as any).error) {
-            return response.status(HttpStatus.BAD_REQUEST).json({
-              error: (resBody as any).error,
-              code: (resBody as any).code,
-            });
+            return response.status(HttpStatus.BAD_REQUEST).json(resBody as any);
           }
         }
         const msg = typeof resBody === 'object' && typeof (resBody as any).message === 'string'

@@ -17,10 +17,10 @@ import { ANON_MESSAGE_KEY } from '../common/decorators/anon-message.decorator.js
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
-    @Inject(JwtService) private readonly jwtService: JwtService,
-    @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(AuthRepository) private readonly authRepo: AuthRepository,
-    @Inject(Reflector) private readonly reflector: Reflector,
+    @Inject(JwtService) protected readonly jwtService: JwtService,
+    @Inject(PrismaService) protected readonly prisma: PrismaService,
+    @Inject(AuthRepository) protected readonly authRepo: AuthRepository,
+    @Inject(Reflector) protected readonly reflector: Reflector,
   ) {}
 
   private anonMessage(context: ExecutionContext): string {
@@ -90,18 +90,18 @@ export class JwtAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractToken(request: Request): string | undefined {
+  protected extractToken(request: Request): string | undefined {
     const auth = request.headers.authorization;
     if (!auth) return undefined;
     const [type, token] = auth.split(' ');
     return type === 'Bearer' ? token : undefined;
   }
 
-  private async sessionIsActive(sessionId: string | undefined, userId: string | undefined): Promise<boolean> {
+  protected async sessionIsActive(sessionId: string | undefined, userId: string | undefined): Promise<boolean> {
     return this.authRepo.sessionIsActive(sessionId, userId);
   }
 
-  private async hydrateActorFromDatabase(actor: RequestActor): Promise<RequestActor> {
+  protected async hydrateActorFromDatabase(actor: RequestActor): Promise<RequestActor> {
     if (!actor.id) return actor;
     
     const user = await this.prisma.userAccount.findUnique({
@@ -204,3 +204,48 @@ export class JwtAuthGuard implements CanActivate {
     };
   }
 }
+
+@Injectable()
+export class OptionalJwtAuthGuard extends JwtAuthGuard {
+  override async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>();
+    const token = this.extractToken(request);
+
+    if (!token) {
+      (request as any).user = { userType: 'anonymous' };
+      return true;
+    }
+
+    let payload: any;
+    try {
+      payload = await this.jwtService.verifyAsync(token);
+    } catch {
+      (request as any).user = { userType: 'anonymous' };
+      return true;
+    }
+
+    const actor: RequestActor = {
+      id: payload.sub || payload.id,
+      name: payload.name || payload.email || payload.unique_name,
+      email: payload.email,
+      userType: payload.role || payload.userType,
+      role: payload.role,
+      roles: Array.isArray(payload.roles) ? payload.roles : payload.role ? [payload.role] : [],
+      permissions: payload.permissions,
+      permissionCodes: Array.isArray(payload.permissionCodes) ? payload.permissionCodes : undefined,
+      customerId: payload.customerId,
+      customerCode: payload.customerCode,
+      customerScopeKeys: Array.isArray(payload.customerScopeKeys) ? payload.customerScopeKeys : undefined,
+      customerMasterIds: Array.isArray(payload.customerMasterIds) ? payload.customerMasterIds : undefined,
+      sessionId: typeof payload.sid === 'string' ? payload.sid : undefined,
+      department: payload.department,
+      username: payload.username,
+      accountStatus: payload.accountStatus,
+    };
+
+    const hydrated = await this.hydrateActorFromDatabase(actor);
+    (request as any).user = hydrated.id ? hydrated : { userType: 'anonymous' };
+    return true;
+  }
+}
+

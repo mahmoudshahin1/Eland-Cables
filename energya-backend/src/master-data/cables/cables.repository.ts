@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, RecordStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma.service.js';
 import { cableFromRow, MasterCableDto } from '../common/master-data-dto.js';
+import { writeAudit } from '../../shared/infra/legacy-ports.js';
 
 export function cableFamilyFilterWhere(family: string): Prisma.CableMasterWhereInput {
   const value = family.trim();
@@ -120,4 +121,99 @@ export class CablesRepository {
 
     return { total, page, pageSize, cables: rows.map(cableFromRow) };
   }
+
+  async create(input: any, actor: any): Promise<MasterCableDto> {
+    const existing = await this.prisma.cableMaster.findUnique({
+      where: { materialNumber: input.cableCode },
+    });
+    if (existing) {
+      const err = new Error('Cable material number already exists.');
+      (err as any).code = 'DUPLICATE_MATERIAL_NUMBER';
+      throw err;
+    }
+
+    const created = await this.prisma.cableMaster.create({
+      data: cableWriteData(input),
+    });
+
+    await writeAudit({
+      actor,
+      entity: 'CableMaster',
+      entityId: created.materialNumber,
+      action: 'CREATE',
+      newValue: created,
+    });
+
+    return cableFromRow(created);
+  }
+
+  async update(materialNumber: string, input: any, actor: any): Promise<MasterCableDto | null> {
+    const existing = await this.prisma.cableMaster.findUnique({
+      where: { materialNumber },
+    });
+    if (!existing) return null;
+
+    const merged = {
+      ...cableFromRow(existing),
+      ...input,
+      cableCode: materialNumber,
+    };
+
+    const updated = await this.prisma.cableMaster.update({
+      where: { materialNumber },
+      data: {
+        ...cableWriteData(merged),
+        status: input.status === 'INACTIVE' ? 'INACTIVE' : input.status === 'ACTIVE' ? 'ACTIVE' : existing.status,
+      },
+    });
+
+    const action =
+      existing.status !== updated.status
+        ? updated.status === 'INACTIVE'
+          ? 'DEACTIVATE'
+          : 'ACTIVATE'
+        : 'UPDATE';
+
+    await writeAudit({
+      actor,
+      entity: 'CableMaster',
+      entityId: materialNumber,
+      action,
+      oldValue: existing,
+      newValue: updated,
+    });
+
+    return cableFromRow(updated);
+  }
+}
+
+function cableWriteData(input: any) {
+  const authority = input.authorityFields;
+  return {
+    materialNumber: input.cableCode,
+    itemCode: input.itemCode,
+    customerCode: input.customerCode,
+    elandItemNumber: input.elandItemNumber || null,
+    description: input.description,
+    family: authority ? authority.family ?? null : input.family ?? null,
+    voltage: authority ? authority.voltage ?? null : input.voltageClass || null,
+    conductor: authority ? authority.conductor ?? null : input.conductor || null,
+    cores: authority ? authority.cores ?? null : input.cores || null,
+    conductorSize: authority
+      ? authority.conductorSize ?? null
+      : input.crossSectionMm2 != null
+        ? String(input.crossSectionMm2)
+        : null,
+    insulation: authority ? authority.insulation ?? null : input.insulation ?? null,
+    screen: authority ? authority.screen ?? null : input.screen ?? null,
+    armour: authority ? authority.armour ?? null : input.armour ?? null,
+    sheath: authority ? authority.sheath ?? null : input.sheath ?? null,
+    sheathColour: authority ? authority.sheathColour ?? null : input.sheathColour ?? null,
+    coreColour: authority ? authority.coreColour ?? null : input.coreColour ?? null,
+    standard: authority ? authority.standard ?? null : input.standard ?? null,
+    diameter: input.outerDiameterMm,
+    weight: input.approxWeightKgKm,
+    uom: (authority?.uom || input.uom || 'CONFIGURATION_REQUIRED') as string,
+    status: (input.status === 'INACTIVE' ? RecordStatus.INACTIVE : RecordStatus.ACTIVE) as RecordStatus,
+  };
 }

@@ -77,7 +77,9 @@ export async function seedMasterDataDatabases() {
         "RawMaterialPrice",
         "RawMaterial",
         "DrumMaster",
-        "CableParameter"
+        "CableParameter",
+        "ImportBatch",
+        "ImportBatchRow"
       CASCADE;
     `);
 
