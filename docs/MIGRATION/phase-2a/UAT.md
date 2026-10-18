@@ -1,8 +1,8 @@
 # Phase 2a User Acceptance Testing Guide (UAT.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
 **Scope:** Phase 2a (19 mounted routes)  
-**Date:** 2026-10-16, corrected 2026-10-17  
-**Status:** ✅ **User confirmed 9/9 on 2026-10-17. Phase acceptance still waits on G2, G3, G4 and G5.**  
+**Date:** 2026-10-18  
+**Status:** ✅ **مقبولة من المستخدم في 2026-10-18. بانتظار tag `phase-2a-accepted`.**  
 **Protocol:** Conforms to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Sections 3.4 & 5)
 
 ---
@@ -36,5 +36,26 @@
 
 - [x] تمت مراجعة جميع السيناريوهات الـ 9 أعلاه والتأكد من مطابقتها بنسبة 100%.
 - [x] النتيجة الإجمالية للاختبار اليدوي: **معتمدة ومقبولة** (أو مسجلة بملاحظات).
-- **اسم المعتمد:** تأكيد المستخدم في المحادثة
-- **التاريخ:** 17 / 10 / 2026
+- **اسم المعتمد:** المستخدم
+- **التاريخ:** 18 / 10 / 2026
+
+---
+
+## 4. UAT دخان 2026-10-18
+
+المنفّذ: **المستخدم**. المقارنة بين `http://localhost:5173/` و`http://localhost:3847/` بحسابات `custA@parity.test` و`admin@energya.com` و`limited@parity.test`، على قاعدتي `energya_legacy` و`energya_nest`. لقطات Products وDrum Optimizer للعميل والمكتب الفني اتراجعت مع Claude كمراجع مستقل.
+
+| # | الشاشة | الحساب | النتيجة | ملاحظة |
+|---|---|---|---|---|
+| 1 | Products | custA | Pass | 432 منتج، بدون حقول سعر، من القديم |
+| 2 | Drum Optimizer (بالرابط `/customer/drum-optimizer`) | custA | Pass | `GET /api/master/drums` رجع 200 من Nest، والـ preset = 17,000م و9 براميل |
+| 3 | candidates (المكتب الفني) | admin | Pass | 200 من Nest |
+| 4 | validate | admin | لم تُختبر | الواجهة لا توفر اختيارًا ثانيًا بعد نتيجة candidates |
+| 5 | optimize | admin | Pass | 200 من Nest |
+| 6 | Cable Master | admin | Pass | القائمة والبحث من Nest |
+| 7 | المستخدم الناقص | limited | Pass | 403 على `/api/admin/security` |
+
+ملاحظات مفتوحة، من غير حكم:
+
+- طلبا candidates الأحمرين في الجديد: السبب مش متأكد. الاحتمال إن الواجهة لغتهم وهي بتكتب. متسجلين كملاحظة مفتوحة.
+- 4 أخطاء حمراء في Console على القديم: لسه متتفحصش.
