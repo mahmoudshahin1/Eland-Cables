@@ -62,6 +62,7 @@ export const CUSTOMER_TAB_PATHS: Record<CustomerPortalTab, string> = {
   process: '/customer/process',
   journey: '/customer/journey',
   configurator: '/customer',
+  cable_3d: '/customer/3d-cable',
   production_tracking: '/customer',
 };
 
@@ -88,6 +89,8 @@ const CUSTOMER_PATH_ALIASES: Record<string, CustomerPortalTab> = {
   '/customer/price-estimation': 'price_estimation',
   '/customer/sales-orders': 'sales_orders',
   '/customer/drum-optimizer': 'drum_optimizer',
+  '/customer/3d-cable': 'cable_3d',
+  '/customer/cable-3d': 'cable_3d',
   '/customer/statement': 'statement',
   '/customer/customer-statement': 'statement',
   '/customer/invoices': 'invoices',

@@ -1,8 +1,14 @@
 # Phase 2a Operations Runbook (RUNBOOK.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a (36 endpoints)  
-**Date:** 2026-10-16  
-**Status:** ✅ **Verified & Tested on Local Environment**  
+**Scope:** Phase 2a (19 mounted routes)  
+**Date:** 2026-10-16, corrected 2026-10-17  
+**Status:** ⬜ **Live stack verified on `energya_nest`. Clean-clone execution was not run, because seeding truncates that database.**
+
+## 0. Execution record (2026-10-17)
+
+The test site the user asked for is already running: UI `http://localhost:5173/` returned 200, Nest `:3000/api/platform/health` returned 200 with `X-Served-By: nest`, and legacy `:3847/api/platform/health` returned 200. Both API processes were started with `DATABASE_URL` from `energya-backend/.env`, whose database name is `energya_nest`.
+
+`node scripts/parity/seed-master-data.mjs` and `node scripts/parity/seed-auth.mjs` were not run. Both can `TRUNCATE` `energya_nest`. A second clean clone was not started on ports 3000, 3847, or 5173.  
 **Protocol:** Conforms to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.3)
 
 ---

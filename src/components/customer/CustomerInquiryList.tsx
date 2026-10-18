@@ -17,6 +17,7 @@ import { Badge, Button, Card, Drawer, Input, Select } from '../ui';
 import { CustomerPageHero } from './CustomerPageHero';
 import {
   AlertCircle,
+  Box,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -535,6 +536,14 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
               </Button>
               <Button variant="secondary" size="sm" leadingIcon={Download} onClick={handleExport}>
                 Export
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                leadingIcon={Box}
+                onClick={() => navigate('/customer/drum-optimizer')}
+              >
+                Drum Optimizer
               </Button>
             </div>
           </div>

@@ -38,6 +38,7 @@ import { CustomerDashboard } from './components/customer/CustomerDashboard';
 import { CustomerInquiryDetail } from './components/customer/CustomerInquiryDetail';
 import { CableConfiguratorHub } from './components/cable-configurator/CableConfiguratorHub';
 import { DrumOptimizer } from './components/customer/DrumOptimizer';
+import { Cable3DStudio } from './components/cable-3d/Cable3DStudio';
 import { PriceEstimation } from './components/customer/PriceEstimation';
 import { CustomerStatement } from './components/customer/CustomerStatement';
 import { ShipmentTracker } from './components/customer/ShipmentTracker';
@@ -128,6 +129,7 @@ function CustomerPortalPages({
         />
       )}
       {customerTab === 'drum_optimizer' && <DrumOptimizer onNavigateTab={goCustomerTab} />}
+      {(customerTab === 'cable_3d' || customerTab === 'configurator') && <Cable3DStudio />}
       {customerTab === 'price_estimation' && (
         <PriceEstimation
           onNavigateTab={goCustomerTab}

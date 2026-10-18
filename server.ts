@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
+dotenv.config();
 import { createServer as createViteServer } from 'vite';
 import { checkDatabase } from './src/server/db';
 import { applyCors, applySecurityHeaders } from './src/server/httpSecurity';

@@ -12,14 +12,29 @@ export function CustomerHomeProductCategories() {
   return (
     <section className="customer-home-card h-full min-w-0">
       <div className="px-5 pt-4 pb-2 flex items-center justify-between gap-3">
-        <h2 className="text-[15px] font-semibold text-slate-800">Product Categories</h2>
-        <button
-          type="button"
-          onClick={() => openCatalog()}
-          className="text-xs font-medium text-[#2563EB] hover:underline"
-        >
-          View All
-        </button>
+        <div className="flex items-center gap-2">
+          <h2 className="text-[15px] font-semibold text-slate-800">Product Categories</h2>
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
+            3D Studio
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/customer/3d-cable')}
+            className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 hover:underline flex items-center gap-1"
+          >
+            Open 3D Studio
+          </button>
+          <span className="text-slate-300">|</span>
+          <button
+            type="button"
+            onClick={() => openCatalog()}
+            className="text-xs font-medium text-[#2563EB] hover:underline"
+          >
+            View All
+          </button>
+        </div>
       </div>
       <div className="px-3 pb-4 grid grid-cols-3 sm:grid-cols-6 gap-2">
         {CUSTOMER_HOME_CATEGORY_TILES.map((category) => (

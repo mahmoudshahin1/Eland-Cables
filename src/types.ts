@@ -6,6 +6,7 @@ export type CustomerPortalTab =
   | 'journey'
   | 'process'
   | 'configurator'
+  | 'cable_3d'
   | 'drum_optimizer'
   | 'price_estimation'
   | 'sales_orders'

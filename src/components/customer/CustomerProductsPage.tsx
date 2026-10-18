@@ -801,6 +801,16 @@ export function CustomerProductsPage() {
         footer={
           viewing ? (
             <>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setViewing(null);
+                  navigate('/customer/3d-cable');
+                }}
+                className="text-cyan-700 border-cyan-300 hover:bg-cyan-50"
+              >
+                🌐 View 3D Model
+              </Button>
               <Button variant="secondary" onClick={() => setViewing(null)}>
                 Close
               </Button>

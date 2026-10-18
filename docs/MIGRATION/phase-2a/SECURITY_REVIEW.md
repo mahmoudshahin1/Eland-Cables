@@ -2,7 +2,21 @@
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
 **Scope:** Phase 2a real mounted routes: 19. Alias rows below are withdrawn; those paths are not mounted.  
 **Date:** 2026-10-16, corrected 2026-10-17  
-**Status:** ⚠️ **Findings SEC-MD-01 and SEC-MD-02 stay ported 1:1. This file is not a fresh 2026-10-17 audit.**  
+**Status:** ⚠️ **SEC-MD-01 and SEC-MD-02 stay ported 1:1. No new High in Phase 2a route code. Dependency audit on 2026-10-17 is recorded below and is not a route-code finding.**
+
+## 0. Audit commands (2026-10-17)
+
+`npm audit --omit=dev` in `energya-backend`: total=4, high=4, critical=0. All four are the Prisma chain: `prisma` → `@prisma/config` → `deepmerge-ts` and `effect`.
+
+`npm audit --omit=dev` at the repo root: total=13, high=9, critical=1. The critical item is `proxy-addr`. The high items include `react-router`, `xlsx`, `source-map-js`, and the same Prisma chain.
+
+`rg` on `energya-backend/src`: `$queryRaw` appears only as `` SELECT 1 `` in `app.controller.ts` and `reference.repository.ts`. No `$executeRaw`, `eval(`, `new Function`, or `child_process`.
+
+`curl.exe -I http://127.0.0.1:3000/api/master/cables` returned `401`, `X-Served-By: nest`, and the helmet headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`).
+
+`npmmirror` matches: 100 in `energya-frontend/package-lock.json` only. Nest `src` has no `DEMO_MODE` or `ALLOW_DEMO_USERS`.
+
+Public Phase 2a routes, matching legacy: `GET /api/master/cables/:materialNumber/attachments`, `GET` of one attachment, and `GET /api/platform/db`. `GET /api/master/db` is not mounted.  
 **Protocol:** Conforms strictly to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.2)
 
 ---

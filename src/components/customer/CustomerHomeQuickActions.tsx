@@ -1,5 +1,4 @@
-import React from 'react';
-import { ClipboardList, FileCheck, FileText, Plus, ShoppingCart } from 'lucide-react';
+import { Box, ClipboardList, FileCheck, FileText, Plus, ShoppingCart, Sparkles } from 'lucide-react';
 import type { CustomerPortalTab } from '../../types';
 
 type QuickAction = {
@@ -53,6 +52,22 @@ const ACTIONS: QuickAction[] = [
     icon: FileText,
     tab: 'tds_library',
     iconClass: 'bg-sky-50 text-sky-600',
+  },
+  {
+    id: 'drum_optimizer',
+    label: 'Drum Optimizer',
+    hint: 'Calculate cable drum sizes',
+    icon: Box,
+    tab: 'drum_optimizer',
+    iconClass: 'bg-indigo-50 text-indigo-600',
+  },
+  {
+    id: 'cable_3d',
+    label: '3D Cable Studio',
+    hint: 'Interactive 3D model & visualizer',
+    icon: Sparkles,
+    tab: 'cable_3d',
+    iconClass: 'bg-cyan-50 text-cyan-600',
   },
 ];
 
