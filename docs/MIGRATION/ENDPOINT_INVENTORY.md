@@ -2,7 +2,7 @@
 
 > تم إنشاء هذا الجرد آلياً من فحص `server.ts` وجميع ملفات `src/server/*Routes.ts`.
 > إجمالي الـ Endpoints المحصورة: **472** endpoint.
-> المخدومة من NestJS حسب `scripts/parity/nestRoutes.mjs`: **70** endpoint.
+> المخدومة من NestJS حسب `scripts/parity/nestRoutes.mjs`: **68** endpoint.
 
 ## 1. توزيع الـ Endpoints حسب المراحل (Phases)
 
@@ -11,13 +11,13 @@
 | Phase 0 | الأساس والأمان وفحص الصحة | **2** | 0.4% | 0 | `platform-health / common` |
 | Phase 1 | الهوية والمصادقة والصلاحيات والعملاء | **49** | 10.4% | 49 | `auth, admin-identity, admin-customers, common/rbac` |
 | Phase 2 | البيانات الأساسية والمعادن والاستيراد | **74** | 15.7% | 19 | `master-data, market-metal, master-data-export` |
-| Phase 3 | هيئة الكابلات والبحث والمكتب الفني | **11** | 2.3% | 2 | `cable-authority, technical-office` |
+| Phase 3 | هيئة الكابلات والبحث والمكتب الفني | **11** | 2.3% | 0 | `cable-authority, technical-office` |
 | Phase 4 | الطلبات التجارية والتسعير وعروض الأسعار | **116** | 24.6% | 0 | `inquiries, quotations, commercial-pricing` |
 | Phase 5 | التكاليف وحسابات الكابلات (Costing) | **109** | 23.1% | 0 | `costing, admin-costing, platform-admin` |
 | Phase 6 | دراسة الحاويات والشحن والعرض المالي | **54** | 11.4% | 0 | `container-study, shipping, financial-offer` |
 | Phase 7 | سير العمل والإشعارات وخدمة العملاء والارتباطات | **54** | 11.4% | 0 | `workflows, notifications, customer-service, commitments` |
 | Phase 8 | الذكاء الاصطناعي والتكاملات الخارجية والمساعدات | **3** | 0.6% | 0 | `ai-assistant, d365, advaris, core-platform` |
-| **الإجمالي** | **جميع المراحل** | **472** | **100%** | **70** | - |
+| **الإجمالي** | **جميع المراحل** | **472** | **100%** | **68** | - |
 
 ## 2. جدول الـ Endpoints المفصل
 
@@ -352,9 +352,9 @@
 | 327 | `GET` | `/api/v2/audit/events` | [src/server/v2PlatformRoutes.ts:360](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L360) | Phase 4 | `v2-platform` | - | - |
 | 328 | `GET` | `/api/v2/audit/migration` | [src/server/v2PlatformRoutes.ts:377](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L377) | Phase 4 | `v2-platform` | - | - |
 | 329 | `GET` | `/api/v2/boundary` | [src/server/v2PlatformRoutes.ts:88](file:///H:/Eland-Cables/src/server/v2PlatformRoutes.ts#L88) | Phase 4 | `v2-platform` | - | - |
-| 330 | `GET` | `/api/v2/cables/products` | [src/server/v2CableSearchRoutes.ts:143](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L143) | Phase 3 | `cable-authority` | yes | - |
+| 330 | `GET` | `/api/v2/cables/products` | [src/server/v2CableSearchRoutes.ts:143](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L143) | Phase 3 | `cable-authority` | - | - |
 | 331 | `GET` | `/api/v2/cables/products/export` | [src/server/v2CableSearchRoutes.ts:86](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L86) | Phase 3 | `cable-authority` | - | - |
-| 332 | `GET` | `/api/v2/cables/products/facets` | [src/server/v2CableSearchRoutes.ts:76](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L76) | Phase 3 | `cable-authority` | yes | - |
+| 332 | `GET` | `/api/v2/cables/products/facets` | [src/server/v2CableSearchRoutes.ts:76](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L76) | Phase 3 | `cable-authority` | - | - |
 | 333 | `GET` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:161](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L161) | Phase 3 | `cable-authority` | - | - |
 | 334 | `POST` | `/api/v2/cables/search` | [src/server/v2CableSearchRoutes.ts:195](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L195) | Phase 3 | `cable-authority` | - | - |
 | 335 | `GET` | `/api/v2/cables/search/facets` | [src/server/v2CableSearchRoutes.ts:183](file:///H:/Eland-Cables/src/server/v2CableSearchRoutes.ts#L183) | Phase 3 | `cable-authority` | - | - |

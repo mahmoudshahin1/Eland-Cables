@@ -1,7 +1,9 @@
 {
-  "anyCount": 143,
+  "anyCount": 140,
+  "previousAnyCount": 143,
+  "previousRule": "word-boundary any including comments and strings",
   "root": "energya-backend/src",
-  "pattern": "\\bany\\b",
+  "pattern": "\\bany\\b after comments and strings are removed",
   "scopeBase": "ee98586",
   "countedOn": "2026-10-18"
 }
