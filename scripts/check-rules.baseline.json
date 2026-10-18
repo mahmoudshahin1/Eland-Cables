@@ -1,0 +1,7 @@
+{
+  "anyCount": 143,
+  "root": "energya-backend/src",
+  "pattern": "\\bany\\b",
+  "scopeBase": "ee98586",
+  "countedOn": "2026-10-18"
+}

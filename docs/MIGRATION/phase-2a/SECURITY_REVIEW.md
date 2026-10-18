@@ -1,207 +1,65 @@
-# Phase 2a Security Review & Audit Report (SECURITY_REVIEW.md)
-**Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a real mounted routes: 19. Alias rows below are withdrawn; those paths are not mounted.  
-**Date:** 2026-10-16, corrected 2026-10-17  
-**Status:** ⚠️ **Findings SEC-MD-01 and SEC-MD-02 stay ported 1:1. This file is not a fresh 2026-10-17 audit.**  
-**Protocol:** Conforms strictly to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.2)
+# Phase 2a Security Review
 
----
+**Scope:** 19 routes mounted for Phase 2a. Source: `scripts/parity/nestRoutes.mjs` phase `2a`, which matches the controllers registered by `MasterDataModule` (`cables`, `raw-materials`, `boms`, `drums`, `reference`). No other `/api/platform/*` route is in this table.
+**Date:** 2026-10-18
+**Branch:** `migration/phase-2a-fix` from `ee98586`
 
-## أ. جدول مسارات المرحلة 2a والصلاحيات والحراس (All 36 Endpoints Security Matrix)
+`GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` are mounted in `CustomerCatalogController`, but they are marked `3-early` in `nestRoutes.mjs`. They are not one of the 19. See Findings.
 
-| # | Method | Path | Guard المستخدم في NestJS | الصلاحية المطلوبة | عام (بلا مصادقة)؟ | مسموح للعميل؟ | يطابق القديم؟ |
-|---|:---:|---|---|---|:---:|:---:|:---:|
-| 1 | `GET` | `/api/master/cables` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 2 | `GET` | `/api/master/cables/:materialNumber` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 3 | `GET` | `/api/master/cables/:materialNumber/attachments` | *(Public / No Auth)* | - | ⚠️ نعم (200 SEC-MD-02) | ✅ نعم (200) | ✅ نعم (مطابق للقديم) |
-| 4 | `GET` | `/api/master/cables/:materialNumber/attachments/:attachmentId` | *(Public / No Auth)* | - | ⚠️ نعم (200 SEC-MD-02) | ✅ نعم (200) | ✅ نعم (مطابق للقديم) |
-| 5 | `POST` | `/api/master/cables/:materialNumber/attachments` | `JwtAuthGuard` + `assertCanWriteCableMaster` | `CABLE_MASTER:CREATE/UPDATE` | لا (401) | ❌ ممنوع (403) | ✅ نعم (مطابق 100%) |
-| 6 | `DELETE`| `/api/master/cables/:materialNumber/attachments/:attachmentId` | `JwtAuthGuard` + `assertCanWriteCableMaster` | `CABLE_MASTER:DELETE` | لا (401) | ❌ ممنوع (403) | ✅ نعم (مطابق 100%) |
-| 7 | `GET` | `/api/master/raw-materials` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ⚠️ نعم (200 SEC-MD-01) | ✅ نعم (مطابق للقديم) |
-| 8 | `GET` | `/api/master/boms` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ⚠️ نعم (200 SEC-MD-01) | ✅ نعم (مطابق للقديم) |
-| 9 | `GET` | `/api/master/drums` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 10 | `GET` | `/api/master/drums/:drumCode` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 11 | `POST` | `/api/master/drums/capacity` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 12 | `POST` | `/api/master/drums/candidates` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 13 | `POST` | `/api/master/drums/optimize` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 14 | `POST` | `/api/master/drums/validate` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 15 | `GET` | `/api/master/reference` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 16 | `GET` | `/api/master/keys` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 17 | `GET` | `/api/master/uniqueness` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 18 | `GET` | `/api/master/sot-status` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 19 | `GET` | `/api/master/db` | *(Public / No Auth)* | Public status check | ✅ نعم (200) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 20 | `GET` | `/api/platform/cables` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 21 | `GET` | `/api/platform/cables/:materialNumber` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 22 | `GET` | `/api/platform/cables/:materialNumber/attachments` | *(Public / No Auth)* | - | ⚠️ نعم (200 SEC-MD-02) | ✅ نعم (200) | ✅ نعم (مطابق للقديم) |
-| 23 | `GET` | `/api/platform/cables/:materialNumber/attachments/:attachmentId` | *(Public / No Auth)* | - | ⚠️ نعم (200 SEC-MD-02) | ✅ نعم (200) | ✅ نعم (مطابق للقديم) |
-| 24 | `POST` | `/api/platform/cables/:materialNumber/attachments` | `JwtAuthGuard` + `assertCanWriteCableMaster` | `CABLE_MASTER:CREATE/UPDATE` | لا (401) | ❌ ممنوع (403) | ✅ نعم (مطابق 100%) |
-| 25 | `DELETE`| `/api/platform/cables/:materialNumber/attachments/:attachmentId` | `JwtAuthGuard` + `assertCanWriteCableMaster` | `CABLE_MASTER:DELETE` | لا (401) | ❌ ممنوع (403) | ✅ نعم (مطابق 100%) |
-| 26 | `GET` | `/api/platform/raw-materials` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ⚠️ نعم (200 SEC-MD-01) | ✅ نعم (مطابق للقديم) |
-| 27 | `GET` | `/api/platform/boms` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ⚠️ نعم (200 SEC-MD-01) | ✅ نعم (مطابق للقديم) |
-| 28 | `GET` | `/api/platform/drums` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 29 | `POST` | `/api/platform/drums/capacity` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 30 | `POST` | `/api/platform/drums/candidates` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 31 | `POST` | `/api/platform/drums/optimize` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 32 | `POST` | `/api/platform/drums/validate` | `JwtAuthGuard` + `assertCanUseDrumOptimization` | SignedIn / Customer | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 33 | `GET` | `/api/platform/reference` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 34 | `GET` | `/api/platform/keys` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 35 | `GET` | `/api/platform/uniqueness` | `JwtAuthGuard` + `assertCanViewMasterDataCatalog` | 1 of 7 master perms | لا (401) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
-| 36 | `GET` | `/api/platform/db` | *(Public / No Auth)* | Public status check | ✅ نعم (200) | ✅ نعم (200) | ✅ نعم (مطابق 100%) |
+## أ. المسارات الـ 19
 
-> **المسارات الإضافية (Phase 3 Early Routes):**  
-> `GET /api/v2/cables/products` و `GET /api/v2/cables/products/facets` يفرضان `JwtAuthGuard` ويطبقان تجريد حقول التكلفة (`catalogProductHasCostingLeak`) للعميل.
+Customer "yes" on catalog reads is the legacy early return in `assertCanViewMasterDataCatalog` (`src/server/rbac.ts:710-711`), ported as SEC-MD-01. It is not a new Nest rule.
 
----
+| # | Method | Path | Nest guard | Permission | Public | Customer | Legacy |
+|---:|---|---|---|---|---|---|---|
+| 1 | GET | `/api/master/cables` | `JwtAuthGuard` | Signed in only | no | yes | `masterDataRoutes.ts:217` `requireSignedIn` "Sign in is required to view Cable Master." |
+| 2 | GET | `/api/master/cables/:materialNumber` | `JwtAuthGuard`, `MasterReadAuthGuard` | One of the 7 catalog codes, or customer | no | yes | `masterDataRoutes.ts:260` `requireMasterReadAuth` |
+| 3 | GET | `/api/master/cables/:materialNumber/attachments` | none | none | yes | yes | `masterDataRoutes.ts:322` no auth helper. SEC-MD-02 |
+| 4 | GET | `/api/master/cables/:materialNumber/attachments/:attachmentId` | none | none | yes | yes | `masterDataRoutes.ts:345` no auth helper. SEC-MD-02 |
+| 5 | POST | `/api/master/cables/:materialNumber/attachments` | `JwtAuthGuard`, `MasterWriteAuthGuard` | `CABLE_MASTER` CREATE or UPDATE | no | no | `masterDataRoutes.ts:331` `requireWriteAuth`; customer denied at `rbac.ts:21-22` |
+| 6 | DELETE | `/api/master/cables/:materialNumber/attachments/:attachmentId` | `JwtAuthGuard`, `MasterWriteAuthGuard` | `CABLE_MASTER` CREATE or UPDATE | no | no | `masterDataRoutes.ts:357` `requireWriteAuth` |
+| 7 | GET | `/api/master/raw-materials` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:421` `requireMasterReadAuth` |
+| 8 | GET | `/api/master/boms` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:370` `requireMasterReadAuth`. SEC-MD-01 |
+| 9 | GET | `/api/master/drums` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:833` message "Sign in is required to view drums." |
+| 10 | GET | `/api/master/drums/:drumCode` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataCutoverRoutes.ts:172` `requireMasterRead` message "Sign in is required." (`:66`) |
+| 11 | POST | `/api/master/drums/capacity` | `JwtAuthGuard`, `DrumComputeAuthGuard` | `assertCanUseDrumOptimization` (`rbac.ts:739`) | no | yes | `masterDataRoutes.ts:843` `requireDrumComputeAuth` |
+| 12 | POST | `/api/master/drums/candidates` | `JwtAuthGuard`, `DrumComputeAuthGuard` | same | no | yes | `masterDataRoutes.ts:874` |
+| 13 | POST | `/api/master/drums/validate` | `JwtAuthGuard`, `DrumComputeAuthGuard` | same | no | yes | `masterDataRoutes.ts:951` |
+| 14 | POST | `/api/master/drums/optimize` | `JwtAuthGuard`, `DrumComputeAuthGuard` | same | no | yes | `masterDataRoutes.ts:982` |
+| 15 | GET | `/api/master/reference` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:1040` |
+| 16 | GET | `/api/master/keys` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:1491` |
+| 17 | GET | `/api/master/uniqueness` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataRoutes.ts:1502` |
+| 18 | GET | `/api/master/sot-status` | `JwtAuthGuard`, `MasterReadAuthGuard` | Catalog codes, or customer | no | yes | `masterDataCutoverRoutes.ts:103` `requireMasterRead` |
+| 19 | GET | `/api/platform/db` | none | none | yes | yes | `masterDataRoutes.ts:208` `platformDbRouter.get('/db')` |
 
-## ب. قائمة المسارات العامة (بدون مصادقة) والمبرر
+## ب. مسارات بلا مصادقة
 
-| المسار | النوع | المبرر والسلوك في القديم | القرار والتوصية |
-|---|---|---|---|
-| `GET /api/master/db` & `GET /api/platform/db` | فحص اتصال قاعدة البيانات | مسار عام لمراقبة الصحة (Health Check). | يبقى عاماً لفحص جاهزية النظام. |
-| `GET /api/master/cables/:mat/attachments` | قراءة قائمة المرفقات | في الكود القديم (`src/server/masterDataRoutes.ts:326`)، لا يوجد أي استدعاء لحارس مصادقة؛ فقط `POST` و `DELETE` يفرضان المصادقة. | منقول كما هو لضمان الـ Parity (SEC-MD-02). يُقترح فرض المصادقة بموافقة صريحة من المستخدم في Phase 2b/2c. |
-| `GET /api/master/cables/:mat/attachments/:id` | تنزيل ملف المرفق ثنائياً | في الكود القديم (`src/server/masterDataRoutes.ts:346`)، متاح للعامة بدون أي حارس. | منقول كما هو لضمان الـ Parity (SEC-MD-02). يُقترح فرض المصادقة بموافقة صريحة من المستخدم. |
-| `GET /api/platform/cables/:mat/attachments` | alias قراءة المرفقات | يتبع المسار المقابل تحت `/master`. | منقول كما هو للـ Parity. |
-| `GET /api/platform/cables/:mat/attachments/:id` | alias تنزيل المرفق | يتبع المسار المقابل تحت `/master`. | منقول كما هو للـ Parity. |
+| Path | Why |
+|---|---|
+| `GET /api/master/cables/:materialNumber/attachments` | Legacy handler at `masterDataRoutes.ts:322` does not call an auth helper. SEC-MD-02, ported 1:1. |
+| `GET /api/master/cables/:materialNumber/attachments/:attachmentId` | Legacy handler at `masterDataRoutes.ts:345` does not call an auth helper. SEC-MD-02, ported 1:1. |
+| `GET /api/platform/db` | Legacy `platformDbRouter.get('/db')` at `masterDataRoutes.ts:208` returns `checkDatabase()` with no actor. |
 
----
+`GET /api/master/db` is not mounted. `server.ts` mounts `platformDbRouter` only at `/api/platform`.
 
-## ج. فحص تسريب الحقول الحساسة (Sensitive Data Protection)
+## ج. حقول حساسة
 
-تم التحقق الآلي في فحص الـ Parity (`scripts/parity/run-phase2a-parity.mjs` خطوة 5) من الحماية الكاملة:
-1. **لا تسريب لكلمات المرور أو الهاش:** ردود المستخدمين والمصادقة لا تعيد `passwordHash` إطلاقاً.
-2. **لا تسريب للتوكنات:** التوكنات لا تُسرب في ردود الكابلات أو المرفقات.
-3. **حجب حقول التكلفة والتسعير عن العميل:**
-   - تم التحقق من أن مسارات الكتالوج للعميل (`/api/v2/cables/products`) و `/api/master/cables` عند استدعائها بتوكن عميل تجرد تماماً الحقول الحساسة:
-     - `costPerKm` = `null` أو محجوب.
-     - `manufacturingCostPerKm` = `null` أو محجوب.
-     - `salesPrice` = `null` أو محجوب.
-     - `copperIndex` / `aluminumIndex` = محجوبة.
-   - النتيجة الفعلية: `✅ Customer Response Costing Exclusion Check (Costing fields stripped: true)`.
-4. **عزل بيانات العملاء:** لا تداخل بين العملاء في استرجاع كتالوج الكابلات.
+`docs/MIGRATION/phase-2a/parity_results.json` (`generatedAt=2026-10-17T14:48:38.283Z`, `passed=159`, `failed=0`, `total=159`) stores status, not response bodies. The harness compares canonical JSON bodies at `scripts/parity/run-phase2a-parity.mjs:162-163` via `normalizePayload`. This close did not recapture a customer payload. Password hashes and access tokens are not fields of these 19 master-data responses. Customer access to BOM and raw materials remains SEC-MD-01.
 
----
+## د. أوامر الفحص
 
-## د. مخرجات أوامر الفحص الأمني الحرفية (Verbatim Security Command Outputs)
+Command output for `npm audit`, the source searches, `npmmirror`, and `curl.exe -I` is pasted in `REVIEW.md` after those commands run on 2026-10-18. This section is not a substitute for that output.
 
-### 1) فحص الاعتماديات (`npm audit --omit=dev`):
-**أ) في `energya-backend`:**
-```text
-> npm audit --omit=dev
+## هـ. اختبارات سلبية
 
-# npm audit report
+The same parity file records anonymous 401, customer, limited, granular, and writer results for these routes. It was not re-run on 2026-10-18 because `scripts/parity/run-phase2a-parity.mjs` seeds with `TRUNCATE`, and this task did not approve a destructive command.
 
-deepmerge-ts  <8.0.0
-Severity: high
-DeepmergeTS has stack exhaustion when merging recursive object graphs - https://github.com/advisories/GHSA-ggr8-5vv4-36mx
-fix available via `npm audit fix --force`
-Will install prisma@7.10.1, which is a breaking change
-node_modules/deepmerge-ts
-  @prisma/config  6.13.0-dev.1 - 7.10.0 || 8.1.0-dev.1 - 8.1.0-dev.4
-  Depends on vulnerable versions of deepmerge-ts
-  Depends on vulnerable versions of effect
-  node_modules/@prisma/config
-    prisma  6.13.0-dev.1 - 7.10.0 || 8.0.0-rc.3 - 8.1.0-dev.4
-    Depends on vulnerable versions of @prisma/config
-    node_modules/prisma
+## و. Findings
 
-effect  <3.20.0
-Severity: high
-Effect `AsyncLocalStorage` context lost/contaminated inside Effect fibers under concurrent load with RPC - https://github.com/advisories/GHSA-38f7-945m-qr2g
-fix available via `npm audit fix --force`
-Will install prisma@7.10.1, which is a breaking change
-node_modules/effect
-
-4 high severity vulnerabilities
-```
-*(ملاحظة: الثغرات الأربع ناتجة حصراً عن حزمة `prisma@6.16.2` القديمة المنقولة مع المشروع، وتحديثها لـ 7.x يمثل breaking change يتطلب قرار المستخدم).*
-
-**ب) في الجذر (Root Legacy App):**
-```text
-> npm audit --omit=dev
-
-13 vulnerabilities (3 moderate, 9 high, 1 critical)
-Critical: proxy-addr (IP spoofing via IPv4-mapped IPv6)
-High: @remix-run/router, deepmerge-ts, effect, source-map-js, xlsx
-```
-
----
-
-### 2) فحص الحقن والأوامر الخطرة (`grep`):
-```text
-> git grep -n -E "(\$queryRaw|\$executeRaw|eval\(|new Function|child_process)" energya-backend/src
-
-(0 matches found - Clean of raw execution / unsafe eval / child_process)
-```
-
----
-
-### 3) فحص الـ Lockfile الرسمية (`npmmirror` check):
-```text
-> git grep -n "npmmirror" package-lock.json energya-backend/package-lock.json
-
-(0 matches found - All packages strictly originate from registry.npmjs.org)
-```
-
----
-
-### 4) فحص الأعلام الخطرة (`ALLOW_DEMO_USERS`):
-```text
-> git grep -n "ALLOW_DEMO_USERS" energya-backend/
-
-(0 matches found - Completely removed in NestJS backend)
-```
-
----
-
-### 5) فحص ترويسات الأمان (Headers & CORS via `curl -I`):
-```text
-> curl -I http://127.0.0.1:3000/api/master/db
-
-HTTP/1.1 200 OK
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Resource-Policy: same-origin
-Origin-Agent-Cluster: ?1
-Referrer-Policy: strict-origin-when-cross-origin
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-X-Content-Type-Options: nosniff
-X-DNS-Prefetch-Control: off
-X-Download-Options: noopen
-X-Frame-Options: DENY
-X-Permitted-Cross-Domain-Policies: none
-X-XSS-Protection: 0
-Permissions-Policy: camera=(), microphone=(), geolocation=()
-X-Served-By: nest
-Vary: Origin
-Access-Control-Allow-Credentials: true
-Content-Type: application/json; charset=utf-8
-Content-Length: 136
-```
-
----
-
-## هـ. سجل Findings الأمني الموثق (Security Findings Log)
-
-### 1. SEC-MD-01: تسريب خلطات التصنيع وكافة الخامات للعميل
-- **المعرف:** `SEC-MD-01`
-- **المسارات المتأثرة:** `GET /api/master/boms`, `GET /api/platform/boms`, `GET /api/master/raw-materials`, `GET /api/platform/raw-materials`
-- **الخطورة:** High
-- **المصدر:** موروث من النظام القديم (Legacy Architecture Flaw).
-- **التفاصيل:** دالة `assertCanViewMasterDataCatalog` في الكود القديم تتجاوز الفحص فوراً إذا كان المستخدم من نوع `customer` (`if (actor.userType === 'customer') return;`)، مما يسمح للعميل بسحب الـ 4,822 سطراً من الخلطات الصناعية لكافة الكابلات والـ 74 خامة مع أسمائها وتوصيفاتها دون أي عزل أو تصفية.
-- **الحالة في NestJS:** نُقلت 1:1 لضمان تطابق الـ Parity مع القديم حرفياً.
-- **الإثبات العملي:** اختبار الـ Parity قام بالاستعلام بتوكن عميل (`custA@parity.test`) واسترجع بنجاح الـ 4,822 سطراً والـ 74 خامة برمز 200 OK متطابق في السيرفرين.
-- **صاحب القرار:** بانتظار قرار المستخدم الصريح للتشديد (مثل حظر العميل وإرجاع 403 Forbidden وقصر اطلاعه على كتالوج الكابلات).
-
----
-
-### 2. SEC-MD-02: الوصول العام لقوائم وتنزيل المرفقات بدون توكن
-- **المعرف:** `SEC-MD-02`
-- **المسارات المتأثرة:** `GET /api/master/cables/:materialNumber/attachments`, `GET /api/master/cables/:materialNumber/attachments/:attachmentId` (وما يقابلها تحت `/api/platform`)
-- **الخطورة:** High
-- **المصدر:** موروث من النظام القديم (Legacy Implementation).
-- **التفاصيل:** مسارات قراءة وتنزيل المرفقات غير محمية بأي حارس مصادقة في القديم، ومفتوحة لأي متصل عام على الإنترنت.
-- **الحالة في NestJS:** نُقلت 1:1 لضمان تطابق الـ Parity مع القديم حرفياً.
-- **توقيت الإثبات (Timing of Proof):**
-  - تم إثبات SEC-MD-02 **قبل وبعد** تعديل `Buffer.from` في القديم.
-  - **قبل تعديل القديم:** أثبت الاختبار المجهول (Anonymous) الحصول على رمز 200 OK وقائمة المرفقات ومحتواها بدون أي توكن.
-  - **بعد تعديل القديم (إصلاح خطأ Express 4 في تحويل البايتات لمصفوفة JSON):** أثبت الفحص المجهول تنزيل الـ 5MB كاملة ثنائياً (5,242,880 بايت) ببايت متطابق 100% بين السيرفرين دون توكن.
-- **صاحب القرار:** بانتظار قرار المستخدم الصريح لفرض المصادقة `requireMasterReadAuth` على مسارات القراءة والتنزيل.
+| ID | Description | Severity | Origin | Status | Owner |
+|---|---|---|---|---|---|
+| SEC-MD-01 | `assertCanViewMasterDataCatalog` returns immediately for `userType === 'customer'` (`rbac.ts:710-711`), so a customer can read BOMs and raw materials. | High | Legacy, ported 1:1 | Open, not tightened | User |
+| SEC-MD-02 | Attachment list and download have no auth (`masterDataRoutes.ts:322` and `:345`). | High | Legacy, ported 1:1 | Open, not tightened | User |
+| FIND-2A-01 | `GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` are mounted in `CustomerCatalogController` and listed as `3-early` in `nestRoutes.mjs`. They are outside the 19. Not unregistered in this close. | Low | Nest, early Phase 3 | Open | User |
+| FIND-2A-02 | `admin-customers.service.ts` is 314 lines and `customer-catalog.repository.ts` is 306 lines. Neither has a spec. `scripts/check-rules.mjs` rule (b) fails on them. Not split in this close. | Low | Existing Nest files | Open | User |
+| FIND-2A-03 | `npm audit --omit=dev` on 2026-10-17 reported 4 high findings in `energya-backend`, all in the Prisma chain, and 13 at the repo root including critical `proxy-addr`. Not introduced by a Phase 2a route change. Not upgraded here (no new packages). | High (dependency) | Existing lockfiles | Open | User |

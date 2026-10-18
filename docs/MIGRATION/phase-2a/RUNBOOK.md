@@ -1,154 +1,128 @@
-# Phase 2a Operations Runbook (RUNBOOK.md)
-**Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
-**Scope:** Phase 2a (36 endpoints)  
-**Date:** 2026-10-16  
-**Status:** ✅ **Verified & Tested on Local Environment**  
-**Protocol:** Conforms to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Section 3.3)
+# Phase 2a Runbook
 
----
+**Scope:** 19 mounted Phase 2a routes, branch `migration/phase-2a-fix`.
+**Date:** 2026-10-18
+**Rule:** environment variable names only. No secret values. Do not run `scripts/parity/seed-master-data.mjs` or `scripts/parity/seed-auth.mjs` against a database you are using for manual testing; those scripts can `TRUNCATE`.
 
-## 1. المتطلبات الأساسية (Prerequisites)
+## 1. Requirements
 
-- **Node.js:** الإصدار `v20.x` أو `v22.x` (تم التحقق على `v22.12.0`).
-- **PostgreSQL:** الإصدار 15 أو 16 (يعمل محلياً على المنفذ `5432`).
-- **مدير الحزم:** `npm` الإصدار `10.x` أو أحدث.
-- **الأدوات المساندة:** `curl.exe` أو أي عميل HTTP، ومتصفح Chromium (للاختبار عبر Playwright).
+- Node.js 22.x
+- PostgreSQL listening on port 5432
+- npm
 
----
+## 2. Environment variable names
 
-## 2. متغيرات البيئة (Environment Variables)
+Root `.env` for the legacy process:
 
-> **قاعدة أمان:** الأسماء موضحة هنا بدون أي قيم سرية حقيقية. تُنشأ ملفات `.env` محلياً فقط.
+- `PORT`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `REFRESH_TOKEN_EXPIRES_IN`
+- `NODE_ENV`
 
-### أ) ملف الجذر (`.env`):
-```env
-PORT=3847
-DATABASE_URL="postgresql://energya:energya_dev@127.0.0.1:5432/energya_legacy?schema=public"
-JWT_SECRET="<secret-min-32-characters>"
-JWT_EXPIRES_IN="15m"
-REFRESH_TOKEN_EXPIRES_IN="7d"
-NODE_ENV="development"
-ADMIN_RESET_TOKEN_IN_RESPONSE="true"
-```
+`energya-backend/.env` for Nest:
 
-### ب) ملف الباك إند (`energya-backend/.env`):
-```env
-PORT=3000
-DATABASE_URL="postgresql://energya:energya_dev@127.0.0.1:5432/energya_nest?schema=public"
-JWT_SECRET="<secret-min-32-characters>"
-JWT_EXPIRES_IN="15m"
-REFRESH_TOKEN_EXPIRES_IN="7d"
-NODE_ENV="development"
-ADMIN_RESET_TOKEN_IN_RESPONSE="true"
-```
+- `PORT`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `REFRESH_TOKEN_EXPIRES_IN`
+- `NODE_ENV`
 
----
+Hybrid UI:
 
-## 3. إعداد قواعد البيانات والزراعة (Database Setup & Seeding)
+- `BACKEND_URL` (Nest, default port 3000)
+- `LEGACY_URL` (Express, default port 3847)
 
-### الخطوة 1: إنشاء قواعد البيانات في PostgreSQL:
-```sql
-CREATE DATABASE energya_legacy;
-CREATE DATABASE energya_nest;
-CREATE DATABASE energya_connect; -- قاعدة المصدر الأصلية
-```
+`JWT_SECRET` must be at least 32 characters and must not be the rejected default. For a hybrid session, both processes need the same `JWT_SECRET`. For a Phase 2a UI test against the Nest database, both processes use the Nest `DATABASE_URL`.
 
-### الخطوة 2: تطبيق مخططات Prisma (Migrations):
+## 3. Database
+
+Create the databases if they do not exist. Names used by the parity scripts: `energya_legacy`, `energya_nest`. The application source database name is separate.
+
+Apply the schema from the repo root, with `DATABASE_URL` pointing at the target database:
+
 ```bash
-# تطبيق المخطط على قاعدة النظام القديم:
 npx prisma migrate deploy
-
-# تطبيق المخطط على قاعدة NestJS:
-cd energya-backend
-npx prisma migrate deploy
-cd ..
 ```
 
-### الخطوة 3: زراعة بيانات الماستر داتا الكاملة (432 كابل، 74 خامة، 4,822 سطر BOM، 105 براميل):
+Repeat with `DATABASE_URL` pointed at the other database. The Nest package uses `../prisma/schema.prisma`.
+
+Master-data and auth seeds:
+
 ```bash
 node scripts/parity/seed-master-data.mjs
-```
-*يقوم هذا السكربت بمسح جداول الماستر داتا عبر `TRUNCATE CASCADE` وإعادة ملئها بنفس الترتيب الحرفي دون المساس بجداول المستخدمين.*
-
-### الخطوة 4: زراعة مستخدمي الاختبار وحسابات الصلاحيات:
-```bash
 node scripts/parity/seed-auth.mjs
 ```
 
----
+`prisma/seed.ts` also calls `seedGovernedElandCustomer()` and upserts incoterms `DAP` and `CIF` before the shipping-cost seed. Run it only when you intend to change the database named by `DATABASE_URL`:
 
-## 4. تشغيل الخوادم والواجهة (Running Servers & UI)
-
-### 1) تشغيل خادم Express القديم (Legacy Port: 3847):
-```powershell
-$env:PORT=3847; npx tsx server.ts
+```bash
+npm run prisma:seed
 ```
-*رابط الفحص:* `http://127.0.0.1:3847/api/platform/health`
 
-### 2) تشغيل خادم NestJS الجديد (Target Port: 3000):
-```powershell
-cd energya-backend
-$env:PORT=3000; npx tsx src/main.ts
+## 4. Start
+
+Three processes:
+
+```bash
+npm run dev
 ```
-*رابط الفحص:* `http://127.0.0.1:3000/api/platform/health`
 
-### 3) تشغيل واجهة React (UI Port: 5173 مع الـ Proxy):
-```powershell
+Legacy Express. Set `PORT` to 3847.
+
+```bash
+npm run start:dev
+```
+
+Run inside `energya-backend`. Nest listens on 3000.
+
+```bash
 npm run dev:legacy-ui
 ```
-*رابط الواجهة:* `http://localhost:5173`  
-*(الـ Proxy يوجه مسارات `/api/auth` و `/api/admin` و `/api/master` و `/api/v2` إلى NestJS، والباقي إلى Express القديم).*
 
----
+React on http://localhost:5173/ . `vite.config.ts` sends a request to Nest only when `scripts/parity/nestRoutes.mjs` matches the method and path. Everything else under `/api` stays on Express.
 
-## 5. حسابات الاختبار المحلية المجهزة (Local Test Personas)
+## 5. Test accounts
 
-| المستخدم | البريد الإلكتروني | كلمة المرور | الدور والصلاحيات |
-|---|---|---|---|
-| **مدير النظام (Admin)** | `admin@energya.com` | `Password123!` | كافة الصلاحيات (`SYSTEM_ADMINISTRATOR`) |
-| **مستخدم كاتب (Writer)** | `writer@parity.test` | `Password123!` | صلاحيات كتابة وتعديل (`CABLE_MASTER:CREATE`, `UPDATE`) |
-| **مستخدم بصلاحية مفردة (Granular)** | `granular@parity.test` | `Password123!` | صلاحية قراءة واحدة فقط من الـ7 (`CABLE_MASTER:VIEW`) |
-| **داخلي محدود (Limited)** | `limited@parity.test` | `Password123!` | مستخدم داخلي بدون أي صلاحيات ماستر داتا (0 من 7) |
-| **العميل (Customer)** | `custA@parity.test` | `Password123!` | مستخدم عميل مرتبط بشركة معتمدة (يقرأ الكتالوج والخامات وBOM بموجب SEC-MD-01) |
+`scripts/parity/seed-auth.mjs` upserts the parity accounts and sets their password to the value hardcoded in that script. Roles:
 
----
+| Email | Role |
+|---|---|
+| `admin@energya.com` | `SYSTEM_ADMINISTRATOR` |
+| `ehab.maher@energya.com` | `SYSTEM_ADMINISTRATOR` |
+| `admin@parity.test` | `ADMIN` |
+| `limited@parity.test` | `VIEWER` |
+| `granular@parity.test` | `TECHNICAL_OFFICE_ENGINEER` |
+| `writer@parity.test` | `TECHNICAL_OFFICE_MANAGER` |
+| `custA@parity.test` | customer, scope `CUST_A` |
+| `custB@parity.test` | customer, scope `CUST_B` |
 
-## 6. أوامر تشغيل الاختبارات والتحقق (Verification Commands)
+## 6. Tests
 
-### أ) فحص تزامن منطق الـ Domain (SHA-256 Check):
+From `energya-backend`:
+
+```bash
+npm test
+npm run test:e2e
+npm run build
+npm run lint
+```
+
+From the repo root:
+
 ```bash
 npm run verify:domain
+node scripts/check-rules.mjs
 ```
 
-### ب) اختبارات الوحدة (Unit Tests - 114 tests):
-```bash
-cd energya-backend
-npm test
-cd ..
-```
+`npm run test:parity:phase2a` compares legacy port 3847 with Nest port 3000. It is not part of the clean-clone execution below.
 
-### ج) اختبارات التكامل وE2E (83 passed, 11 todo):
-```bash
-cd energya-backend
-npm run test:e2e
-cd ..
-```
+## 7. Stop
 
-### د) جناح مطابقة الـ Parity الكامل (95 فحصاً آلياً شاملاً كافة الـ 36 مساراً ومصفوفة الصلاحيات الخمس):
-```bash
-npm run test:parity:phase2a
-```
+Stop the three processes. On Windows, stop the process IDs listening on 5173, 3000, and 3847. Do not use `git clean` or a database reset unless the user approved that command.
 
-### هـ) التحقق البصري وسجل الشبكة لشاشات G3 بالـ Playwright عبر منفذ Vite (:5173):
-```bash
-node scripts/parity/verify-g3-phase2a-ui.mjs
-```
-*(يتحقق السكربت من ترويسة `X-Served-By: nest` لكافة طلبات الماستر داتا، ويحفظ لقطات الشاشة الثلاث، ويسجل كافة الطلبات الـ 103 في `docs/MIGRATION/phase-2a/network_log.json`).*
+## 8. Clean-clone execution
 
-
----
-
-## 7. إعادة الضبط والإيقاف (Reset & Teardown)
-
-- **إيقاف الخوادم:** الضغط على `Ctrl + C` في نوافذ الأوامر النشطة.
-- **إعادة تصفير البيانات:** تشغيل `node scripts/parity/seed-master-data.mjs` لإعادة ضبط الجداول إلى الحالة المصنعية الصفرية النظيفة.
+The verbatim log is appended after the clone commands finish. The clone does not receive `.env` files and does not run a seed.

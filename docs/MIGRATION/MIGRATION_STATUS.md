@@ -79,7 +79,12 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `src/server/masterDataRoutes.ts:350` | تغليف `row.content` بـ `Buffer.from(row.content)` عند إرسال المرفقات الثنائية | تصحيح خلل في Express 4؛ حيث أن كائن `row.content` المسترجع من Prisma هو `Uint8Array` وليس Node.js `Buffer`. عدم التغليف جعل Express يعامله ككائن عادي ويسلسله بصيغة JSON (`{"0":197,"1":170,...}`) بحجم 70MB بدلاً من إرسال البايتات الثنائية الخام بحجم 5MB. |
 | `.env` | توجيه `DATABASE_URL` القديم إلى قاعدة `energya_legacy` | عزل بيئة الاختبارات القديمة وقاعدة الـ Parity عن قاعدة NestJS (`energya_nest`) وقاعدة التشغيل الأساسية، وضمان تطابق كلمات المرور والبيانات المزروعة. |
 | `server.ts` | حذف `app.use('/api/platform', masterDataRouter)` و`app.use('/api/master', platformDbRouter)` | المساران كانا أسماءً مستعارة غير موجودة في السلوك المطلوب. `platformDbRouter` يبقى على `/api/platform` و`masterDataRouter` يبقى على `/api/master`. |
-| `vite.config.ts` | استبدال بروكسي الـ regex بجدول `scripts/parity/nestRoutes.mjs` حسب الميثود والمسار | الطلبات المنقولة فقط تذهب إلى Nest `:3000`، وباقي `/api` يبقى على Express `:3847`. |
+| `vite.config.ts` | استبدال بروكسي الـ regex بجدول `scripts/parity/nestRoutes.mjs` حسب الميثود والمسار | الطلبات المنقولة فقط تذهب إلى Nest `:3000`، وباقي `/api` يبقى على Express `:3847`. الفرق مقابل `origin/main` هو إضافة البروكسي نفسه، لأن `main` لا يحتوي بروكسي `/api`. |
+| `package.json` script `dev:legacy-ui` | `vite --port 5173` | تشغيل واجهة React على 5173 للاختبار الهجين. أُضيف في `d39b2d2`. |
+| `package.json` script `verify:domain` | `node scripts/parity/verify-domain-sync.mjs` | فحص SHA-256 لنسخ الـ domain. أُضيف في `c623b94`. |
+| `package.json` script `test:parity:phase2a` | `node scripts/parity/run-phase2a-parity.mjs` | تشغيل مقارنة Phase 2a. أُضيف في `c623b94`. السكربت يزرع القاعدتين وقد يستخدم `TRUNCATE`؛ لا يُشغَّل أثناء اختبار حي بدون إذن. |
+| `prisma/seed.ts` | استدعاء `seedGovernedElandCustomer()` ثم upsert لـ incoterm `DAP` و`CIF` | `seedElandCustomerShippingCostRates` في `src/server/customerShippingCostRepository.ts:671` يرمي خطأ إذا لم يكن DAP وCIF موجودين مسبقًا. عميل Eland المحكوم يُزرع قبل ذلك حتى يجد الـ seed العميل. أُضيف في `207a2cc`. |
+| `energya-backend/src/app.module.ts` | إزالة import وتسجيل `InquiriesModule` | نطاق Phase 4. ملفات `energya-backend/src/inquiries/` لم تُحذف. |
 
 ---
 
