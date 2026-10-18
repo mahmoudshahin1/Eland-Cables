@@ -12,7 +12,7 @@ Source of Truth Schema: `/prisma/schema.prisma`
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومعتمدة**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ✅ | ✅ | ✅ | ✅ | ✅ | **مقبولة (UAT المستخدم 2026-10-18).** بانتظار tag `phase-2a-accepted`. e2e: 78 نجحت و16 مؤجلة. Parity على `energya_legacy` و`energya_nest`: 147/147. FIND-2A-01 وFIND-2A-04 مقفولان. FIND-2A-02 و03 و05 و06 و07 و08 مفتوحة. |
+| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ✅ | ✅ | ✅ | ✅ | ✅ | **مقبولة بتحفظ (UAT 2026-10-18).** validate ما اتجربتش، وملاحظة candidates مفتوحة. بانتظار tag `phase-2a-accepted`. e2e: 78 نجحت و16 مؤجلة. Parity على `energya_legacy` و`energya_nest`: 147/147. FIND-2A-01 وFIND-2A-02 وFIND-2A-04 مقفولان. FIND-2A-03 و05 و06 و07 و08 و09 مفتوحة. |
 | Phase 2 المتبقي | CRUD والاستيراد والحوكمة | 0 / 55 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 55 = 74 − 19 من `ENDPOINT_INVENTORY.md`. التقسيم القديم 52 + 42 غير معتمد. ممنوع البدء قبل عبارة المستخدم. |
 | Phase 3 | Cable Authority & Configurator | 0 / 11 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مسارا products وfacets لم يعودا على Nest. المرحلة لم تبدأ. |
 | Phase 4 | Commercial (Inquiries & Quotations) | 0 / 116 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |
@@ -31,11 +31,13 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | **SEC-MD-01** | `GET /api/master/boms`<br>`GET /api/master/raw-materials` | تسريب كامل للخلطات التصنيعية (4,822 سطر BOM) وكافة الخامات (74 خامة) لأي مستخدم من نوع `customer` بسبب غياب عزل العميل وسماح `assertCanViewMasterDataCatalog` الفوري للعميل. | منقولة 1:1 لضمان تطابق الـ Parity | موثقة رسمياً. تم الإثبات عملياً باسترجاع الـ 4,822 سطراً والـ 74 خامة بتوكن عميل (`custA@parity.test`) برمز 200 OK. يُقترح تشديدها مستقبلاً بحظر وصول العميل (403) وقصر اطلاعه على كتالوج الكابلات المنقى فقط (بانتظار قرار المستخدم). |
 | **SEC-MD-02** | `GET /api/master/cables/:mat/attachments`<br>`GET .../:attachmentId` | مسارات قراءة وتحميل المرفقات الهندسية والملفات الثنائية متاحة للجميع بدون أي توكن مصادقة (Public No Auth) مع تخزين الملفات كـ Bytes. | منقولة 1:1 لضمان تطابق الـ Parity | موثقة رسمياً. إثبات عملي بدون توكن استرجع قائمة المرفقات بـ 200 OK وحمّل الملف كاملاً بـ 200 OK. يُقترح فرض المصادقة مستقبلاً (بانتظار قرار المستخدم). |
 | **FIND-2A-01** | `GET /api/v2/cables/products` و`/products/facets` | كانت مركّبة على Nest خارج نطاق 2a | شُيلت من التسجيل والبروكسي | **مغلق.** شُيلت مسارات الكتالوج بقرار المستخدم في 2026-10-18. |
+| **FIND-2A-02** | `admin-customers.service.ts` و`customer-catalog.repository.ts` | الملفان كانوا أطول من 300 سطر | الـ split اتعمل والسلوك ما اتغيرش | **مغلق.** |
 | **FIND-2A-04** | `.env.example` في الجذر | كان فيه placeholders | لا ينطبق | **مغلق.** القيم اتفصّت في `8398c61`. |
 | **FIND-2A-05** | `/customer/drum-optimizer` | شاشة العميل غير ظاهرة في أي مسار؛ التبويب مخفي وSmartConfigurator غير متركّب | سلوك قديم | **مفتوح.** يُفتح بالرابط فقط. قرار منتج لـ Phase 9. |
 | **FIND-2A-06** | قاعدة `energya_nest` | براميل اختبار بـ timestamp مثل `EWD-B2-b2-1791816694712` من e2e/parity | لا يُصلح هنا | **مفتوح.** محتاج seed نضيف قبل أي عرض. |
 | **FIND-2A-07** | G3 Playwright | `browserType.launch` قفل المتصفح في أول تشغيل | لا يُصلح هنا | **مفتوح.** عطل flaky. |
 | **FIND-2A-08** | `POST /api/master/drums/validate` و`/capacity` و`GET /api/master/cables/:materialNumber` | 3 مسارات من الـ 19 من غير دليل UI | مثبتة بالـ parity فقط | **مفتوح.** |
+| **FIND-2A-09** | `energya-backend/src/master-data/cables/customer-catalog.controller.ts` | الملف 24 سطر وموجود وغير متسجّل في أي module | تسجيل فقط، من غير حذف | **مفتوح.** القرار للمستخدم. |
 
 ---
 

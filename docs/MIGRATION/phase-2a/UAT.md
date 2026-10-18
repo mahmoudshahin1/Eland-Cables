@@ -1,8 +1,8 @@
 # Phase 2a User Acceptance Testing Guide (UAT.md)
 **Module:** Master Data Read & Drum Engine (`migration/phase-2`)  
 **Scope:** Phase 2a (19 mounted routes)  
-**Date:** 2026-10-18  
-**Status:** ✅ **مقبولة من المستخدم في 2026-10-18. بانتظار tag `phase-2a-accepted`.**  
+**Date:** 2026-10-16, corrected 2026-10-17  
+**Status:** مقبولة بتحفظ. validate ما اتجربتش. ملاحظة candidates مفتوحة: الطلب الملغي من الواجهة (StrictMode وAbortController)، ونفس الـ payload رجع 200 من `:3847` ومن `:3000` والـ body مطابق.  
 **Protocol:** Conforms to `docs/MIGRATION/PHASE_CLOSING_PROTOCOL.md` (Sections 3.4 & 5)
 
 ---
@@ -36,8 +36,8 @@
 
 - [x] تمت مراجعة جميع السيناريوهات الـ 9 أعلاه والتأكد من مطابقتها بنسبة 100%.
 - [x] النتيجة الإجمالية للاختبار اليدوي: **معتمدة ومقبولة** (أو مسجلة بملاحظات).
-- **اسم المعتمد:** المستخدم
-- **التاريخ:** 18 / 10 / 2026
+- **اسم المعتمد:** تأكيد المستخدم في المحادثة
+- **التاريخ:** 17 / 10 / 2026
 
 ---
 
@@ -55,7 +55,7 @@
 | 6 | Cable Master | admin | Pass | القائمة والبحث من Nest |
 | 7 | المستخدم الناقص | limited | Pass | 403 على `/api/admin/security` |
 
-ملاحظات مفتوحة، من غير حكم:
+ملاحظات، من غير إصلاح:
 
-- طلبا candidates الأحمرين في الجديد: السبب مش متأكد. الاحتمال إن الواجهة لغتهم وهي بتكتب. متسجلين كملاحظة مفتوحة.
-- 4 أخطاء حمراء في Console على القديم: لسه متتفحصش.
+- candidates لسه مفتوحة. المكوّن `DrumSelectionWorkflowPanel` بينادي `POST /api/master/drums/candidates` من effect واحد (`src/components/common/DrumSelectionWorkflowPanel.tsx` 280–383) عن طريق `listDrumCandidatesViaApi`. `src/main.tsx` لافّ التطبيق في `StrictMode`. الـ effect بيعمل `AbortController` والـ cleanup بيعمل `abort`. في التطوير الطلب الأول بيتلغى ويظهر أحمر، وبعدين الطلب يتبعت تاني. مفيش effect تاني لنفس المسار. الكتابة في طول التقطيع بتعيد نفس الإلغاء. نفس payload الكابل `10009487` (قطر 10.9 مم، وزن 268 كجم/كم، طول 1000 م، سماحية 2) رجع status 200 من `:3847` وstatus 200 من `:3000`، والـ body متطابق: 194745 بايت، sha256 `ae602d7a4a814a4b9dd291056ea717b461199b396834940607c98407b7ac09a3`، suitable 101 وincomplete 0 وunsuitable 4. Nest مش اللي بيفشل.
+- أخطاء Console على القديم: بعد دخول `admin@energya.com` وفتح `http://127.0.0.1:3847/internal/master-data` ظهر فشل Vite HMR. الرسالة: اتصال WebSocket على `ws://127.0.0.1:24678` رجع handshake 400، و`[vite] failed to connect to websocket (Error: WebSocket closed without opened.)`. كل رسالة اتكررت، ومعاها pageerror بنفس نص الإغلاق. مش أخطاء API. العدد اللي شافه المستخدم كان 4، والتشغيل هنا طلّع 6 أسطر لنفس العطل.
