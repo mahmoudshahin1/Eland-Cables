@@ -123,6 +123,53 @@ node scripts/check-rules.mjs
 
 Stop the three processes. On Windows, stop the process IDs listening on 5173, 3000, and 3847. Do not use `git clean` or a database reset unless the user approved that command.
 
-## 8. Clean-clone execution
+## 8. Clean-clone execution (2026-10-18)
 
-The verbatim log is appended after the clone commands finish. The clone does not receive `.env` files and does not run a seed.
+Command, from `H:\Eland-Cables`:
+
+```text
+git clone --branch migration/phase-2a-fix "h:\Eland-Cables" $env:TEMP\energya-2a-runbook-20261018
+```
+
+Result:
+
+```text
+Cloning into 'C:\Users\mahmo\AppData\Local\Temp\energya-2a-runbook-20261018'...
+done.
+Updating files: 100% (1392/1392), done.
+v22.12.0
+11.0.0
+```
+
+Root `npm install --ignore-scripts`:
+
+```text
+added 341 packages, and audited 342 packages in 2m
+13 vulnerabilities (3 moderate, 9 high, 1 critical)
+```
+
+`energya-backend` `npm install --ignore-scripts`:
+
+```text
+added 460 packages, and audited 461 packages in 2m
+12 vulnerabilities (2 low, 1 moderate, 9 high)
+```
+
+`npx prisma migrate deploy` inside the clone's `energya-backend`:
+
+```text
+Prisma schema loaded from ..\prisma\schema.prisma
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: Environment variable not found: DATABASE_URL.
+  -->  C:\Users\mahmo\AppData\Local\Temp\energya-2a-runbook-20261018\prisma\schema.prisma:7
+   |
+ 6 |   provider = "postgresql"
+ 7 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+Prisma CLI Version : 6.16.2
+```
+
+Exit code of that command sequence: 1. The clone had no `.env`. Seed scripts were not run. Servers were not started from the clone, so ports 3000, 3847, and 5173 were left to the existing Nest process used for the header check.
