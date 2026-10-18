@@ -1,15 +1,12 @@
-import { describe, it, beforeAll, afterAll, expect } from 'vitest';
+import { describe, it, beforeAll, afterAll } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
 import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../src/prisma.service.js';
-import { CABLE_SEARCH_FORBIDDEN_RESULT_KEYS } from '../../src/shared/domain/v2AdvancedCableSearch.js';
 
 describe('Customer Cable Products catalog API (NestJS e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let customerToken: string;
   const suffix = `CAT-${String(Date.now()).replace(/99/g, '88')}`;
   const matLv = `${suffix}-LV`;
   const matMv = `${suffix}-MV`;
@@ -23,12 +20,6 @@ describe('Customer Cable Products catalog API (NestJS e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     prisma = app.get(PrismaService);
-
-    // Seed customer and login to get token
-    const customerLogin = await request(app.getHttpServer())
-      .post('/api/auth/login')
-      .send({ email: 'custA@parity.test', password: 'Password123!' });
-    customerToken = customerLogin.body.accessToken;
 
     // Seed test cables
     await prisma.cableMaster.deleteMany({ where: { materialNumber: { in: materials } } });
@@ -81,74 +72,20 @@ describe('Customer Cable Products catalog API (NestJS e2e)', () => {
     await app.close();
   });
 
-  const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
+  // Deferred to Phase 3 (catalog routes removed from 2a by user decision 2026-10-18)
+  it.todo('requires sign-in');
 
-  it('requires sign-in', async () => {
-    await request(app.getHttpServer())
-      .get('/api/v2/cables/products?page=1&pageSize=25')
-      .expect(401);
-  });
+  // Deferred to Phase 3 (catalog routes removed from 2a by user decision 2026-10-18)
+  it.todo('lists Cable Master rows with server-side pagination and no costing leak');
 
-  it('lists Cable Master rows with server-side pagination and no costing leak', async () => {
-    const res = await request(app.getHttpServer())
-      .get(`/api/v2/cables/products?page=1&pageSize=25&q=${encodeURIComponent(suffix)}`)
-      .set(auth(customerToken))
-      .expect(200);
+  // Deferred to Phase 3 (catalog routes removed from 2a by user decision 2026-10-18)
+  it.todo('maps category=MV from family/voltage without rewriting masters');
 
-    expect(res.body.pageSize).toBe(25);
-    expect(res.body.total).toBeGreaterThanOrEqual(2);
-    expect(res.body.cables.length).toBeGreaterThanOrEqual(2);
-    expect(res.body.searchKind).toBe('CABLE_MASTER_CATALOG');
+  // Deferred to Phase 3 (catalog routes removed from 2a by user decision 2026-10-18)
+  it.todo('maps POWER as LV ∪ MV family keys');
 
-    for (const hit of res.body.cables) {
-      for (const key of CABLE_SEARCH_FORBIDDEN_RESULT_KEYS) {
-        expect(Object.hasOwn(hit, key)).toBe(false);
-      }
-    }
-  });
-
-  it('maps category=MV from family/voltage without rewriting masters', async () => {
-    const before = await prisma.cableMaster.findUnique({ where: { materialNumber: matMv } });
-
-    const res = await request(app.getHttpServer())
-      .get(`/api/v2/cables/products?category=MV&q=${encodeURIComponent(suffix)}`)
-      .set(auth(customerToken))
-      .expect(200);
-
-    const ids = res.body.cables.map((c: { materialNumber: string }) => c.materialNumber);
-    expect(ids).toContain(matMv);
-    expect(ids).not.toContain(matLv);
-
-    const after = await prisma.cableMaster.findUnique({ where: { materialNumber: matMv } });
-    expect(after?.family).toBe(before?.family);
-    expect(after?.updatedAt.getTime()).toBe(before?.updatedAt.getTime());
-  });
-
-  it('maps POWER as LV ∪ MV family keys', async () => {
-    const res = await request(app.getHttpServer())
-      .get(`/api/v2/cables/products?category=POWER&q=${encodeURIComponent(suffix)}`)
-      .set(auth(customerToken))
-      .expect(200);
-
-    const ids = res.body.cables.map((c: { materialNumber: string }) => c.materialNumber);
-    expect(ids).toContain(matLv);
-    expect(ids).toContain(matMv);
-  });
-
-  it('returns live facets from Cable Master and documents unmapped category field', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/api/v2/cables/products/facets')
-      .set(auth(customerToken))
-      .expect(200);
-
-    expect(res.body.facets.mapping.productCategoryField).toBe(false);
-    expect(res.body.facets.mapping.mappedBy).toBe('family_voltage');
-    expect(typeof res.body.facets.mapping.unmappedCount).toBe('number');
-    expect(
-      res.body.facets.voltageClass.includes('MV') || res.body.facets.voltageClass.includes('LV'),
-    ).toBe(true);
-    expect(Array.isArray(res.body.facets.voltage)).toBe(true);
-  });
+  // Deferred to Phase 3 (catalog routes removed from 2a by user decision 2026-10-18)
+  it.todo('returns live facets from Cable Master and documents unmapped category field');
 
   it.todo('exports customer-safe Excel without costing or BOM columns (Deferred to Phase 2b: Excel Export)');
 });

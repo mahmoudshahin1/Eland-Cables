@@ -118,6 +118,7 @@ async function send(base, path, { method, token, body }) {
 }
 
 const results = [];
+const deferred = [];
 const tokens = {};
 
 function record(entry) {
@@ -169,7 +170,7 @@ async function check(name, path, opts = {}) {
     }
   }
 
-  record({
+  const entry = {
     name,
     method,
     path,
@@ -182,7 +183,13 @@ async function check(name, path, opts = {}) {
     reason: reasons.join('; '),
     legacyBody: reasons.length ? legacyBody : undefined,
     nestBody: reasons.length ? nestBody : undefined,
-  });
+  };
+  if (opts.deferred) {
+    deferred.push(entry);
+    console.log(`  DEFERRED ${entry.name} [legacy ${entry.legacyStatus} / nest ${entry.nestStatus}${entry.expected !== undefined ? ` / expected ${entry.expected}` : ''}]${entry.reason ? ` ${entry.reason}` : ''}`);
+    return { legacy, nest };
+  }
+  record(entry);
   return { legacy, nest };
 }
 
@@ -230,6 +237,10 @@ const MATRIX_ROUTES = [
   { method: 'GET', path: '/api/master/uniqueness', auth: 'masterRead' },
   { method: 'GET', path: '/api/master/sot-status', auth: 'masterRead' },
   { method: 'GET', path: '/api/platform/db', auth: 'public' },
+];
+
+// Moved out of the Phase 2a score. Same requests, not counted as pass or fail.
+const PHASE3_DEFERRED_ROUTES = [
   { method: 'GET', path: '/api/v2/cables/products?page=1&pageSize=10', auth: 'signedIn' },
   { method: 'GET', path: '/api/v2/cables/products/facets', auth: 'signedIn' },
 ];
@@ -250,6 +261,21 @@ const MUST_NOT_EXIST_ON_NEST = [
 // ---------------------------------------------------------------------------
 // Sections
 // ---------------------------------------------------------------------------
+async function sectionPhase3Deferred() {
+  console.log('\nPhase 3 deferred');
+  for (const route of PHASE3_DEFERRED_ROUTES) {
+    for (const persona of PERSONA_ORDER) {
+      await check(`${persona} ${route.method} ${route.path}`, route.path, {
+        method: route.method,
+        persona,
+        body: route.body,
+        expected: expectedStatus(route.auth, persona),
+        deferred: true,
+      });
+    }
+  }
+}
+
 async function sectionPersonaMatrix() {
   console.log('\nA. Persona x route matrix (status + body + error message)');
   for (const route of MATRIX_ROUTES) {
@@ -449,6 +475,7 @@ export async function runPhase2aParity() {
   for (const persona of Object.keys(PERSONAS)) await login(persona);
 
   await sectionPersonaMatrix();
+  await sectionPhase3Deferred();
   await sectionAttachmentWrites();
   await sectionFilters();
   await sectionBigBinary();
@@ -458,12 +485,13 @@ export async function runPhase2aParity() {
 
   const passed = results.filter((r) => r.ok).length;
   const failed = results.length - passed;
-  console.log(`\nSummary: ${passed}/${results.length} checks passed, ${failed} failed.`);
+  console.log(`\nPhase 3 deferred: ${deferred.length} (not counted)`);
+  console.log(`Summary: ${passed}/${results.length} checks passed, ${failed} failed.`);
 
   fs.mkdirSync('docs/MIGRATION/phase-2a', { recursive: true });
   fs.writeFileSync(
     RESULTS_PATH,
-    JSON.stringify({ generatedAt: new Date().toISOString(), legacyBase, targetBase, passed, failed, total: results.length, results }, null, 2)
+    JSON.stringify({ generatedAt: new Date().toISOString(), legacyBase, targetBase, passed, failed, total: results.length, phase3Deferred: deferred.length, results, deferred }, null, 2)
   );
   console.log(`Results written to ${RESULTS_PATH}`);
   return { passed, failed, total: results.length };
