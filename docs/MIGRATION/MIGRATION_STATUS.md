@@ -12,7 +12,7 @@ Source of Truth Schema: `/prisma/schema.prisma`
 |---|---|---|---|---|---|---|---|---|
 | **Phase 0** | **Foundation & Security** | **2 / 2** | ⬜ | ✅ | ⬜ | ✅ | ✅ | الأساس، الأمان، تنظيف Mock، الفلاتر، توحيد Prisma |
 | **Phase 1** | **Auth / RBAC / Identity** | **49 / 49** | ✅ | ✅ | ✅ | ✅ | ✅ | **مكتملة ومعتمدة**: Parity (150/150 + 45/45)، اختبارات G2 (27 unit + 70 e2e)، وUI مربوطة (7/7 شاشات 200 OK) |
-| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ⬜ | ⬜ | ⬜ | ✅ | ⬜ | **غير معتمدة.** جدول Nest لمرحلة 2a ما زال 19 مسارًا بعد شيل الكتالوج؛ الكتالوج كان زيادة وليس داخل الـ 19. `generateInventory.mjs` في 2026-10-18: 472 إجمالي، Nest 68، المرحلة 2 على Nest = 19. Parity على `energya_legacy` و`energya_nest`: 147 نجحت و12 فشلت، والفشل كله على مساري products. e2e: 5 فشلت و78 نجحت و11 مؤجلة. |
+| **Phase 2a** | **Master Data Read & Drums** | **19 / 19** | ✅ | ✅ | ⬜ | ✅ | ⬜ | **المستخدم وافق على إكمال شيل مساري الكتالوج في 2026-10-18.** المساران مؤجلان إلى Phase 3. e2e: 78 نجحت و16 مؤجلة. Parity على `energya_legacy` و`energya_nest`: 147/147، و12 فحصًا في قسم Phase 3 deferred غير محسوبة. غير معتمدة لحين المراجعة. |
 | Phase 2 المتبقي | CRUD والاستيراد والحوكمة | 0 / 55 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 55 = 74 − 19 من `ENDPOINT_INVENTORY.md`. التقسيم القديم 52 + 42 غير معتمد. ممنوع البدء قبل عبارة المستخدم. |
 | Phase 3 | Cable Authority & Configurator | 0 / 11 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | مسارا products وfacets لم يعودا على Nest. المرحلة لم تبدأ. |
 | Phase 4 | Commercial (Inquiries & Quotations) | 0 / 116 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | تشمل البنود المؤجلة من Phase 1 (عزل الاستفسارات TEST 1-4) |

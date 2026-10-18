@@ -1,5 +1,82 @@
 # Phase 2a review evidence (2026-10-18)
 
+The user approved completing the removal of `GET /api/v2/cables/products` and `GET /api/v2/cables/products/facets` from Phase 2a. Those checks are deferred to Phase 3. They are not in the Phase 2a pass/fail count.
+
+## Official rerun after that approval
+
+`npm test` exit 0:
+
+```text
+Test Files  7 passed (7)
+     Tests  114 passed (114)
+  Start at  18:01:10
+  Duration  4.55s
+```
+
+`npm run test:e2e` exit 0:
+
+```text
+Test Files  9 passed | 1 skipped (10)
+     Tests  78 passed | 16 todo (94)
+  Start at  18:01:30
+  Duration  27.75s
+```
+
+`npm run build` exit 0:
+
+```text
+> energya-backend@0.0.1 build
+> tsc -p tsconfig.build.json
+```
+
+`npm run lint` exit 0. Warnings only. No error lines.
+
+`node scripts/check-rules.mjs` exit 0:
+
+```text
+anyCount=140 baseline=140 previousAnyCount=143
+check-rules passed
+scopeBase=ee98586
+```
+
+`npm run test:parity:phase2a` after printing `parity databases: energya_legacy and energya_nest`. Exit 0:
+
+```text
+Phase 3 deferred: 12 (not counted)
+Summary: 147/147 checks passed, 0 failed.
+```
+
+`npm run verify:domain` exit 0. Eleven copies, all `SYNC OK`.
+
+## Intentional failure, then reverted
+
+`GET /api/master/cables` was temporarily forced to HTTP 418 in `cables.controller.ts`, then restored. `PARITY_SKIP_SEED=1` on `energya_legacy` and `energya_nest`. The tool failed and the file was reverted before the official run. `git diff` on that controller was empty afterward.
+
+```text
+  FAIL customer GET /api/master/cables [legacy 200 / nest 418 / expected 200] status differs
+  FAIL limited GET /api/master/cables [legacy 200 / nest 418 / expected 200] status differs
+  FAIL granular GET /api/master/cables [legacy 200 / nest 418 / expected 200] status differs
+  FAIL writer GET /api/master/cables [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?q=Cu [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?family=LV [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?family=MV [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?voltage=6/10 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?conductor=Copper [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?cores=1 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?diameter=25 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?page=1&pageSize=10 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?page=2&pageSize=15 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?page=3&pageSize=25 [legacy 200 / nest 418 / expected 200] status differs
+  FAIL admin GET /api/master/cables?family=LV&cores=1&page=1&pageSize=10 [legacy 200 / nest 418 / expected 200] status differs
+Phase 3 deferred: 12 (not counted)
+Summary: 131/147 checks passed, 16 failed.
+```
+
+## Earlier same-day run, before the deferral
+
+The user approved completing the removal of the catalog routes from Phase 2a. The phase 2a proxy table is still 19 routes. Nest total is 68, not 17.
+
 Branch `migration/phase-2a-fix`. Catalog routes were removed from Nest registration. The phase 2a proxy table is still 19 routes. Nest total is 68, not 17.
 
 `node scripts/inventory/generateInventory.mjs`:

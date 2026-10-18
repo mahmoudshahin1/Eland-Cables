@@ -22,13 +22,17 @@ Same table. Customer catalog reads follow `src/server/rbac.ts:710-711`. Attachme
 
 Not re-run on 2026-10-18. Reason: `scripts/parity/run-phase2a-parity.mjs` seeds with `TRUNCATE`, and this task did not approve that command. Last recorded result remains 159 passed, 0 failed, 159 total.
 
-## 5. Tests (2026-10-18 rerun)
+## 5. Tests after the user approved deferring the catalog routes
 
-`npm test` exit 0: Test Files 7 passed (7), Tests 114 passed (114), start 17:32:49, Duration 35.43s.
+The user approved completing the removal. The five catalog e2e names are now `it.todo`. The twelve parity checks are under "Phase 3 deferred" and are not counted.
 
-`npm run test:e2e` exit 1: Test Files 1 failed | 9 passed (10), Tests 5 failed | 78 passed | 11 todo (94). The five failures are 404 on `/api/v2/cables/products` and `/products/facets` after those controllers were unregistered. The test file was not changed.
+`npm test` exit 0: Test Files 7 passed (7), Tests 114 passed (114), start 18:01:10, Duration 4.55s.
 
-`npm run test:parity:phase2a` exit 1 on databases `energya_legacy` and `energya_nest`: Summary 147/159 checks passed, 12 failed. All 12 failures are those same two catalog paths. The harness was not changed.
+`npm run test:e2e` exit 0: Test Files 9 passed | 1 skipped (10), Tests 78 passed | 16 todo (94), start 18:01:30, Duration 27.75s.
+
+`npm run test:parity:phase2a` exit 0 on `energya_legacy` and `energya_nest`: `Phase 3 deferred: 12 (not counted)` and `Summary: 147/147 checks passed, 0 failed.`
+
+An intentional HTTP 418 on `GET /api/master/cables` made the same tool report `Summary: 131/147 checks passed, 16 failed.` That edit was reverted before the official run.
 
 ## 6. Build and lint
 

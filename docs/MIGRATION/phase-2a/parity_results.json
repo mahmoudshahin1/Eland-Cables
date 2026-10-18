@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-10-18T14:44:05.328Z",
+  "generatedAt": "2026-10-18T15:02:30.568Z",
   "legacyBase": "http://127.0.0.1:3847",
   "targetBase": "http://127.0.0.1:3000",
   "passed": 147,
-  "failed": 12,
-  "total": 159,
+  "failed": 0,
+  "total": 147,
+  "phase3Deferred": 12,
   "results": [
     {
       "name": "anon GET /api/master/cables",
@@ -1158,6 +1159,534 @@
       "ok": true,
       "reason": ""
     },
+    {
+      "name": "anon POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "anon",
+      "expected": 401,
+      "legacyStatus": 401,
+      "nestStatus": 401,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "customer POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "customer",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "limited POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "limited",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "granular POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "granular",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "writer POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "writer",
+      "expected": 201,
+      "legacyStatus": 201,
+      "nestStatus": 201,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "anon GET /api/master/cables/10009487/attachments/:id (download)",
+      "method": "GET",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "anon",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "anon DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "anon",
+      "expected": 401,
+      "legacyStatus": 401,
+      "nestStatus": 401,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "customer DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "customer",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "limited DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "limited",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "granular DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "granular",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "writer DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "writer",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin POST /api/master/cables/10009487/attachments",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "admin",
+      "expected": 201,
+      "legacyStatus": 201,
+      "nestStatus": 201,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "anon GET /api/master/cables/10009487/attachments/:id (download)",
+      "method": "GET",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "anon",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "anon DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "anon",
+      "expected": 401,
+      "legacyStatus": 401,
+      "nestStatus": 401,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "customer DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "customer",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "limited DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "limited",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "granular DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "granular",
+      "expected": 403,
+      "legacyStatus": 403,
+      "nestStatus": 403,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin DELETE /api/master/cables/10009487/attachments/:id",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET missing attachment",
+      "method": "GET",
+      "path": "/api/master/cables/10009487/attachments/does-not-exist",
+      "persona": "admin",
+      "expected": 404,
+      "legacyStatus": 404,
+      "nestStatus": 404,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?q=Cu",
+      "method": "GET",
+      "path": "/api/master/cables?q=Cu",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?family=LV",
+      "method": "GET",
+      "path": "/api/master/cables?family=LV",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?family=MV",
+      "method": "GET",
+      "path": "/api/master/cables?family=MV",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?voltage=6/10",
+      "method": "GET",
+      "path": "/api/master/cables?voltage=6/10",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?conductor=Copper",
+      "method": "GET",
+      "path": "/api/master/cables?conductor=Copper",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?cores=1",
+      "method": "GET",
+      "path": "/api/master/cables?cores=1",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?diameter=25",
+      "method": "GET",
+      "path": "/api/master/cables?diameter=25",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?page=1&pageSize=10",
+      "method": "GET",
+      "path": "/api/master/cables?page=1&pageSize=10",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?page=2&pageSize=15",
+      "method": "GET",
+      "path": "/api/master/cables?page=2&pageSize=15",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?page=3&pageSize=25",
+      "method": "GET",
+      "path": "/api/master/cables?page=3&pageSize=25",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin GET /api/master/cables?family=LV&cores=1&page=1&pageSize=10",
+      "method": "GET",
+      "path": "/api/master/cables?family=LV&cores=1&page=1&pageSize=10",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin POST 5MB attachment",
+      "method": "POST",
+      "path": "/api/master/cables/10009487/attachments",
+      "persona": "admin",
+      "expected": 201,
+      "legacyStatus": 201,
+      "nestStatus": 201,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "anon GET 5MB attachment download",
+      "method": "GET",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "anon",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "5MB download equals uploaded bytes",
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "admin DELETE 5MB attachment",
+      "method": "DELETE",
+      "path": "/api/master/cables/10009487/attachments/:id",
+      "persona": "admin",
+      "expected": 200,
+      "legacyStatus": 200,
+      "nestStatus": 200,
+      "nestServedBy": "nest",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "nest GET /api/master/db is 404",
+      "path": "/api/master/db",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/cables is 404",
+      "path": "/api/platform/cables",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/cables/10009487 is 404",
+      "path": "/api/platform/cables/10009487",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/raw-materials is 404",
+      "path": "/api/platform/raw-materials",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/boms is 404",
+      "path": "/api/platform/boms",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/drums is 404",
+      "path": "/api/platform/drums",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/reference is 404",
+      "path": "/api/platform/reference",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/keys is 404",
+      "path": "/api/platform/keys",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "nest GET /api/platform/uniqueness is 404",
+      "path": "/api/platform/uniqueness",
+      "legacyStatus": "-",
+      "nestStatus": 404,
+      "expected": 404,
+      "ok": true
+    },
+    {
+      "name": "X-Served-By: nest on 129 Nest responses",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "proxy table routes all 19 Phase 2a routes to Nest",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "proxy table keeps 11 unmigrated routes on legacy",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true,
+      "reason": ""
+    },
+    {
+      "name": "negative control: status drift",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true
+    },
+    {
+      "name": "negative control: value drift",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true
+    },
+    {
+      "name": "negative control: missing key",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true
+    },
+    {
+      "name": "negative control: error message drift",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true
+    },
+    {
+      "name": "negative control: order drift",
+      "legacyStatus": "-",
+      "nestStatus": "-",
+      "ok": true
+    }
+  ],
+  "deferred": [
     {
       "name": "anon GET /api/v2/cables/products?page=1&pageSize=10",
       "method": "GET",
@@ -8941,532 +9470,6 @@
         "method": "GET",
         "path": "/api/v2/cables/products/facets"
       }
-    },
-    {
-      "name": "anon POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "anon",
-      "expected": 401,
-      "legacyStatus": 401,
-      "nestStatus": 401,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "customer POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "customer",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "limited POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "limited",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "granular POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "granular",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "writer POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "writer",
-      "expected": 201,
-      "legacyStatus": 201,
-      "nestStatus": 201,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "anon GET /api/master/cables/10009487/attachments/:id (download)",
-      "method": "GET",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "anon",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "anon DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "anon",
-      "expected": 401,
-      "legacyStatus": 401,
-      "nestStatus": 401,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "customer DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "customer",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "limited DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "limited",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "granular DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "granular",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "writer DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "writer",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin POST /api/master/cables/10009487/attachments",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "admin",
-      "expected": 201,
-      "legacyStatus": 201,
-      "nestStatus": 201,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "anon GET /api/master/cables/10009487/attachments/:id (download)",
-      "method": "GET",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "anon",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "anon DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "anon",
-      "expected": 401,
-      "legacyStatus": 401,
-      "nestStatus": 401,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "customer DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "customer",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "limited DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "limited",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "granular DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "granular",
-      "expected": 403,
-      "legacyStatus": 403,
-      "nestStatus": 403,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin DELETE /api/master/cables/10009487/attachments/:id",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET missing attachment",
-      "method": "GET",
-      "path": "/api/master/cables/10009487/attachments/does-not-exist",
-      "persona": "admin",
-      "expected": 404,
-      "legacyStatus": 404,
-      "nestStatus": 404,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?q=Cu",
-      "method": "GET",
-      "path": "/api/master/cables?q=Cu",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?family=LV",
-      "method": "GET",
-      "path": "/api/master/cables?family=LV",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?family=MV",
-      "method": "GET",
-      "path": "/api/master/cables?family=MV",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?voltage=6/10",
-      "method": "GET",
-      "path": "/api/master/cables?voltage=6/10",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?conductor=Copper",
-      "method": "GET",
-      "path": "/api/master/cables?conductor=Copper",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?cores=1",
-      "method": "GET",
-      "path": "/api/master/cables?cores=1",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?diameter=25",
-      "method": "GET",
-      "path": "/api/master/cables?diameter=25",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?page=1&pageSize=10",
-      "method": "GET",
-      "path": "/api/master/cables?page=1&pageSize=10",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?page=2&pageSize=15",
-      "method": "GET",
-      "path": "/api/master/cables?page=2&pageSize=15",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?page=3&pageSize=25",
-      "method": "GET",
-      "path": "/api/master/cables?page=3&pageSize=25",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin GET /api/master/cables?family=LV&cores=1&page=1&pageSize=10",
-      "method": "GET",
-      "path": "/api/master/cables?family=LV&cores=1&page=1&pageSize=10",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin POST 5MB attachment",
-      "method": "POST",
-      "path": "/api/master/cables/10009487/attachments",
-      "persona": "admin",
-      "expected": 201,
-      "legacyStatus": 201,
-      "nestStatus": 201,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "anon GET 5MB attachment download",
-      "method": "GET",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "anon",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "5MB download equals uploaded bytes",
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "admin DELETE 5MB attachment",
-      "method": "DELETE",
-      "path": "/api/master/cables/10009487/attachments/:id",
-      "persona": "admin",
-      "expected": 200,
-      "legacyStatus": 200,
-      "nestStatus": 200,
-      "nestServedBy": "nest",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "nest GET /api/master/db is 404",
-      "path": "/api/master/db",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/cables is 404",
-      "path": "/api/platform/cables",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/cables/10009487 is 404",
-      "path": "/api/platform/cables/10009487",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/raw-materials is 404",
-      "path": "/api/platform/raw-materials",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/boms is 404",
-      "path": "/api/platform/boms",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/drums is 404",
-      "path": "/api/platform/drums",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/reference is 404",
-      "path": "/api/platform/reference",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/keys is 404",
-      "path": "/api/platform/keys",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "nest GET /api/platform/uniqueness is 404",
-      "path": "/api/platform/uniqueness",
-      "legacyStatus": "-",
-      "nestStatus": 404,
-      "expected": 404,
-      "ok": true
-    },
-    {
-      "name": "X-Served-By: nest on 141 Nest responses",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "proxy table routes all 19 Phase 2a routes to Nest",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "proxy table keeps 11 unmigrated routes on legacy",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true,
-      "reason": ""
-    },
-    {
-      "name": "negative control: status drift",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true
-    },
-    {
-      "name": "negative control: value drift",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true
-    },
-    {
-      "name": "negative control: missing key",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true
-    },
-    {
-      "name": "negative control: error message drift",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true
-    },
-    {
-      "name": "negative control: order drift",
-      "legacyStatus": "-",
-      "nestStatus": "-",
-      "ok": true
     }
   ]
 }
