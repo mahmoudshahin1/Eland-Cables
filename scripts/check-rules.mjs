@@ -221,6 +221,7 @@ function allowedPath(rel) {
     'scripts/parity/run-phase2b-parity.mjs',
     'scripts/parity/seed-auth.mjs',
     'scripts/parity/seed-master-data.mjs',
+    'energya-backend/test/master-data/phase2bRepositories.spec.ts',
   ].includes(norm);
 }
 
