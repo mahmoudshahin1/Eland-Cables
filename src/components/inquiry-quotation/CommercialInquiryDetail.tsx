@@ -650,6 +650,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     }
   };
 
+  const openQuotationTab = () => {
+    setTab('quotation');
+    window.setTimeout(() => {
+      document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  };
+
   const handleGenerateQuotation = async () => {
     if (!jwtToken || !inquiry) return;
     try {
@@ -863,7 +870,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     setInquiryCalcResults(null);
     setVipCalcResult(null);
     try {
-      if (isVipV2Inquiry) {
+      if (canCalculateInquiry(inquiry)) {
         const result = await calculateVipInquiry(jwtToken, inquiry.id);
         setVipCalcResult(result);
         if (result.status === 'COMPLETED' && result.financialOffer && result.quotation) {
@@ -1104,8 +1111,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             actions={
               <CustomerInquiryPrimaryActions
                 isEditable={isEditable}
-                canCalculate={canShowInquiryCalculate(inquiry.status, inquiry.lines?.length || 0)}
-                canSubmit={canShowInquirySubmit(inquiry.status)}
+                canCalculate={canCalculate}
+                canSubmit={canSubmit}
                 savingHeader={savingHeader}
                 costingLoading={costingLoading}
                 hasLines={(inquiry.lines || []).length > 0}
@@ -1257,7 +1264,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   result={vipCalcResult}
                   loading={costingLoading && isVipV2Inquiry}
                   customerSafe={isCustomer}
-                  onViewQuotation={() => setTab('quotation')}
+                  onViewQuotation={openQuotationTab}
                 />
               </div>
             ) : null}
@@ -1327,7 +1334,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
             )}
 
-            {canQuote && (
+            {canQuote && !isVipV2Inquiry && (
               <button
                 type="button"
                 onClick={() => void handleGenerateQuotation()}
@@ -1433,7 +1440,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           result={vipCalcResult}
           loading={costingLoading && isVipV2Inquiry}
           customerSafe={isCustomer}
-          onViewQuotation={() => setTab('quotation')}
+          onViewQuotation={openQuotationTab}
         />
       ) : null}
 
@@ -1499,7 +1506,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
       {/* Workspace Tabs Navigation Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
+      <div id="inquiry-workspace" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-1 px-4 border-b border-slate-200 overflow-x-auto no-scrollbar scroll-smooth">
           {(isCustomer ? customerInquiryPresentationTabs(tabsListResolved).filter((t) => !t.overflow) : tabsListResolved).map((t) => {
             const active = isCustomer
@@ -2208,7 +2215,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   Official quotation snapshots linked to this commercial inquiry.
                 </p>
               </div>
-              {canQuote && isEditable && (
+              {canQuote && isEditable && !isVipV2Inquiry && (
                 <button
                   type="button"
                   onClick={() => void handleGenerateQuotation()}

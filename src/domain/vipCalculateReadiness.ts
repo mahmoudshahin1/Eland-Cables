@@ -7,6 +7,7 @@ import { DECISION5_STATUS } from './v2CostingRequestService';
 import { collectInquirySubmitMissingItems } from '../services/inquiryHeaderFormService';
 import { evaluateContainerStudyGate } from './containerStudyReadiness';
 import {
+  approvedCatalogCableCanCalculate,
   evaluateMissingSnapshotForCalculation,
   importedCableSatisfiesCalculationEngineering,
   type ImportedCableCalculationEvidence,
@@ -87,8 +88,18 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
     unresolvedBomConflictCount: 0,
   };
   const importedEngineeringOk = importedCableSatisfiesCalculationEngineering(importedEvidence);
+  const catalogReady = approvedCatalogCableCanCalculate(importedEvidence);
 
   if (!line.v2CurrentSnapshotId || !line.configurationSnapshot) {
+    if (catalogReady && !importedEngineeringOk) {
+      gates.push({
+        gate: 'CONFIGURATION_SNAPSHOT',
+        status: 'PASS',
+        lineNumber: line.lineNumber,
+        message: `Line ${line.lineNumber}: approved catalog cable. Cable Master and BOM are the engineering record.`,
+        code: 'CATALOG_MASTER_AUTHORITY',
+      });
+    } else {
     const snapshotGate = evaluateMissingSnapshotForCalculation({
       lineNumber: line.lineNumber,
       importedCable: importedEvidence,
@@ -100,6 +111,7 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
       message: snapshotGate.message,
       code: snapshotGate.code,
     });
+    }
   } else if (line.configurationSnapshot.id !== line.v2CurrentSnapshotId) {
     gates.push({
       gate: 'CONFIGURATION_SNAPSHOT',
@@ -128,9 +140,9 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
   if (!line.v2CurrentCuttingPlanId || !line.cuttingPlan) {
     gates.push({
       gate: 'CUTTING_LENGTH_PLAN',
-      status: importedEngineeringOk ? 'WARN' : 'BLOCK',
+      status: catalogReady ? 'WARN' : 'BLOCK',
       lineNumber: line.lineNumber,
-      message: importedEngineeringOk
+      message: catalogReady
         ? `Line ${line.lineNumber}: cutting length plan not set — costing uses inquiry quantity/length.`
         : `Line ${line.lineNumber}: V2 cutting length plan required.`,
       code: 'CUTTING_PLAN_REQUIRED',
@@ -175,9 +187,9 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
   if (!line.v2CurrentDrumPlanId || !line.drumPlan) {
     gates.push({
       gate: 'DRUM_PLAN',
-      status: importedEngineeringOk ? 'WARN' : 'BLOCK',
+      status: catalogReady ? 'WARN' : 'BLOCK',
       lineNumber: line.lineNumber,
-      message: importedEngineeringOk
+      message: catalogReady
         ? `Line ${line.lineNumber}: drum plan not confirmed — packing/CS uses physical data when present.`
         : `Line ${line.lineNumber}: V2 drum plan required.`,
       code: 'DRUM_PLAN_REQUIRED',
@@ -185,7 +197,7 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
   } else if (line.drumPlan.lifecycleStatus !== 'CONFIRMED') {
     gates.push({
       gate: 'DRUM_PLAN',
-      status: importedEngineeringOk ? 'WARN' : 'BLOCK',
+      status: catalogReady ? 'WARN' : 'BLOCK',
       lineNumber: line.lineNumber,
       message: `Line ${line.lineNumber}: drum plan must be CONFIRMED (current: ${line.drumPlan.lifecycleStatus}).`,
       code: 'DRUM_PLAN_NOT_CONFIRMED',
@@ -209,7 +221,7 @@ export function evaluateVipLineReadiness(line: VipLineReadinessInput): VipCalcul
       message: `Line ${line.lineNumber}: BOM Gate 2 blocked (${unresolvedConflicts || 81} unresolved conflicts).`,
       code: 'BOM_CONFLICT_UNRESOLVED',
     });
-  } else if (line.configurationSnapshot || importedEngineeringOk) {
+  } else if (line.configurationSnapshot || catalogReady) {
     gates.push({
       gate: 'BOM_GATE_2',
       status: 'PASS',

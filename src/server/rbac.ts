@@ -477,7 +477,7 @@ export function assertCanRunV2Costing(actor: RequestActor): void {
   }
 }
 
-/** Customers may view issued quotations for owned inquiries only (enforced via inquiry scope). */
+/** Customers may view the customer-safe quotation for owned inquiries. The official PDF stays blocked until issue. */
 export function assertCanViewCustomerQuotation(actor: RequestActor): void {
   assertCanManageInquiry(actor);
   assertCustomerBusinessScope(actor);

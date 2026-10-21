@@ -12,6 +12,8 @@ import { getV2DrumPlanHandoff } from './v2DrumPlanRepository';
 import { loadImportedCableCalculationEvidence } from './importedCableCalculationEvidence';
 import { assertCanAccessInquiryOwnership, assertCanApproveQuotation, assertCanIssueQuotation, assertCanManageQuotations } from './rbac';
 import { assertV2StatusTransition, isV2InquiryMetadata } from '../domain/v2InquiryWorkflow';
+import { canCalculateInquiry } from '../domain/inquiryProcessCommands';
+import type { QuotationReadinessOptions } from '../domain/v2QuotationService';
 import {
   buildIssuedCommercialOfferDocument,
   conductorWeightsFromCostingOutput,
@@ -157,6 +159,8 @@ async function loadLineReadinessInputs(
           }
         : null,
       handoff,
+      commercialCuttingLengthM: confirmedCommercialSelection(line).length,
+      commercialDrumCode: confirmedCommercialSelection(line).drum,
       costingCalculation: calculation
         ? {
             id: calculation.id,
@@ -183,14 +187,69 @@ async function loadLineReadinessInputs(
   return { inquiry, lines };
 }
 
+function confirmedCommercialSelection(line: {
+  cuttingLengthMeters?: unknown;
+  requestedLengthMeters?: unknown;
+  drumType?: string | null;
+  drumSchedule?: unknown;
+}): { length: number | null; drum: string | null } {
+  const schedule =
+    line.drumSchedule && typeof line.drumSchedule === 'object'
+      ? (line.drumSchedule as { rows?: Array<{ drumCode?: string; cuttingLengthM?: number }> })
+      : null;
+  const row = schedule?.rows?.find(
+    (item) => String(item.drumCode || '').trim() && Number(item.cuttingLengthM) > 0
+  );
+  const candidates = [
+    line.cuttingLengthMeters != null ? Number(line.cuttingLengthMeters) : null,
+    row?.cuttingLengthM != null ? Number(row.cuttingLengthM) : null,
+    line.requestedLengthMeters != null ? Number(line.requestedLengthMeters) : null,
+  ];
+  const length = candidates.find((value) => value != null && Number.isFinite(value) && value > 0) ?? null;
+  const drum = String(line.drumType || row?.drumCode || '').trim() || null;
+  return { length, drum };
+}
+
+function vipQuotationReadinessOptions(
+  inquiry: { commercialMetadata?: unknown },
+  decision5Signed: boolean
+): QuotationReadinessOptions {
+  return {
+    decision5Signed,
+    vipCatalogFastPath: canCalculateInquiry(inquiry),
+  };
+}
+
+const VIP_ISSUE_STATUS_LADDER = ['DRAFT', 'SUBMITTED', 'ENGINEERING_REVIEW', 'READY_FOR_COMMERCIAL'] as const;
+
+async function advanceVipInquiryToReadyForCommercial(
+  tx: Prisma.TransactionClient,
+  inquiry: { id: string; status: (typeof VIP_ISSUE_STATUS_LADDER)[number] | string; commercialMetadata?: unknown }
+): Promise<string> {
+  if (!canCalculateInquiry(inquiry)) return inquiry.status;
+  let status = inquiry.status;
+  while (status !== 'READY_FOR_COMMERCIAL' && status !== 'QUOTED') {
+    const index = VIP_ISSUE_STATUS_LADDER.indexOf(status as (typeof VIP_ISSUE_STATUS_LADDER)[number]);
+    if (index < 0 || index >= VIP_ISSUE_STATUS_LADDER.length - 1) break;
+    const next = VIP_ISSUE_STATUS_LADDER[index + 1];
+    assertV2StatusTransition(status as never, next);
+    await tx.commercialInquiry.update({
+      where: { id: inquiry.id },
+      data: { status: next },
+    });
+    status = next;
+  }
+  return status;
+}
+
 export async function getV2QuotationReadiness(
   inquiryId: string,
   actor: RequestActor,
   stage: 'CREATE_DRAFT' | 'PRICE' | 'READY_FOR_APPROVAL' | 'APPROVE' | 'ISSUE' = 'ISSUE'
 ) {
-  const { lines } = await loadLineReadinessInputs(inquiryId, actor);
+  const { inquiry, lines } = await loadLineReadinessInputs(inquiryId, actor);
   const decision5Signed = stage === 'ISSUE' ? (await loadDecision5SignOff()).signed : false;
-  return evaluateQuotationReadiness(lines, stage, { decision5Signed });
+  return evaluateQuotationReadiness(lines, stage, vipQuotationReadinessOptions(inquiry, decision5Signed));
 }
 
 export async function getV2CurrentQuotation(inquiryId: string, actor: RequestActor) {
@@ -538,8 +597,8 @@ export async function approveV2Quotation(inquiryId: string, actor: RequestActor)
   if (!quotation) throwCode('No V2 quotation found.', 'NOT_FOUND');
   if (isQuotationIssued(quotation)) throwCode('Issued quotations are immutable.', 'BUSINESS_RULE_REQUIRED');
 
-  const { lines: readinessLines } = await loadLineReadinessInputs(inquiryId, actor);
-  const readiness = evaluateQuotationReadiness(readinessLines, 'APPROVE');
+  const { inquiry, lines: readinessLines } = await loadLineReadinessInputs(inquiryId, actor);
+  const readiness = evaluateQuotationReadiness(readinessLines, 'APPROVE', vipQuotationReadinessOptions(inquiry, false));
   if (!readiness.ready) {
     throwCode(readiness.blockingReasons.join('; '), 'QUOTATION_NOT_READY');
   }
@@ -755,7 +814,11 @@ export async function issueV2Quotation(inquiryId: string, actor: RequestActor) {
 
   const { lines: readinessLines } = await loadLineReadinessInputs(inquiryId, actor);
   const decision5Signed = (await loadDecision5SignOff()).signed;
-  const readiness = evaluateQuotationReadiness(readinessLines, 'ISSUE', { decision5Signed });
+  const readiness = evaluateQuotationReadiness(
+    readinessLines,
+    'ISSUE',
+    vipQuotationReadinessOptions(inquiry, decision5Signed)
+  );
   if (!readiness.ready) {
     throwCode(readiness.blockingReasons.join('; '), 'QUOTATION_NOT_READY');
   }
@@ -840,8 +903,12 @@ export async function issueV2Quotation(inquiryId: string, actor: RequestActor) {
       include: { lines: { include: { pricingSnapshot: true } } },
     });
 
-    if (inquiry.status !== 'QUOTED') {
-      assertV2StatusTransition(inquiry.status, 'QUOTED');
+    let inquiryStatus = inquiry.status;
+    if (canCalculateInquiry(inquiry) && inquiryStatus !== 'QUOTED') {
+      inquiryStatus = await advanceVipInquiryToReadyForCommercial(tx, inquiry);
+    }
+    if (inquiryStatus !== 'QUOTED') {
+      assertV2StatusTransition(inquiryStatus as never, 'QUOTED');
       await tx.commercialInquiry.update({
         where: { id: inquiry.id },
         data: { status: 'QUOTED' },

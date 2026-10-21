@@ -9,6 +9,7 @@ import type { DrumPlanHandoffDto } from './v2DrumPlanService';
 import {
   evaluateMissingSnapshotForCalculation,
   importedCableSatisfiesCalculationEngineering,
+  isOfficialImportedCableIdentity,
 } from './importedCableCalculationAuthority';
 
 export const V2_QUOTATION_WORKFLOW_CHANNEL = V2_COSTING_WORKFLOW_CHANNEL;
@@ -54,6 +55,10 @@ export interface V2LineReadinessInput {
     validationStatus?: string | null;
   } | null;
   handoff?: DrumPlanHandoffDto | null;
+  /** Length already stored on the commercial line, in meters. */
+  commercialCuttingLengthM?: number | null;
+  /** Drum code already stored on the commercial line. */
+  commercialDrumCode?: string | null;
   costingCalculation?: {
     id: string;
     calculationNumber?: string | null;
@@ -107,7 +112,28 @@ function pushBomBlock(input: V2LineReadinessInput, stage: QuotationGateStage, bl
 export type QuotationReadinessOptions = {
   /** True only when a recorded Decision 5 Option B / LME-base sign-off exists. Default unsigned. */
   decision5Signed?: boolean;
+  /**
+   * VIP catalog cables: the line's cutting length and drum are the plan.
+   * A separate technical datasheet and Decision 5 sign-off do not block the commercial offer.
+   */
+  vipCatalogFastPath?: boolean;
 };
+
+function vipCatalogCable(input: V2LineReadinessInput, options?: QuotationReadinessOptions): boolean {
+  if (!options?.vipCatalogFastPath) return false;
+  const evidence = input.importedCable;
+  const material = evidence?.materialNumber || input.materialNumber;
+  if (!isOfficialImportedCableIdentity(material)) return false;
+  if (!evidence || evidence.bomLineCount <= 0 || evidence.unresolvedBomConflictCount > 0) return false;
+  return true;
+}
+
+function vipCatalogSelectionReady(input: V2LineReadinessInput, options?: QuotationReadinessOptions): boolean {
+  if (!vipCatalogCable(input, options)) return false;
+  const length = Number(input.commercialCuttingLengthM ?? 0);
+  const drum = String(input.commercialDrumCode || '').trim();
+  return Number.isFinite(length) && length > 0 && drum.length > 0;
+}
 
 function pushDecision5Block(stage: QuotationGateStage, blocking: string[], decision5Signed = false) {
   if (stage === 'ISSUE' && !decision5Signed) {
@@ -136,6 +162,11 @@ export function evaluateLineQuotationReadiness(
   );
 
   if (!input.configurationSnapshot) {
+    if (vipCatalogCable(input, options)) {
+      warnings.push(
+        `Line ${input.lineNumber}: catalog cable uses Cable Master and BOM. A configuration snapshot is not required.`
+      );
+    } else {
     const snapshotGate = evaluateMissingSnapshotForCalculation({
       lineNumber: input.lineNumber,
       importedCable: input.importedCable || {
@@ -147,6 +178,7 @@ export function evaluateLineQuotationReadiness(
     if (snapshotGate.status === 'BLOCK') {
       blockingReasons.push(snapshotGate.message);
     }
+    }
   } else {
     if (input.configurationSnapshot.engineeringStatus === 'ENGINEERING_BLOCKED') {
       blockingReasons.push(`Line ${input.lineNumber}: engineering status is ENGINEERING_BLOCKED.`);
@@ -157,13 +189,22 @@ export function evaluateLineQuotationReadiness(
     pushBomBlock(input, stage, blockingReasons);
   }
 
+  const catalogSelection = vipCatalogSelectionReady(input, options);
   if (!input.cuttingPlan && stage !== 'CREATE_DRAFT' && !(importedOk && stage !== 'ISSUE')) {
-    blockingReasons.push(`Line ${input.lineNumber}: cutting length plan required.`);
+    if (catalogSelection) {
+      warnings.push(`Line ${input.lineNumber}: cutting length on the inquiry line is the VIP plan.`);
+    } else {
+      blockingReasons.push(`Line ${input.lineNumber}: cutting length plan required.`);
+    }
   }
 
   if (stage !== 'CREATE_DRAFT' && !(importedOk && stage !== 'ISSUE')) {
     if (!input.drumPlan || input.drumPlan.lifecycleStatus !== 'CONFIRMED') {
-      blockingReasons.push(`Line ${input.lineNumber}: CONFIRMED drum plan required.`);
+      if (catalogSelection) {
+        warnings.push(`Line ${input.lineNumber}: selected drum on the inquiry line is the VIP drum plan.`);
+      } else {
+        blockingReasons.push(`Line ${input.lineNumber}: CONFIRMED drum plan required.`);
+      }
     }
   } else if (!input.drumPlan) {
     warnings.push(`Line ${input.lineNumber}: drum plan not yet created.`);
@@ -172,7 +213,8 @@ export function evaluateLineQuotationReadiness(
   if (stage === 'PRICE' || stage === 'READY_FOR_APPROVAL' || stage === 'APPROVE' || stage === 'ISSUE') {
     const v2Costing =
       input.costingCalculation && input.costingCalculation.workflowChannel === V2_QUOTATION_WORKFLOW_CHANNEL;
-    if (!v2Costing && !(importedOk && input.costingRun)) {
+    const catalogCosting = vipCatalogCable(input, options) && Boolean(input.costingRun);
+    if (!v2Costing && !(importedOk && input.costingRun) && !catalogCosting) {
       blockingReasons.push(`Line ${input.lineNumber}: persisted V2 costing calculation required.`);
     } else if (v2Costing && input.costingCalculation && input.costingCalculation.status !== 'LOCKED') {
       blockingReasons.push(`Line ${input.lineNumber}: costing calculation must be LOCKED.`);
@@ -185,7 +227,11 @@ export function evaluateLineQuotationReadiness(
 
   if (stage === 'READY_FOR_APPROVAL' || stage === 'APPROVE' || stage === 'ISSUE') {
     if (!lineHasRequiredTechnicalOffer(input.attachments)) {
-      blockingReasons.push(`Line ${input.lineNumber}: technical offer attachment required.`);
+      if (vipCatalogCable(input, options)) {
+        warnings.push(`Line ${input.lineNumber}: catalog cable has no technical datasheet. The offer continues without a TDS file.`);
+      } else {
+        blockingReasons.push(`Line ${input.lineNumber}: technical offer attachment required.`);
+      }
     }
     if (!input.pricingSnapshot) {
       blockingReasons.push(`Line ${input.lineNumber}: commercial pricing snapshot required.`);
@@ -201,9 +247,17 @@ export function evaluateLineQuotationReadiness(
 
   const decision5Signed = options?.decision5Signed === true;
   if (stage === 'ISSUE') {
-    pushDecision5Block(stage, blockingReasons, decision5Signed);
+    if (vipCatalogCable(input, options) && !decision5Signed) {
+      warnings.push('Decision 5 is unsigned. VIP catalog offer issue is not blocked. Production sign-off stays with Finance.');
+    } else {
+      pushDecision5Block(stage, blockingReasons, decision5Signed);
+    }
     if (!input.handoff) {
-      blockingReasons.push(`Line ${input.lineNumber}: drum plan handoff snapshot required for issue.`);
+      if (catalogSelection) {
+        warnings.push(`Line ${input.lineNumber}: drum handoff is taken from the inquiry line selection.`);
+      } else {
+        blockingReasons.push(`Line ${input.lineNumber}: drum plan handoff snapshot required for issue.`);
+      }
     }
   }
 
@@ -234,7 +288,9 @@ export function evaluateQuotationReadiness(
   const results = lines.map((l) => evaluateLineQuotationReadiness(l, stage, options));
   const blockingReasons = results.flatMap((r) => r.blockingReasons);
   const warnings = results.flatMap((r) => r.warnings);
-  if (stage === 'ISSUE') {
+  const catalogIssue =
+    options?.vipCatalogFastPath === true && lines.every((line) => vipCatalogCable(line, options));
+  if (stage === 'ISSUE' && !catalogIssue) {
     pushDecision5Block(stage, blockingReasons, decision5Signed);
   }
   return {

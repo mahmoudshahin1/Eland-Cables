@@ -184,11 +184,11 @@ export async function createInquiry(
   });
   const resolvedProcess = await resolveInquiryProcess(customerMasterId);
   const commercialMetadata = applyInquiryProcessToMetadata(baseMetadata, resolvedProcess);
-  // Explicit STANDARD_WORKFLOW assignments enter the V2 configuration path.
+  // VIP Fast Track and explicit Standard assignments enter the V2 configuration path.
   // SYSTEM_DEFAULT Version A creates stay off that channel and keep the existing submit contract.
   if (
-    resolvedProcess.processCode === 'STANDARD_WORKFLOW' &&
-    resolvedProcess.source !== 'SYSTEM_DEFAULT'
+    resolvedProcess.processCode === 'VIP_FAST_TRACK' ||
+    (resolvedProcess.processCode === 'STANDARD_WORKFLOW' && resolvedProcess.source !== 'SYSTEM_DEFAULT')
   ) {
     commercialMetadata.workflowChannel = 'V2_CONFIGURATION';
   }

@@ -6,6 +6,9 @@ import {isNestRoute} from './scripts/parity/nestRoutes.mjs';
 
 const NEST_URL = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
 const LEGACY_URL = process.env.LEGACY_URL || 'http://127.0.0.1:3847';
+// VIP journey UI must keep login and inquiry APIs on the same legacy server.
+const VIP_FLOW_LEGACY =
+  process.env.VIP_FLOW_LEGACY === '1' || process.env.npm_lifecycle_event === 'dev:vip-ui';
 
 export default defineConfig(() => {
   return {
@@ -31,7 +34,10 @@ export default defineConfig(() => {
           configure: (proxy) => {
             const web = proxy.web.bind(proxy);
             proxy.web = (req, res, options, callback) => {
-              const routed = { ...options, target: isNestRoute(req.method, req.url) ? NEST_URL : LEGACY_URL };
+              const routed = {
+                ...options,
+                target: !VIP_FLOW_LEGACY && isNestRoute(req.method, req.url) ? NEST_URL : LEGACY_URL,
+              };
               return callback ? web(req, res, routed, callback) : web(req, res, routed);
             };
           },

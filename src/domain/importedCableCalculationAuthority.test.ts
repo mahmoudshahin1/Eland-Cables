@@ -129,6 +129,14 @@ describe('imported catalog calculation authority — generic rule', () => {
     assert.doesNotMatch(unapprovedGate.message, /snapshot required/i);
   });
 
+  it('VIP calculate accepts an approved catalog cable when the separate engineering mapping row is missing', () => {
+    const released = catalogCable('10009497', 8, { engineeringWorkflowStatus: null });
+    assert.equal(importedCableSatisfiesCalculationEngineering(released), false);
+    const gate = evaluateVipLineReadiness(vipLine(released)).find((row) => row.gate === 'CONFIGURATION_SNAPSHOT');
+    assert.equal(gate?.status, 'PASS');
+    assert.equal(gate?.code, 'CATALOG_MASTER_AUTHORITY');
+  });
+
   it('G. VIP inquiry with catalog authority is ready without snapshot or shipment', () => {
     const readiness = evaluateVipInquiryReadiness({
       commercialMetadata: {},

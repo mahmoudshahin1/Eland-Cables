@@ -15,7 +15,8 @@ import {
   persistV2QuotationPricingForVipCalculate,
 } from './v2QuotationRepository';
 import { createFinancialOfferSnapshot } from './financialOfferSnapshotRepository';
-import { assertVipCalculateAllowed } from '../domain/inquiryProcessCommands';
+import { assertVipCalculateAllowed, canCalculateInquiry } from '../domain/inquiryProcessCommands';
+import { commercialMetadataRecord } from '../domain/inquiryProcessResolver';
 import { isV2InquiryMetadata } from '../domain/v2InquiryWorkflow';
 import {
   appendCostingGateResults,
@@ -36,7 +37,7 @@ import { snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepo
 import { loadImportedCableCalculationEvidence } from './importedCableCalculationEvidence';
 import { executeCostingForInquiryLine } from './costingOrchestrationService';
 import { buildCostingRequestFromInquiryLine } from '../services/costingRequestService';
-import { importedCableSatisfiesCalculationEngineering } from '../domain/importedCableCalculationAuthority';
+import { approvedCatalogCableCanCalculate } from '../domain/importedCableCalculationAuthority';
 
 function requirePrisma() {
   const prisma = getPrisma();
@@ -143,11 +144,32 @@ async function loadVipLineReadinessInputs(inquiryId: string, actor: RequestActor
   return { inquiry, lines };
 }
 
+async function ensureVipConfigurationChannel(inquiryId: string, actor: RequestActor): Promise<void> {
+  const prisma = requirePrisma();
+  const row = await prisma.commercialInquiry.findFirst({
+    where: { OR: [{ id: inquiryId }, { inquiryNumber: inquiryId }] },
+    select: { id: true, commercialMetadata: true, customerId: true, customerMasterId: true },
+  });
+  if (!row || !canCalculateInquiry(row) || isV2InquiryMetadata(row.commercialMetadata)) return;
+  assertCanAccessInquiryOwnership(actor, row.customerId, row.customerMasterId);
+  const metadata = JSON.parse(
+    JSON.stringify({
+      ...commercialMetadataRecord(row.commercialMetadata),
+      workflowChannel: 'V2_CONFIGURATION',
+    })
+  );
+  await prisma.commercialInquiry.update({
+    where: { id: row.id },
+    data: { commercialMetadata: metadata },
+  });
+}
+
 export async function calculateInquiry(
   inquiryId: string,
   actor: RequestActor,
   options?: { recalculate?: boolean }
 ): Promise<VipCalculateResult> {
+  await ensureVipConfigurationChannel(inquiryId, actor);
   const { inquiry, lines: readinessLines } = await loadVipLineReadinessInputs(inquiryId, actor);
 
   assertCanAccessInquiryOwnership(actor, inquiry.customerId, inquiry.customerMasterId);
@@ -269,9 +291,10 @@ export async function calculateInquiry(
     }
 
     try {
-      const importedOk = importedCableSatisfiesCalculationEngineering(
+      const importedOk = approvedCatalogCableCanCalculate(
         readinessLine.importedCable || {
           materialNumber: line.materialNumber,
+          cableMasterApprovalStatus: 'APPROVED',
           bomLineCount: 0,
           unresolvedBomConflictCount: 0,
         }

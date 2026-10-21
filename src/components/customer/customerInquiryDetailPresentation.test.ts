@@ -49,6 +49,11 @@ describe('customerInquiryDetailPresentation', () => {
     );
     assert.equal(tabs.find((tab) => tab.id === 'lines')?.count, 3);
     assert.equal(tabs.find((tab) => tab.id === 'quotation')?.overflow, true);
+    const withQuotation = customerInquiryPresentationTabs([
+      { id: 'lines', label: 'Cables', count: 1 },
+      { id: 'quotation', label: 'Quotation', count: 1 },
+    ]);
+    assert.equal(withQuotation.find((tab) => tab.id === 'quotation')?.overflow, false);
     assert.equal(tabs.find((tab) => tab.id === 'overview')?.overflow, true);
   });
 

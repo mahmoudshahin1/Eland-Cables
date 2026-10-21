@@ -608,9 +608,6 @@ v2InquiryConfigurationRouter.get('/:id/quotation', async (req, res) => {
     assertCanViewCustomerQuotation(actor);
     const quotation = await getV2CurrentQuotation(req.params.id, actor);
     if (actor.userType === 'customer') {
-      if (!quotation?.issuedAt) {
-        return res.json({ quotation: null });
-      }
       return res.json({ quotation: projectCustomerQuotation(quotation as Record<string, unknown>) });
     }
     res.json({ quotation });

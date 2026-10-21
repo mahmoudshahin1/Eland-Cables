@@ -41,7 +41,12 @@ export function customerInquiryPresentationTabs(
   if (activity) tabs.push({ id: 'activity', label: 'Activity' });
   const quotation = byId.get('quotation');
   if (quotation) {
-    tabs.push({ id: 'quotation', label: 'Quotation', count: quotation.count, overflow: true });
+    tabs.push({
+      id: 'quotation',
+      label: 'Quotation',
+      count: quotation.count,
+      overflow: !(quotation.count && quotation.count > 0),
+    });
   }
   if (byId.has('overview')) {
     tabs.push({ id: 'overview', label: 'Overview', overflow: true });

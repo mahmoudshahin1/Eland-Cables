@@ -196,6 +196,32 @@ describe('v2QuotationService', () => {
     assert.equal(signed.blockingReasons.some((reason) => reason.includes('Decision 5')), false);
   });
 
+  it('lets a VIP catalog line issue from the inquiry drum and length without a datasheet or Decision 5', () => {
+    const line: V2LineReadinessInput = {
+      lineId: 'l1',
+      lineNumber: 1,
+      materialNumber: '10009495',
+      commercialCuttingLengthM: 500,
+      commercialDrumCode: 'EWD1100-0',
+      importedCable: {
+        materialNumber: '10009495',
+        cableMasterApprovalStatus: 'IMPORTED',
+        engineeringWorkflowStatus: 'DRAFT',
+        bomLineCount: 8,
+        unresolvedBomConflictCount: 0,
+      },
+      costingRun: { id: 'cr', materialCost: 8648.26 },
+      pricingSnapshot: { id: 'ps', pricingStatus: 'PRICING_APPROVED' },
+      attachments: [],
+    };
+    const result = evaluateQuotationReadiness([line], 'ISSUE', { vipCatalogFastPath: true });
+    assert.equal(result.ready, true);
+    assert.equal(result.blockingReasons.some((reason) => reason.includes('Decision 5')), false);
+    assert.equal(result.warnings.some((warning) => warning.includes('technical datasheet')), true);
+    const standard = evaluateQuotationReadiness([line], 'ISSUE');
+    assert.equal(standard.ready, false);
+  });
+
   it('detects issued quotations by issuedAt', () => {
     assert.equal(isQuotationIssued({ issuedAt: null }), false);
     assert.equal(isQuotationIssued({ issuedAt: new Date() }), true);

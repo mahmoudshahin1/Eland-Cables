@@ -43,6 +43,21 @@ function masterIsValidatedForCalculation(evidence: ImportedCableCalculationEvide
   );
 }
 
+/**
+ * VIP catalog cable already released on Cable Master.
+ * The master approval and BOM are the engineering record. A separate mapping row is not required.
+ */
+export function approvedCatalogCableCanCalculate(evidence: ImportedCableCalculationEvidence): boolean {
+  if (importedCableSatisfiesCalculationEngineering(evidence)) return true;
+  const material = String(evidence.materialNumber || '').trim();
+  if (!isOfficialImportedCableIdentity(material)) return false;
+  if (evidence.unresolvedBomConflictCount > 0 || evidence.bomLineCount <= 0) return false;
+  return (
+    evidence.cableMasterApprovalStatus === CABLE_MASTER_APPROVAL_VALIDATED ||
+    evidence.cableMasterApprovalStatus === 'APPROVED_MAPPING'
+  );
+}
+
 export function importedCableSatisfiesCalculationEngineering(
   evidence: ImportedCableCalculationEvidence
 ): boolean {
