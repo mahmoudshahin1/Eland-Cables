@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: energya-connect
+    env: node
+    plan: free
+    buildCommand: npx prisma generate && npm run build
+    startCommand: node scripts/deployStartup.mjs
+    healthCheckPath: /api/platform/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: energya-connect-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOW_DEMO_USERS
+        value: "true"
+
+databases:
+  - name: energya-connect-db
+    databaseName: energya_connect
+    user: energya
+    plan: free

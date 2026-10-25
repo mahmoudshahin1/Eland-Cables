@@ -24,9 +24,8 @@ import { UserAccount } from '../types';
 import { LOGIN_PORTAL_CONFIG } from './loginRoutes';
 
 const LOGIN_HERO_IMAGE = '/login-cables.jpg';
-const FUTURE_LANGUAGES = ['English', 'العربية', 'Français'] as const;
-const DEMO_DEFAULT_EMAIL = LOGIN_PORTAL_CONFIG.admin.defaultEmail;
-const DEMO_DEFAULT_PASSWORD = LOGIN_PORTAL_CONFIG.admin.defaultPassword;
+const DEMO_DEFAULT_EMAIL = 'david.smith@elandcables.com';
+const DEMO_DEFAULT_PASSWORD = 'Customer@2026!';
 
 function safeRedirectFrom(from: unknown): string | null {
   if (typeof from !== 'string' || !from.startsWith('/') || from.startsWith('//')) return null;
@@ -53,15 +52,13 @@ export default function LoginPage() {
     (import.meta as { env?: { PROD?: boolean } }).env?.PROD ? 'production' : process.env.NODE_ENV
   );
 
-  const [email, setEmail] = useState(() => (demoAuthEnabled ? DEMO_DEFAULT_EMAIL : ''));
-  const [password, setPassword] = useState(() => (demoAuthEnabled ? DEMO_DEFAULT_PASSWORD : ''));
+  const [email, setEmail] = useState('david.smith@elandcables.com');
+  const [password, setPassword] = useState('Customer@2026!');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedUserAccount, setSelectedUserAccount] = useState<string>(
-    demoAuthEnabled ? DEMO_DEFAULT_EMAIL : 'custom'
-  );
+  const [selectedUserAccount, setSelectedUserAccount] = useState<string>('david.smith@elandcables.com');
   const [language, setLanguage] = useState<(typeof FUTURE_LANGUAGES)[number]>('English');
   const [languageOpen, setLanguageOpen] = useState(false);
   const languageMenuId = useId();
@@ -132,33 +129,18 @@ export default function LoginPage() {
 
   const handleAccountSelectChange = (accountEmail: string) => {
     setSelectedUserAccount(accountEmail);
-    if (accountEmail === 'custom') {
-      setEmail('');
-      setPassword('');
+    if (accountEmail === 'm.ahmed@energya.com' || accountEmail.includes('sales')) {
+      setEmail('m.ahmed@energya.com');
+      setPassword(''); // Sales must enter password manually
       return;
     }
-    const foundUser = usersList.find((u) => u.email.toLowerCase() === accountEmail.toLowerCase());
-    if (foundUser) {
-      setEmail(foundUser.email);
-      if (foundUser.userType === 'customer') {
-        setPassword(foundUser.passwordHash || 'Customer@2026!');
-      } else if (foundUser.email.includes('sales')) {
-        setPassword('Sales@2026!');
-      } else if (foundUser.email.includes('tech')) {
-        setPassword('Tech@2026!');
-      } else {
-        setPassword(foundUser.passwordHash || 'Admin@2026!');
-      }
-    } else {
-      setEmail(accountEmail);
-      if (accountEmail.includes('eland') || accountEmail.includes('david') || accountEmail.includes('customer')) {
-        setPassword('Customer@2026!');
-      } else if (accountEmail.includes('sales')) {
-        setPassword('Sales@2026!');
-      } else {
-        setPassword('Admin@2026!');
-      }
+    if (accountEmail === 'david.smith@elandcables.com' || accountEmail.includes('david')) {
+      setEmail('david.smith@elandcables.com');
+      setPassword('Customer@2026!');
+      return;
     }
+    setEmail('');
+    setPassword('');
   };
 
   const handleQuickSelectUser = (user: UserAccount) => {
@@ -383,43 +365,44 @@ export default function LoginPage() {
                   </a>
                 </p>
 
-                {demoAuthEnabled && (
-                  <details className="mt-5 text-[12px] text-slate-500">
-                    <summary className="cursor-pointer font-medium text-slate-500 hover:text-brand-700">
-                      Development demo accounts (not available in production)
-                    </summary>
-                    <select
-                      value={selectedUserAccount}
-                      onChange={(e) => handleAccountSelectChange(e.target.value)}
-                      className="mt-2 min-h-11 w-full rounded-lg border border-slate-200 px-2 py-2 text-[12px]"
+                <details open className="mt-5 text-[12px] text-slate-500">
+                  <summary className="cursor-pointer font-semibold text-slate-600 hover:text-brand-700">
+                    Quick Profile Switch
+                  </summary>
+                  <select
+                    value={selectedUserAccount}
+                    onChange={(e) => handleAccountSelectChange(e.target.value)}
+                    className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-800 bg-white"
+                  >
+                    <option value="david.smith@elandcables.com">VIP Customer — Eng. David Smith (ELAND)</option>
+                    <option value="m.ahmed@energya.com">Sales — Mohamed Ahmed (Energya)</option>
+                    <option value="custom">Type credentials manually</option>
+                  </select>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('david.smith@elandcables.com')}
+                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'david.smith@elandcables.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
                     >
-                      <option value="admin@energya.com">Admin — admin@energya.com</option>
-                      <option value="m.ahmed@energya.com">Sales — m.ahmed@energya.com</option>
-                      <option value="t.hasan@energya.com">Technical — t.hasan@energya.com</option>
-                      <option value="k.salem@energya.com">Costing — k.salem@energya.com</option>
-                      <option value="n.nabil@energya.com">Production — n.nabil@energya.com</option>
-                      <option value="david.smith@elandcables.com">ELAND — david.smith@elandcables.com</option>
-                      <option value="custom">Type credentials manually</option>
-                    </select>
-                    <div className="mt-2 grid grid-cols-2 gap-1">
-                      {usersList.slice(0, 8).map((u) => (
-                          <button
-                            key={u.id}
-                            type="button"
-                            onClick={() => handleQuickSelectUser(u)}
-                            className="truncate rounded-md border border-slate-100 px-2 py-2 text-left hover:border-brand-500"
-                          >
-                            {u.fullName}
-                          </button>
-                        ))}
-                    </div>
-                    {jwtToken && (
-                      <div className="mt-2">
-                        <JwtClaimsInspector />
-                      </div>
-                    )}
-                  </details>
-                )}
+                      👑 VIP Customer (David)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('m.ahmed@energya.com')}
+                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'm.ahmed@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      💼 Sales (Password req.)
+                    </button>
+                  </div>
+                </details>
 
                 <nav
                   className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-400"

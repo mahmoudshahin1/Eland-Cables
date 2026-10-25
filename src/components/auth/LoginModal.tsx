@@ -53,15 +53,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [selectedLanguage, setSelectedLanguage] = useState<string>('English');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState<boolean>(false);
   const [selectedUserAccount, setSelectedUserAccount] = useState<string>(
-    demoAuthEnabled ? LOGIN_PORTAL_CONFIG.admin.defaultEmail : 'custom'
+    demoAuthEnabled ? 'david.smith@elandcables.com' : 'custom'
   );
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [emailInput, setEmailInput] = useState<string>(
-    demoAuthEnabled ? LOGIN_PORTAL_CONFIG.admin.defaultEmail : ''
+    demoAuthEnabled ? 'david.smith@elandcables.com' : ''
   );
   const [passwordInput, setPasswordInput] = useState<string>(
-    demoAuthEnabled ? LOGIN_PORTAL_CONFIG.admin.defaultPassword : ''
+    demoAuthEnabled ? 'Customer@2026!' : ''
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -69,42 +69,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
   const handleAccountSelectChange = (accountEmail: string) => {
     setSelectedUserAccount(accountEmail);
-    if (accountEmail === 'custom') {
-      setEmailInput('');
-      setPasswordInput('');
+    if (accountEmail === 'm.ahmed@energya.com' || accountEmail.includes('sales')) {
+      setEmailInput('m.ahmed@energya.com');
+      setPasswordInput(''); // Sales must type password manually
       return;
     }
-    const foundUser = usersList.find((u) => u.email.toLowerCase() === accountEmail.toLowerCase());
-    if (foundUser) {
-      setEmailInput(foundUser.email);
-      if (foundUser.userType === 'customer') {
-        setPasswordInput(foundUser.passwordHash || 'Customer@2026!');
-      } else if (foundUser.email.includes('sales')) {
-        setPasswordInput('Sales@2026!');
-      } else if (foundUser.email.includes('tech')) {
-        setPasswordInput('Tech@2026!');
-      } else {
-        setPasswordInput(foundUser.passwordHash || 'Admin@2026!');
-      }
-    } else {
-      setEmailInput(accountEmail);
-      if (
-        accountEmail.includes('customer') ||
-        accountEmail.includes('sec') ||
-        accountEmail.includes('global') ||
-        accountEmail.includes('dewa') ||
-        accountEmail.includes('eland') ||
-        accountEmail.includes('david')
-      ) {
-        setPasswordInput('Customer@2026!');
-      } else if (accountEmail.includes('sales')) {
-        setPasswordInput('Sales@2026!');
-      } else if (accountEmail.includes('tech')) {
-        setPasswordInput('Tech@2026!');
-      } else {
-        setPasswordInput('Admin@2026!');
-      }
+    if (accountEmail === 'david.smith@elandcables.com' || accountEmail.includes('david')) {
+      setEmailInput('david.smith@elandcables.com');
+      setPasswordInput('Customer@2026!');
+      return;
     }
+    setEmailInput('');
+    setPasswordInput('');
   };
 
   const handleJwtLoginSubmit = async (e: React.FormEvent) => {
@@ -351,48 +327,42 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   Secure connection • Your data is protected
                 </p>
 
-                {demoAuthEnabled && (
-                <details className="mt-5 text-[12px] text-slate-500">
-                  <summary className="cursor-pointer font-medium text-brand-600">Development demo accounts (not available in production)</summary>
+                <details open className="mt-5 text-[12px] text-slate-500">
+                  <summary className="cursor-pointer font-semibold text-slate-600 hover:text-brand-700">Quick Profile Switch</summary>
                     <select
                     value={selectedUserAccount}
                     onChange={(e) => handleAccountSelectChange(e.target.value)}
-                    className="mt-2 w-full border border-slate-200 rounded-lg py-2 px-2 text-[12px]"
+                    className="mt-2 w-full border border-slate-300 rounded-lg py-2 px-3 text-xs font-medium text-slate-800 bg-white"
                   >
-                    <option value="admin@energya.com">Admin — admin@energya.com</option>
-                    <option value="m.ahmed@energya.com">Sales — m.ahmed@energya.com</option>
-                    <option value="t.hasan@energya.com">Technical — t.hasan@energya.com</option>
-                    <option value="k.salem@energya.com">Costing — k.salem@energya.com</option>
-                    <option value="n.nabil@energya.com">Production — n.nabil@energya.com</option>
-                    <option value="david.smith@elandcables.com">ELAND — david.smith@elandcables.com</option>
+                    <option value="david.smith@elandcables.com">VIP Customer — Eng. David Smith (ELAND)</option>
+                    <option value="m.ahmed@energya.com">Sales — Mohamed Ahmed (Energya)</option>
                     <option value="custom">Type credentials manually</option>
                   </select>
-                  <div className="mt-2 grid grid-cols-2 gap-1">
-                    {usersList.slice(0, 8).map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => handleQuickSelectUser(u)}
-                          className="text-left border border-slate-100 rounded-md px-2 py-1 hover:border-brand-600 truncate"
-                        >
-                          {u.fullName}
-                        </button>
-                      ))}
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('david.smith@elandcables.com')}
+                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'david.smith@elandcables.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      👑 VIP Customer (David)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('m.ahmed@energya.com')}
+                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'm.ahmed@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      💼 Sales (Password req.)
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveAuthView('register')}
-                    className="mt-2 text-brand-600 hover:underline"
-                  >
-                    Register a new user
-                  </button>
-                  {jwtToken && (
-                    <div className="mt-2">
-                      <JwtClaimsInspector />
-                    </div>
-                  )}
                 </details>
-                )}
               </div>
             </div>
 
