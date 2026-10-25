@@ -129,14 +129,34 @@ export default function LoginPage() {
 
   const handleAccountSelectChange = (accountEmail: string) => {
     setSelectedUserAccount(accountEmail);
-    if (accountEmail === 'm.ahmed@energya.com' || accountEmail.includes('sales')) {
-      setEmail('m.ahmed@energya.com');
-      setPassword(''); // Sales must enter password manually
-      return;
-    }
     if (accountEmail === 'david.smith@elandcables.com' || accountEmail.includes('david')) {
       setEmail('david.smith@elandcables.com');
       setPassword('Customer@2026!');
+      return;
+    }
+    if (accountEmail === 'm.ahmed@energya.com' || accountEmail.includes('sales')) {
+      setEmail('m.ahmed@energya.com');
+      setPassword(''); // Password required manually
+      return;
+    }
+    if (accountEmail === 'admin@energya.com' || accountEmail.includes('admin')) {
+      setEmail('admin@energya.com');
+      setPassword(''); // Password required manually
+      return;
+    }
+    if (accountEmail === 'technical@energya.com' || accountEmail === 't.hasan@energya.com' || accountEmail.includes('tech')) {
+      setEmail('technical@energya.com');
+      setPassword(''); // Password required manually
+      return;
+    }
+    if (accountEmail === 'k.salem@energya.com' || accountEmail.includes('cost')) {
+      setEmail('k.salem@energya.com');
+      setPassword(''); // Password required manually
+      return;
+    }
+    if (accountEmail === 'n.nabil@energya.com' || accountEmail.includes('proc') || accountEmail.includes('prod')) {
+      setEmail('n.nabil@energya.com');
+      setPassword(''); // Password required manually
       return;
     }
     setEmail('');
@@ -374,32 +394,80 @@ export default function LoginPage() {
                     onChange={(e) => handleAccountSelectChange(e.target.value)}
                     className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-800 bg-white"
                   >
-                    <option value="david.smith@elandcables.com">VIP Customer — Eng. David Smith (ELAND)</option>
-                    <option value="m.ahmed@energya.com">Sales — Mohamed Ahmed (Energya)</option>
+                    <option value="david.smith@elandcables.com">👑 VIP Customer — Eng. David Smith (ELAND)</option>
+                    <option value="m.ahmed@energya.com">💼 Sales — Mohamed Ahmed (m.ahmed@energya.com)</option>
+                    <option value="admin@energya.com">🛡️ Admin — System Administrator (admin@energya.com)</option>
+                    <option value="technical@energya.com">⚙️ Technical — Eng. Tarek Hasan (technical@energya.com)</option>
+                    <option value="k.salem@energya.com">📊 Costing — Khaled Salem (k.salem@energya.com)</option>
+                    <option value="n.nabil@energya.com">🏭 Production — Nader Nabil (n.nabil@energya.com)</option>
                     <option value="custom">Type credentials manually</option>
                   </select>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                     <button
                       type="button"
                       onClick={() => handleAccountSelectChange('david.smith@elandcables.com')}
-                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
                         selectedUserAccount === 'david.smith@elandcables.com'
                           ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
                           : 'border-slate-200 hover:border-brand-400 text-slate-700'
                       }`}
                     >
-                      👑 VIP Customer (David)
+                      👑 VIP (Saved)
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAccountSelectChange('m.ahmed@energya.com')}
-                      className={`truncate rounded-lg border px-3 py-2 text-left text-xs font-bold transition-all ${
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
                         selectedUserAccount === 'm.ahmed@energya.com'
                           ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
                           : 'border-slate-200 hover:border-brand-400 text-slate-700'
                       }`}
                     >
-                      💼 Sales (Password req.)
+                      💼 Sales (PW req.)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('admin@energya.com')}
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'admin@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      🛡️ Admin (PW req.)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('technical@energya.com')}
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'technical@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      ⚙️ Tech (PW req.)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('k.salem@energya.com')}
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'k.salem@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      📊 Costing (PW req.)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAccountSelectChange('n.nabil@energya.com')}
+                      className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-all ${
+                        selectedUserAccount === 'n.nabil@energya.com'
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs'
+                          : 'border-slate-200 hover:border-brand-400 text-slate-700'
+                      }`}
+                    >
+                      🏭 Prod (PW req.)
                     </button>
                   </div>
                 </details>
