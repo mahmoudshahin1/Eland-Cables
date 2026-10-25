@@ -10,11 +10,13 @@ import {
   Ruler,
   Save,
   UserRound,
+  Ship,
+  Sparkles,
 } from 'lucide-react';
 import { CUSTOMER_HOME_PATH, CUSTOMER_INQUIRIES_PATH, customerPathForTab } from '../../app/shellRoutes';
 import { Badge, Drawer } from '../ui';
 import { CustomerPageHero } from './CustomerPageHero';
-import { WoodenDrumIcon } from '../ui/icons';
+import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import { SupportChatPanel } from './SupportChatPanel';
 import { customerFacingInquiryStatusLabel, customerFacingInquiryStatusTone } from './customerInquiryListPresentation';
 import {
@@ -60,6 +62,7 @@ export function CustomerInquiryPrimaryActions({
   onCalculate,
   onSubmit,
   extra,
+  hideSaveAndCalculate = false,
 }: {
   isEditable: boolean;
   canCalculate: boolean;
@@ -71,21 +74,23 @@ export function CustomerInquiryPrimaryActions({
   onCalculate: () => void;
   onSubmit: () => void;
   extra?: React.ReactNode;
+  hideSaveAndCalculate?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {isEditable && (
+      {!hideSaveAndCalculate && (
         <button
           type="button"
           onClick={onSave}
           disabled={savingHeader}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold border border-emerald-200 bg-emerald-50/60 text-emerald-800 hover:bg-emerald-100/60 disabled:opacity-50 transition-colors"
+          title="Changes are automatically saved in real time"
         >
-          <Save className="h-3.5 w-3.5 text-slate-500" />
-          {savingHeader ? 'Saving…' : 'Save Draft'}
+          <Save className="h-3.5 w-3.5 text-emerald-600" />
+          {savingHeader ? 'Saving…' : '✓ Auto-saved'}
         </button>
       )}
-      {isEditable && canCalculate && (
+      {!hideSaveAndCalculate && isEditable && canCalculate && (
         <button
           type="button"
           onClick={onCalculate}
@@ -96,7 +101,7 @@ export function CustomerInquiryPrimaryActions({
           {costingLoading ? 'Processing…' : 'Calculate'}
         </button>
       )}
-      {canSubmit && (
+      {!hideSaveAndCalculate && canSubmit && (
         <button
           type="button"
           onClick={onSubmit}
@@ -222,12 +227,24 @@ export function CustomerInquiryFooterKpis({
   totalDrums,
   totalLength,
   estimatedValueLabel,
+  freightCostLabel,
+  grandTotalLabel,
+  incoterm,
+  destination,
+  containerType,
 }: {
   totalLines: number;
   totalDrums: number;
   totalLength: number;
   estimatedValueLabel: string | null;
+  freightCostLabel?: string | null;
+  grandTotalLabel?: string | null;
+  incoterm?: string | null;
+  destination?: string | null;
+  containerType?: string | null;
 }) {
+  const showFreightBreakdown = Boolean(freightCostLabel && grandTotalLabel);
+
   const cards = [
     {
       label: 'Total Lines',
@@ -235,6 +252,7 @@ export function CustomerInquiryFooterKpis({
       icon: Layers,
       wrap: 'bg-sky-50 text-sky-700',
       helper: null as string | null,
+      isGrandTotal: false,
     },
     {
       label: 'Total Drums',
@@ -242,6 +260,7 @@ export function CustomerInquiryFooterKpis({
       icon: WoodenDrumIcon,
       wrap: 'bg-slate-100 text-slate-600',
       helper: null,
+      isGrandTotal: false,
     },
     {
       label: 'Total Length (m)',
@@ -249,32 +268,77 @@ export function CustomerInquiryFooterKpis({
       icon: Ruler,
       wrap: 'bg-indigo-50 text-indigo-700',
       helper: null,
+      isGrandTotal: false,
     },
     {
-      label: 'Estimated Value',
+      label: showFreightBreakdown ? 'Products Subtotal' : 'Estimated Value',
       value: estimatedValueLabel || '—',
       icon: Banknote,
       wrap: 'bg-amber-50 text-amber-700',
-      helper: estimatedValueLabel ? null : 'Shown when a selling price is available',
+      helper: showFreightBreakdown
+        ? 'Ex-Works / Cable value'
+        : estimatedValueLabel
+          ? null
+          : 'Shown when a selling price is available',
+      isGrandTotal: false,
     },
+    ...(showFreightBreakdown
+      ? [
+          {
+            label: `Sea Freight (${containerType || '20STD'})`,
+            value: freightCostLabel || '—',
+            icon: Ship,
+            wrap: 'bg-blue-50 text-blue-700',
+            helper: destination ? `To ${destination}` : 'Container shipping',
+            isGrandTotal: false,
+          },
+          {
+            label: `Grand Total (${incoterm || 'DAP'})`,
+            value: grandTotalLabel || '—',
+            icon: Sparkles,
+            wrap: 'bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/30',
+            helper: 'All Inclusive: Products + Freight',
+            isGrandTotal: true,
+          },
+        ]
+      : []),
   ];
+
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5">
+    <div
+      className={`grid gap-2.5 ${
+        showFreightBreakdown
+          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6'
+          : 'grid-cols-2 xl:grid-cols-4'
+      }`}
+    >
       {cards.map((card) => {
         const Icon = card.icon;
         return (
           <div
             key={card.label}
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-[var(--shadow-card)] min-w-0"
+            className={`rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-[var(--shadow-card)] min-w-0 transition-all ${
+              card.isGrandTotal ? 'bg-gradient-to-b from-white to-emerald-50/50 border-emerald-300' : ''
+            }`}
           >
             <div className="flex items-center gap-2 text-slate-500">
               <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${card.wrap}`}>
                 <Icon className="h-4 w-4" />
               </span>
-              <span className="text-[12px] font-medium">{card.label}</span>
+              <span className={`text-[12px] font-medium truncate ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
+                {card.label}
+              </span>
             </div>
-            <p className="mt-2 text-[22px] leading-none font-bold text-brand-800 tabular-nums">{card.value}</p>
-            {card.helper ? <p className="mt-1 text-[10px] text-slate-400">{card.helper}</p> : null}
+            <p className={`mt-2 text-[20px] leading-tight font-bold tabular-nums truncate ${
+              card.isGrandTotal ? 'text-emerald-900 font-black' : 'text-brand-800'
+            }`}>
+              {card.value}
+            </p>
+            {card.helper ? (
+              <p className={`mt-1 text-[10px] truncate ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                {card.helper}
+              </p>
+            ) : null}
           </div>
         );
       })}

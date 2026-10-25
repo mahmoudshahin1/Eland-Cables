@@ -166,12 +166,13 @@ export function presentText(value: unknown): string {
 export function commercialOfferDocumentActions(input: {
   issued: boolean;
   isCustomer: boolean;
+  isVip?: boolean;
 }): Array<{ id: string; label: string; draft: boolean }> {
-  if (input.isCustomer && !input.issued) return [];
-  if (input.issued) {
+  if (input.isCustomer && !input.issued && !input.isVip) return [];
+  if (input.issued || input.isVip) {
     return [
-      { id: 'print-final', label: 'Print Final Commercial Offer', draft: false },
-      { id: 'export-final', label: 'Export Final Commercial Offer PDF', draft: false },
+      { id: 'print-final', label: 'Print Commercial Offer', draft: false },
+      { id: 'export-final', label: 'Export Commercial Offer PDF', draft: false },
     ];
   }
   return [

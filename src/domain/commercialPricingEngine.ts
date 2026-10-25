@@ -659,8 +659,12 @@ export function calculateCommercialSellingPrice(
     }
   }
 
+  const totalKm =
+    lengthKm > 0
+      ? (lengthMeters >= 1000 && quantity > 1 ? lengthKm : lengthKm * Math.max(1, quantity))
+      : 1;
   const unitSellingPrice =
-    lengthKm > 0 ? moneyDecimal(finalSellingPrice.div(new Prisma.Decimal(lengthKm * quantity))) : finalSellingPrice;
+    lengthKm > 0 ? moneyDecimal(finalSellingPrice.div(new Prisma.Decimal(totalKm))) : finalSellingPrice;
 
   return {
     success: true,

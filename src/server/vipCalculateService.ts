@@ -212,9 +212,13 @@ export async function calculateInquiry(
 
   const readiness = evaluateVipInquiryReadiness({
     commercialMetadata: meta,
-    copperPriceRate: meta.copperPriceRate,
-    aluminiumPriceRate: meta.aluminiumPriceRate,
-    deliveryDestination: meta.deliveryDestination,
+    copperPriceRate: meta.copperPriceRate ?? meta.copperRatePerMt,
+    aluminiumPriceRate: meta.aluminiumPriceRate ?? meta.aluminumRatePerMt,
+    deliveryDestination:
+      meta.deliveryDestination ??
+      meta.destination ??
+      meta.destinationPortCode ??
+      inquiry.deliveryTerms,
     incoterms: meta.incoterms ?? inquiry.incoterms,
     lines: readinessLines,
     containerStudyDevBypass: isContainerStudyDevBypassEnabled(),
@@ -223,7 +227,11 @@ export async function calculateInquiry(
   const optionalComponents = evaluateVipOptionalComponents({
     commercialMetadata: meta,
     incoterms: meta.incoterms ?? inquiry.incoterms,
-    deliveryDestination: meta.deliveryDestination,
+    deliveryDestination:
+      meta.deliveryDestination ??
+      meta.destination ??
+      meta.destinationPortCode ??
+      inquiry.deliveryTerms,
     currency: inquiry.currency,
   });
   let optionalWarnings = optionalComponents.filter((c) => c.hasWarning).map((c) => c.warningMessage || c.reasonCode);
@@ -299,6 +307,46 @@ export async function calculateInquiry(
           unresolvedBomConflictCount: 0,
         }
       );
+      let effectiveDrumType = line.drumType;
+      if (!effectiveDrumType && line.materialNumber) {
+        try {
+          const cableMaster = await prisma.cableMaster.findUnique({
+            where: { materialNumber: line.materialNumber },
+            select: { diameter: true, weight: true },
+          });
+          const diameter = Number(cableMaster?.diameter);
+          const weight = Number(cableMaster?.weight);
+          const cuttingLength = Number(line.cuttingLengthMeters || line.requestedLengthMeters || 1000);
+          if (diameter > 0 && weight > 0 && cuttingLength > 0) {
+            const { listDrums } = await import('./masterDataRepository');
+            const { optimizeDrumPlan } = await import('../domain/drumOptimizationService');
+            const allDrums = await listDrums();
+            const plan = optimizeDrumPlan({
+              drums: allDrums,
+              cable: { cableDiameterMm: diameter, approxWeightKgKm: weight },
+              totalOrderLengthM: cuttingLength,
+              cableTolerancePercent: Number(line.cableTolerancePercent || 0),
+            });
+            if (plan.outcome === 'RECOMMENDED' && plan.lines.length > 0 && plan.lines[0].drumCode) {
+              effectiveDrumType = plan.lines[0].drumCode;
+              await prisma.commercialInquiryLine.update({
+                where: { id: line.id },
+                data: {
+                  drumType: effectiveDrumType,
+                  cuttingLengthMeters: line.cuttingLengthMeters ?? cuttingLength,
+                },
+              });
+              line.drumType = effectiveDrumType;
+              if (line.cuttingLengthMeters == null) {
+                line.cuttingLengthMeters = cuttingLength as never;
+              }
+            }
+          }
+        } catch {
+          // Auto drum optimization best effort — does not block calculation
+        }
+      }
+
       const usePathA = importedOk && !line.v2CurrentDrumPlanId;
       if (usePathA) {
         const built = buildCostingRequestFromInquiryLine(
@@ -307,7 +355,7 @@ export async function calculateInquiry(
             requestedQuantity: Number(line.requestedQuantity),
             requestedLengthMeters: Number(line.requestedLengthMeters),
             cuttingLengthMeters: line.cuttingLengthMeters != null ? Number(line.cuttingLengthMeters) : null,
-            drumType: line.drumType,
+            drumType: effectiveDrumType || line.drumType,
             cableTolerancePercent:
               line.cableTolerancePercent != null ? Number(line.cableTolerancePercent) : null,
             drumSchedule: line.drumSchedule as Record<string, unknown> | null,

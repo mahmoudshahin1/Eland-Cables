@@ -732,17 +732,22 @@ v2InquiryConfigurationRouter.get('/:id/quotation/pdf', async (req, res) => {
     if (!quotation) {
       return res.status(404).json({ error: 'No quotation found.', code: 'NOT_FOUND' });
     }
+    const isVip = quotation.inquiry?.commercialMetadata &&
+      (quotation.inquiry.commercialMetadata as any)?.inquiryProcessCode === 'VIP_FAST_TRACK';
     const draft = req.query.draft === '1' || req.query.draft === 'true';
-    if (draft && actor.userType === 'customer') {
+    if (draft && actor.userType === 'customer' && !isVip) {
       return res.status(403).json({
         error: 'Draft commercial offers are internal only.',
         code: 'UNAUTHORIZED',
       });
     }
-    if (!draft && actor.userType === 'customer' && !quotation.issuedAt) {
+    if (!draft && actor.userType === 'customer' && !quotation.issuedAt && !isVip) {
       return res.status(403).json({ error: 'Quotation PDF is available after issue.', code: 'UNAUTHORIZED' });
     }
-    const doc = await generateV2QuotationPdf(quotation.id, actor, { draft });
+    const doc = await generateV2QuotationPdf(quotation.id, actor, {
+      draft: draft && !isVip,
+      vipFastTrack: Boolean(isVip),
+    });
     if (req.query.format === 'html') {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       const printScript =

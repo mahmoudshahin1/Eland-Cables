@@ -1,0 +1,6327 @@
+{
+  "generatedAt": "2026-10-18T15:40:46.590Z",
+  "requests": [
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=1&status=QUOTED",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=50",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/sales-orders",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=1&status=QUOTED",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/inquiries?pageSize=50",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/sales-orders",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/v2/cables/products/facets",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/v2/cables/products?page=1&pageSize=50&sortBy=material",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Customer Products",
+      "method": "GET",
+      "path": "/api/v2/cables/products/facets",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "custA@parity.test",
+      "screen": "Drum Optimizer",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/raw-materials",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Cable Master",
+      "method": "GET",
+      "path": "/api/master/imports",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/security",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/permissions/matrix",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/security",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/permissions/matrix",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "login",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/security",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/permissions/matrix",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/security",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/permissions/matrix",
+      "status": 403,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "limited@parity.test",
+      "screen": "Cable Master limited",
+      "method": "GET",
+      "path": "/api/admin/users?sort=createdAt&skip=0&take=20",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/v2/workflows/my-tasks",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/admin/platform/dashboard/kpis",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/roles",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/engineering-mappings",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/engineering-mappings",
+      "status": 200,
+      "servedBy": null
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/cables",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/boms",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/cables?pageSize=50&page=1&q=10009487",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/drums",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "POST",
+      "path": "/api/master/drums/candidates",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "GET",
+      "path": "/api/master/cables?pageSize=50&page=1&customerCode=N2XH",
+      "status": 200,
+      "servedBy": "nest"
+    },
+    {
+      "session": "admin@energya.com",
+      "screen": "Technical Office drum plan",
+      "method": "POST",
+      "path": "/api/master/drums/optimize",
+      "status": 200,
+      "servedBy": "nest"
+    }
+  ],
+  "consoleErrors": [],
+  "findings": []
+}

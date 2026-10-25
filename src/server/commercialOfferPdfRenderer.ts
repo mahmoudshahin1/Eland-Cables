@@ -290,8 +290,8 @@ export function renderCommercialOfferPdf(offerInput: IssuedCommercialOfferDocume
         String(line.lineNumber),
         description,
         formatDocumentNumber(line.moqKm, 3),
-        formatDocumentNumber(line.cuWeightKgPerKm, 0),
-        formatDocumentNumber(line.alWeightKgPerKm, 0),
+        formatDocumentNumber(line.cuWeightKgPerKm, 2),
+        formatDocumentNumber(line.alWeightKgPerKm, 2),
         `${symbol} ${formatDocumentNumber(line.unitSellingPrice, 2)}`,
         `${symbol} ${formatDocumentNumber(line.lineTotal, 2)}`,
       ];
@@ -329,7 +329,7 @@ export function renderCommercialOfferPdf(offerInput: IssuedCommercialOfferDocume
 
     y += 6;
     offer.notes.forEach((note, index) => {
-      const prefix = '*'.repeat(index + 1);
+      const prefix = index === 2 ? '**' : '*'.repeat(index + 1);
       doc.fillColor(index === 2 ? RED : MUTED).font(index === 2 ? 'Helvetica-Bold' : 'Helvetica-Oblique').fontSize(6.4);
       doc.text(`${prefix} ${note}`, LEFT, y, { width: WIDTH });
       y = doc.y + 2;

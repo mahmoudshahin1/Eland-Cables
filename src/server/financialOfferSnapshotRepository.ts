@@ -784,7 +784,13 @@ async function drumsByPinnedPricing(view: FinancialOfferSnapshotView): Promise<R
     where: { id: { in: view.pricingSnapshotIds } },
     select: {
       drumPlanId: true,
-      quotationLine: { select: { inquiryLineId: true } },
+      quotationLine: {
+        select: {
+          inquiryLineId: true,
+          drumType: true,
+          inquiryLine: { select: { drumType: true } },
+        },
+      },
     },
   });
   const planIds = snapshots.map((row) => row.drumPlanId).filter((id): id is string => Boolean(id));
@@ -797,12 +803,22 @@ async function drumsByPinnedPricing(view: FinancialOfferSnapshotView): Promise<R
   const planById = new Map(plans.map((plan) => [plan.id, plan]));
   const drums: Record<string, string> = {};
   for (const snapshot of snapshots) {
-    const inquiryLineId = snapshot.quotationLine.inquiryLineId;
-    if (!snapshot.drumPlanId) continue;
-    const plan = planById.get(snapshot.drumPlanId);
-    if (!plan) continue;
-    const codes = [...new Set(plan.lines.map((line) => line.drumCode).filter(Boolean))];
-    if (codes.length) drums[inquiryLineId] = codes.join(', ');
+    const inquiryLineId = snapshot.quotationLine?.inquiryLineId;
+    if (!inquiryLineId) continue;
+    if (snapshot.drumPlanId) {
+      const plan = planById.get(snapshot.drumPlanId);
+      if (plan) {
+        const codes = [...new Set(plan.lines.map((line) => line.drumCode).filter(Boolean))];
+        if (codes.length) {
+          drums[inquiryLineId] = codes.join(', ');
+          continue;
+        }
+      }
+    }
+    const directDrum = snapshot.quotationLine?.drumType || snapshot.quotationLine?.inquiryLine?.drumType;
+    if (directDrum) {
+      drums[inquiryLineId] = String(directDrum).trim();
+    }
   }
   return drums;
 }

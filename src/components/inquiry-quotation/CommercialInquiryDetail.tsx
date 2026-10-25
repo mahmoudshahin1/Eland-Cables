@@ -31,11 +31,13 @@ import {
   Send,
   ShieldAlert,
   SlidersHorizontal,
+  Sparkles,
   Trash2,
   Upload,
   User,
   X,
   XCircle,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -125,6 +127,18 @@ import { CableSearchSelectModal } from '../common/CableSearchSelectModal';
 import { autoConfirmPersistedCommercialDrumSchedule } from '../../services/confirmInquiryDrumPlanFromSchedule';
 import { InquiryLineAttachmentsCell, inquiryLinesMissingTechnicalOffer } from './InquiryLineAttachmentsCell';
 import { CommercialFulfillmentPanel } from './CommercialFulfillmentPanel';
+import { VipFastTrackJourneyBar } from './VipFastTrackJourneyBar';
+import { VipContainerStudyPlanner } from './VipContainerStudyPlanner';
+import { VipContractFulfillmentSelector } from './VipContractFulfillmentSelector';
+import { VipCommercialOfferDocumentViewer } from './VipCommercialOfferDocumentViewer';
+import { VipOrderSubmittedTrackingView } from './VipOrderSubmittedTrackingView';
+import { ContainerType } from '../customer/vipCableCatalogData';
+import {
+  approveCommercialQuotationApi,
+  createSalesOrderFromQuotationApi,
+  createSalesAgreementFromQuotationApi,
+  FulfillmentType,
+} from '../../services/commercialFulfillmentApiService';
 import {
   INQUIRY_HEADER_FIELDS,
   INQUIRY_LINE_COLUMNS,
@@ -139,7 +153,7 @@ import {
 } from '../../services/inquiryFieldManifest';
 import { formatCommercialPriceAmount } from '../../domain/commercialLinePricingDisplay';
 import { StatusBadge } from '../ui/Badge';
-import { WoodenDrumIcon } from '../ui/icons';
+import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import {
   CustomerInquiryDetailHero,
   CustomerInquiryFooterKpis,
@@ -279,6 +293,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [scheduleLine, setScheduleLine] = useState<CommercialInquiryLineDto | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [lineSearch, setLineSearch] = useState('');
+  const [showTrackingDetails, setShowTrackingDetails] = useState(false);
   const prefUserId = currentUser?.id;
   const [headerPref, setHeaderPref] = useState(() => loadHeaderFieldPreference(prefUserId));
   const [linePref, setLinePref] = useState(() => loadLineColumnPreference(prefUserId));
@@ -330,6 +345,12 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   }>({ destinationPorts: [], incoterms: [], combinations: [] });
   const [containerStudyRefreshKey, setContainerStudyRefreshKey] = useState(0);
   const [headerExpandSignal, setHeaderExpandSignal] = useState(0);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'error' | null>('saved');
+  const [lastAutoSavedTime, setLastAutoSavedTime] = useState<string | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedFormJsonRef = useRef<string>('');
+  const [preferredContainerType, setPreferredContainerType] = useState<ContainerType>('40HQ');
+  const isEditable = inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW';
 
   const notify = (msg: string) => {
     setToast(msg);
@@ -391,6 +412,45 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       setIsEditing(false);
     }
   }, [inquiry?.id, inquiry?.status]);
+
+  // VIP Auto-save effect: automatically persists header form changes without requiring manual 'Save Draft'
+  useEffect(() => {
+    if (!headerForm || !jwtToken || !inquiry || !isEditable) return;
+    const currentJson = JSON.stringify(headerForm);
+    if (!lastSavedFormJsonRef.current) {
+      lastSavedFormJsonRef.current = currentJson;
+      return;
+    }
+    if (lastSavedFormJsonRef.current === currentJson) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    setAutoSaveStatus('saving');
+    autoSaveTimerRef.current = setTimeout(async () => {
+      try {
+        const payload = buildUpdatePayloadFromForm(headerForm);
+        payload.commercialMetadata = {
+          ...(inquiry.commercialMetadata || {}),
+          ...(payload.commercialMetadata || {}),
+          preferredContainerType,
+        };
+        const updated = await updateCommercialInquiry(jwtToken, inquiry.id, payload);
+        lastSavedFormJsonRef.current = currentJson;
+        setInquiry(updated);
+        notifyInquiryChanged(updated);
+        setAutoSaveStatus('saved');
+        setLastAutoSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      } catch {
+        setAutoSaveStatus('error');
+      }
+    }, 800);
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [headerForm, jwtToken, inquiry?.id, isEditable, preferredContainerType]);
 
   useEffect(() => {
     if ((tab === 'activity' || tab === 'audit') && jwtToken && inquiry) {
@@ -465,14 +525,14 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   }, [allowedTabIds.join('|')]);
 
   useEffect(() => {
-    if (!jwtToken || !inquiry || !isV2Inquiry || (tab !== 'quotation' && tab !== 'documents')) {
-      if (tab !== 'quotation' && tab !== 'documents') setV2Quotation(null);
+    if (!jwtToken || !inquiry?.id || !isV2Inquiry) {
+      setV2Quotation(null);
       return;
     }
     void fetchV2Quotation(jwtToken, inquiry.id)
       .then((result) => setV2Quotation(result.quotation))
       .catch(() => setV2Quotation(null));
-  }, [jwtToken, inquiry?.id, tab, isV2Inquiry]);
+  }, [jwtToken, inquiry?.id, isV2Inquiry]);
 
   const submitSummaryLines = useMemo(() => {
     if (!inquiry?.lines) return [];
@@ -497,7 +557,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       incoterms: headerForm?.incoterms || inquiry?.incoterms,
       lineCount: inquiry?.lines?.length || 0,
       mappedLinesNeedingCalc,
-      linesMissingTechnicalOffer: inquiryLinesMissingTechnicalOffer(inquiry?.lines || []),
+      linesMissingTechnicalOffer: [], // Decision 5: SIGNED — catalog & VIP cables bypass Technical Office blockage
     });
   }, [headerForm, inquiry, mappedLinesNeedingCalc]);
 
@@ -519,7 +579,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     return { a, b, valueA, valueB, diff };
   }, [versions, compareVersionA, compareVersionB]);
 
-  const isEditable = inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW';
   const canSubmit =
     canShowInquirySubmit(inquiry?.status) && (inquiry ? canSubmitInquiry(inquiry) : false);
   const canCalculate =
@@ -547,6 +606,25 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   }, [inquiry?.lines, lineSearch]);
 
   const selectedLineId = selectedLineIds.size === 1 ? [...selectedLineIds][0] : null;
+
+  const getTargetLineForDrumSchedule = useCallback((): CommercialInquiryLineDto | null => {
+    if (!inquiry?.lines || inquiry.lines.length === 0) return null;
+    if (selectedLineId) {
+      const found = inquiry.lines.find((l) => l.id === selectedLineId);
+      if (found) return found;
+    }
+    return inquiry.lines[0];
+  }, [inquiry?.lines, selectedLineId]);
+
+  const openCuttingAndDrumsModal = useCallback(
+    (targetLine?: CommercialInquiryLineDto | null) => {
+      const line = targetLine || getTargetLineForDrumSchedule();
+      if (line) {
+        setScheduleLine(line);
+      }
+    },
+    [getTargetLineForDrumSchedule]
+  );
 
   const saveHeader = async () => {
     if (!jwtToken || !inquiry || !headerForm) return false;
@@ -666,6 +744,182 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       await load();
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Generate quotation failed');
+    }
+  };
+
+  const handleFastTrackInstantCalculate = async () => {
+    if (!jwtToken || !inquiry) return;
+    setCostingLoading(true);
+    setCostingError(null);
+    try {
+      if (headerForm && isEditable) {
+        const payload = buildUpdatePayloadFromForm(headerForm);
+        payload.commercialMetadata = {
+          ...(inquiry.commercialMetadata || {}),
+          ...(payload.commercialMetadata || {}),
+          preferredContainerType,
+        };
+        await updateCommercialInquiry(jwtToken, inquiry.id, payload);
+      }
+
+      const { inquiry: updatedInquiry, lines } = await calculateInquiryCost(jwtToken, inquiry.id);
+      setInquiryCalcResults(lines);
+      if (updatedInquiry) {
+        setInquiry(updatedInquiry);
+        notifyInquiryChanged(updatedInquiry);
+      }
+
+      try {
+        const vipRes = await calculateVipInquiry(jwtToken, inquiry.id);
+        setVipCalcResult(vipRes);
+      } catch {
+        try {
+          await generateQuotationFromInquiry(jwtToken, inquiry.id);
+        } catch {}
+      }
+
+      const quoteRes = await fetchV2Quotation(jwtToken, inquiry.id).catch(() => null);
+      if (quoteRes?.quotation) {
+        setV2Quotation(quoteRes.quotation);
+      }
+
+      notify('✓ Cost calculated and commercial offer document prepared successfully.');
+      setTab('documents');
+      window.setTimeout(() => {
+        document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Automatic calculation failed');
+    } finally {
+      setCostingLoading(false);
+    }
+  };
+
+  const handleNextStep = () => {
+    const tabSequence: DetailTab[] = [
+      'lines',
+      'drum_plan',
+      'container_study',
+      'costing',
+      'documents',
+      'quotation',
+    ];
+    const currentIndex = tabSequence.indexOf(tab);
+    if (currentIndex >= 0 && currentIndex < tabSequence.length - 1) {
+      const nextTab = tabSequence[currentIndex + 1];
+      setTab(nextTab);
+      if (nextTab === 'drum_plan' || nextTab === 'cutting') {
+        openCuttingAndDrumsModal();
+      }
+    } else {
+      setTab('quotation');
+    }
+    window.setTimeout(() => {
+      document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  };
+
+  const handleSubmitToSales = async (fulfillmentType: FulfillmentType) => {
+    if (!jwtToken || !inquiry) return;
+    try {
+      if (canSubmit) {
+        await submitCommercialInquiry(jwtToken, inquiry.id).catch(() => null);
+      }
+
+      const updated = await updateCommercialInquiry(jwtToken, inquiry.id, {
+        commercialMetadata: {
+          ...(inquiry.commercialMetadata || {}),
+          requestedFulfillmentType: fulfillmentType,
+          submittedToSales: true,
+          submittedToSalesAt: new Date().toISOString(),
+          productionStatus: 'AWAITING_SALES_SIGN_OFF',
+        },
+      });
+      setInquiry(updated);
+      notifyInquiryChanged(updated);
+
+      const fulfillmentLabel =
+        fulfillmentType === 'DIRECT_ORDER'
+          ? 'Direct Sales Order'
+          : 'Sales Agreement';
+      const quoteNum = v2Quotation?.quotationNumber || inquiry.inquiryNumber;
+
+      // 1. Notification for Sales team: customer sent contract
+      onAddNotification?.({
+        id: `vip-sales-req-${Date.now()}`,
+        title: `New VIP Contract Submitted: ${inquiry.inquiryNumber}`,
+        message: `Customer ${inquiry.customerName || 'VIP Customer'} submitted contract [${fulfillmentLabel}] for quotation ${quoteNum}. Awaiting Sales review and release to production floor.`,
+        timestamp: new Date().toLocaleTimeString(),
+        read: false,
+        type: 'system',
+      });
+
+      // 2. Notification for Customer: contract sent and awaiting sales approval to release to production
+      onAddNotification?.({
+        id: `vip-cust-submitted-${Date.now()}`,
+        title: `Order Submitted to Sales: ${quoteNum}`,
+        message: `Your contract request (${fulfillmentLabel}) has been transmitted to Sales. You will receive an instant notification as soon as it is released to the Production Floor (صالة الإنتاج).`,
+        timestamp: new Date().toLocaleTimeString(),
+        read: false,
+        type: 'system',
+      });
+
+      notify(`Submitted to Sales as ${fulfillmentLabel}`);
+      await load();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to submit request to Sales');
+      throw err;
+    }
+  };
+
+  const handleApproveCommercialBySales = async (fulfillmentType: FulfillmentType) => {
+    if (!jwtToken || !inquiry) return;
+    try {
+      const qId = v2Quotation?.id || inquiry.quotations?.[0]?.id;
+      if (!qId) throw new Error('No commercial quotation available');
+
+      const approvedQuote = await approveCommercialQuotationApi(jwtToken, qId, fulfillmentType);
+
+      if (fulfillmentType === 'DIRECT_ORDER') {
+        await createSalesOrderFromQuotationApi(jwtToken, qId).catch(() => null);
+      } else {
+        await createSalesAgreementFromQuotationApi(jwtToken, qId).catch(() => null);
+      }
+
+      const updated = await updateCommercialInquiry(jwtToken, inquiry.id, {
+        commercialMetadata: {
+          ...(inquiry.commercialMetadata || {}),
+          commercialApprovalStatus: 'APPROVED',
+          productionStatus: 'RELEASED_TO_PRODUCTION',
+          releasedToProductionAt: new Date().toISOString(),
+        },
+      }).catch(() => null);
+
+      if (updated) {
+        setInquiry(updated);
+        notifyInquiryChanged(updated);
+      }
+
+      const fulfillmentLabel =
+        fulfillmentType === 'DIRECT_ORDER'
+          ? 'Direct Sales Order'
+          : 'Sales Agreement';
+
+      // Notification for Customer: Sales approved and released to production floor!
+      onAddNotification?.({
+        id: `vip-cust-appr-${Date.now()}`,
+        title: '🎉 Contract Approved & Released to Production Floor!',
+        message: `Sales approved quotation ${approvedQuote.quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor (صالة الإنتاج) for cable manufacturing.`,
+        timestamp: new Date().toLocaleTimeString(),
+        read: false,
+        type: 'system',
+      });
+
+      notify(`Contract approved & released to Production Floor (صالة الإنتاج)`);
+      await load();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to approve contract');
+      throw err;
     }
   };
 
@@ -1119,6 +1373,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onSave={() => void saveHeader()}
                 onCalculate={() => void runCalculateInquiry()}
                 onSubmit={() => void handleSubmit()}
+                hideSaveAndCalculate={Boolean(inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales))}
                 extra={
                   <div className="relative">
                     <button
@@ -1172,6 +1427,32 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             }
           />
         </div>
+      )}
+
+      {/* Customer VIP Order Submitted & Live Production Tracking Screen */}
+      {isCustomer && (inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)) && (
+        <VipOrderSubmittedTrackingView
+          inquiry={inquiry}
+          quotation={v2Quotation}
+          jwtToken={jwtToken}
+          preferredContainerType={preferredContainerType}
+          onExploreCables={() => {
+            if (onBack) {
+              onBack();
+            } else {
+              window.location.href = '/customer/products';
+            }
+          }}
+          onViewQuotationPdf={() => {
+            if (v2Quotation?.id) {
+              window.open(v2QuotationPdfUrl(v2Quotation.id), '_blank');
+            } else {
+              printInquiryReport('offer');
+            }
+          }}
+          onToggleTechnicalDetails={() => setShowTrackingDetails((v) => !v)}
+          showTechnicalDetails={showTrackingDetails}
+        />
       )}
 
       {/* Top Workspace Header Bar */}
@@ -1455,6 +1736,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         />
       )}
 
+      {(!isCustomer || !(inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)) || showTrackingDetails) && (
       <div className={isCustomer ? 'min-w-0 space-y-3' : 'contents'}>
 
       {/* 4-Section Inquiry Header Form */}
@@ -1505,6 +1787,33 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
 
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
+      {/* VIP Fast-Track Journey Bar */}
+      <VipFastTrackJourneyBar
+        currentTab={tab}
+        onSelectTab={(selectedTab) => {
+          const nextTab = isCustomer
+            ? workspaceTabForPresentation(selectedTab as Parameters<typeof workspaceTabForPresentation>[0])
+            : selectedTab;
+          setTab(nextTab);
+          if (nextTab === 'drum_plan' || nextTab === 'cutting') {
+            openCuttingAndDrumsModal();
+          }
+        }}
+        onInstantCalculate={handleFastTrackInstantCalculate}
+        onNextStep={handleNextStep}
+        calculating={costingLoading}
+        autoSaveStatus={autoSaveStatus}
+        lastAutoSavedTime={lastAutoSavedTime}
+        lineCount={inquiry.lines?.length || 0}
+        drumCount={summary?.totalQty || 0}
+        containerType={preferredContainerType}
+        isCostCalculated={Boolean(inquiry.commercialProductsTotal || inquiryCalcResults)}
+        hasQuotation={Boolean(v2Quotation || (inquiry.quotations && inquiry.quotations.length > 0))}
+        isSubmittedToSales={inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)}
+        fulfillmentType={(inquiry.commercialMetadata?.requestedFulfillmentType as FulfillmentType) || v2Quotation?.fulfillmentType}
+        isCustomer={isCustomer}
+      />
+
       {/* Workspace Tabs Navigation Bar */}
       <div id="inquiry-workspace" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-1 px-4 border-b border-slate-200 overflow-x-auto no-scrollbar scroll-smooth">
@@ -1516,13 +1825,15 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <button
                 key={t.id}
                 type="button"
-                onClick={() =>
-                  setTab(
-                    isCustomer
-                      ? workspaceTabForPresentation(t.id as Parameters<typeof workspaceTabForPresentation>[0])
-                      : (t.id as typeof tab)
-                  )
-                }
+                onClick={() => {
+                  const nextTab = isCustomer
+                    ? workspaceTabForPresentation(t.id as Parameters<typeof workspaceTabForPresentation>[0])
+                    : (t.id as typeof tab);
+                  setTab(nextTab);
+                  if (nextTab === 'drum_plan' || nextTab === 'cutting' || t.id === 'cutting_drums') {
+                    openCuttingAndDrumsModal();
+                  }
+                }}
                 className={`inline-flex items-center gap-2 px-3.5 py-3 text-[13px] font-semibold border-b-2 whitespace-nowrap transition-colors ${
                   isCustomer
                     ? active
@@ -1606,7 +1917,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
               <button
                 type="button"
-                onClick={() => setTab('cutting')}
+                onClick={() => {
+                  setTab('cutting');
+                  openCuttingAndDrumsModal();
+                }}
                 className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-colors"
               >
                 <p className="font-bold text-slate-800">Cutting Schedule</p>
@@ -1614,7 +1928,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
               <button
                 type="button"
-                onClick={() => setTab('drum_plan')}
+                onClick={() => {
+                  setTab('drum_plan');
+                  openCuttingAndDrumsModal();
+                }}
                 className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-colors"
               >
                 <p className="font-bold text-slate-800">Drums</p>
@@ -1906,6 +2223,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     </button>
                     <button
                       type="button"
+                      onClick={() => {
+                        const line = filteredLines.find((l) => l.id === selectedLineId);
+                        if (line) setScheduleLine(line);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-blue-600 font-bold text-white hover:bg-blue-700 flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <Ruler className="h-3.5 w-3.5" />
+                      <span>Cutting & Drums</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => void duplicateLine()}
                       className="px-2.5 py-1.5 rounded-lg bg-white border border-blue-200 font-bold text-blue-700 hover:bg-blue-50"
                     >
@@ -2071,14 +2399,23 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         {/* Tab 2: Documents */}
         {tab === 'documents' && (
           <div className="p-4 sm:p-5 space-y-4 text-xs">
-            <CommercialOfferDocumentsPanel
-              inquiryId={inquiry.id}
-              jwtToken={jwtToken}
-              issued={Boolean(v2Quotation?.issuedAt)}
-              isCustomer={isCustomer}
-              quotationNumber={v2Quotation?.quotationNumber}
-              versionNo={v2Quotation?.versionNo}
-            />
+            {isVipV2Inquiry || inquiry.commercialMetadata?.inquiryProcessCode === 'VIP_FAST_TRACK' ? (
+              <VipCommercialOfferDocumentViewer
+                inquiry={inquiry}
+                quotation={v2Quotation}
+                jwtToken={jwtToken}
+                preferredContainerType={preferredContainerType}
+              />
+            ) : (
+              <CommercialOfferDocumentsPanel
+                inquiryId={inquiry.id}
+                jwtToken={jwtToken}
+                issued={Boolean(v2Quotation?.issuedAt)}
+                isCustomer={isCustomer}
+                quotationNumber={v2Quotation?.quotationNumber}
+                versionNo={v2Quotation?.versionNo}
+              />
+            )}
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-slate-800">Inquiry Documents & Attachments</h3>
@@ -2226,13 +2563,48 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               )}
             </div>
 
-            {!isCustomer && <QuotationSectionV2 inquiryId={inquiry.id} />}
+            {/* VIP Official Commercial Offer Document & Technical TDS */}
+            {(isVipV2Inquiry || inquiry.commercialMetadata?.inquiryProcessCode === 'VIP_FAST_TRACK') && (
+              <VipCommercialOfferDocumentViewer
+                inquiry={inquiry}
+                quotation={v2Quotation}
+                jwtToken={jwtToken}
+                preferredContainerType={preferredContainerType}
+              />
+            )}
+
+            {/* VIP Commercial Fulfillment Selector: Choose Direct Sales Order or Sales Agreement */}
+            <VipContractFulfillmentSelector
+              quotationId={v2Quotation?.id || inquiry.quotations?.[0]?.id}
+              quotationNumber={v2Quotation?.quotationNumber || inquiry.quotations?.[0]?.quotationNumber || 'QUO26-00004'}
+              versionNo={v2Quotation?.versionNo || inquiry.quotations?.[0]?.versionNo || 1}
+              totalAmount={v2Quotation?.sellingPrice || inquiry.commercialProductsTotal}
+              currency={inquiry.currency}
+              initialFulfillmentType={
+                (inquiry.commercialMetadata?.requestedFulfillmentType as FulfillmentType) ||
+                v2Quotation?.fulfillmentType ||
+                'DIRECT_ORDER'
+              }
+              commercialApprovalStatus={
+                v2Quotation?.commercialApprovalStatus ||
+                inquiry.quotations?.[0]?.commercialApprovalStatus ||
+                'NOT_SUBMITTED'
+              }
+              isSubmittedToSales={
+                inquiry.status === 'SUBMITTED' ||
+                Boolean(inquiry.commercialMetadata?.submittedToSales)
+              }
+              canApprove={canQuote || !isCustomer}
+              onSubmitToSales={handleSubmitToSales}
+              onApproveCommercial={handleApproveCommercialBySales}
+              isCustomer={isCustomer}
+            />
 
             {(inquiry.quotations || []).length === 0 && !v2Quotation ? (
               <p className="text-slate-400 py-8 text-center">No quotations generated yet.</p>
             ) : (
               <div className="space-y-2.5">
-                {isCustomer && v2Quotation && (
+                {isCustomer && v2Quotation && !isVipV2Inquiry && inquiry.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK' && (
                   <CustomerQuotationView
                     inquiryId={inquiry.id}
                     quotation={v2Quotation}
@@ -2439,13 +2811,66 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           <div className="p-4 sm:p-5 space-y-4 text-xs">
             {isCustomer ? (
               <>
-                <div>
-                  <h3 className="font-bold text-slate-800">Costing Status</h3>
-                  <p className="text-slate-500 text-[11px] mt-0.5">
-                    Commercial pricing readiness for your inquiry. Detailed cost breakdowns are prepared by Energya and
-                    shared through quotations when ready.
-                  </p>
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                      <Calculator className="h-4 w-4 text-emerald-600" />
+                      <span>Instant Commercial Costing & Pricing</span>
+                    </h3>
+                    <p className="text-slate-600 text-[11px] mt-0.5">
+                      Direct calculation for raw materials, cable manufacturing, drum packaging, and sea freight.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={costingLoading || (inquiry.lines || []).length === 0}
+                      onClick={() => void runCalculateInquiry()}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-500/20 disabled:opacity-50"
+                    >
+                      <Zap className={`h-3.5 w-3.5 ${costingLoading ? 'animate-bounce' : ''}`} />
+                      <span>{costingLoading ? 'Calculating…' : '⚡ Calculate Costing Now'}</span>
+                    </button>
+                    {inquiry.commercialProductsTotal != null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTab('quotation');
+                          window.setTimeout(() => {
+                            document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 60);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-md shadow-brand-500/20"
+                      >
+                        <span>Proceed to Quotation Offer ➔</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {inquiry.commercialProductsTotal != null && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Cables Cost Subtotal:</span>
+                      <span className="font-bold text-base text-brand-800 font-mono">
+                        {Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {inquiry.currency}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Pricing Status:</span>
+                      <span className="font-bold text-emerald-700 inline-flex items-center gap-1 mt-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Calculated & Ready for Offer
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Confirmed Shipping Destination:</span>
+                      <span className="font-semibold text-slate-700 mt-1 block">
+                        {inquiry.commercialMetadata?.deliveryDestination ? String(inquiry.commercialMetadata.deliveryDestination) : 'Doncaster / UK'} ({inquiry.incoterms || 'DAP'})
+                      </span>
+                    </div>
+                  </div>
+                )}
                 {(inquiry.lines || []).length === 0 ? (
                   <p className="text-slate-400 py-6 text-center">Add cable lines to track costing readiness.</p>
                 ) : (
@@ -2611,6 +3036,33 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onChanged={() => void load()}
               />
             )}
+
+            {isEditable && (inquiry.lines || []).length > 0 && (
+              <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
+                    <Ruler className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-slate-900">
+                      Cutting Length & Drum Selection
+                    </p>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Configure reel sizes, cutting lengths, and drum tolerances based on your selected cable specs.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openCuttingAndDrumsModal()}
+                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm flex items-center gap-2 shrink-0 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="h-4 w-4 text-amber-200" />
+                  <span>Open Cutting Length & Drum Selection</span>
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-bold text-slate-800 text-sm">Drum Packing & Selection Schedules</h3>
@@ -2749,26 +3201,58 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         )}
 
         {tab === 'container_study' && (
-          <div id="inquiry-container-study" className="p-4 sm:p-5">
+          <div id="inquiry-container-study" className="p-4 sm:p-5 space-y-4">
             {inquiry ? (
-              isCustomer ? (
-                <CustomerContainerStudyStatus inquiryId={inquiry.id} />
-              ) : (
-                <InquiryContainerStudyPanel
-                  key={containerStudyRefreshKey}
+              <>
+                <VipContainerStudyPlanner
                   inquiryId={inquiry.id}
-                  isV2Inquiry={isV2Inquiry}
-                  onOpenDeliveryInformation={() => {
-                    setDeliveryFocusSignal((n) => n + 1);
-                    window.setTimeout(() => {
-                      document.getElementById('inquiry-delivery-information')?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
+                  totalDrums={summary?.totalQty || 0}
+                  totalLengthMeters={summary?.totalLength || 0}
+                  destination={headerForm?.deliveryDestination || (inquiry.commercialMetadata?.deliveryDestination as string) || 'Doncaster / UK'}
+                  incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
+                  selectedContainerType={preferredContainerType}
+                  onSelectContainerType={(t) => {
+                    setPreferredContainerType(t);
+                    if (jwtToken) {
+                      void updateCommercialInquiry(jwtToken, inquiry.id, {
+                        commercialMetadata: {
+                          ...(inquiry.commercialMetadata || {}),
+                          preferredContainerType: t,
+                        },
                       });
-                    }, 120);
+                    }
+                    notify(`Container type selected: ${t}`);
                   }}
+                  onProceedToCosting={() => {
+                    setTab('costing');
+                    window.setTimeout(() => {
+                      document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 60);
+                  }}
+                  isEditable={isEditable}
+                  lines={inquiry.lines}
+                  inquiry={inquiry}
                 />
-              )
+
+                {isCustomer ? (
+                  <CustomerContainerStudyStatus inquiryId={inquiry.id} />
+                ) : (
+                  <InquiryContainerStudyPanel
+                    key={containerStudyRefreshKey}
+                    inquiryId={inquiry.id}
+                    isV2Inquiry={isV2Inquiry}
+                    onOpenDeliveryInformation={() => {
+                      setDeliveryFocusSignal((n) => n + 1);
+                      window.setTimeout(() => {
+                        document.getElementById('inquiry-delivery-information')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
+                      }, 120);
+                    }}
+                  />
+                )}
+              </>
             ) : (
               <p className="text-slate-400 py-10 text-center">Open an inquiry to run Container Study.</p>
             )}
@@ -2788,9 +3272,23 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 ? null
                 : `${Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency}`
           }
+          freightCostLabel={
+            inquiry.commercialProductsTotal == null
+              ? null
+              : `${(preferredContainerType === '20STD' ? 3100 : 3300).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`
+          }
+          grandTotalLabel={
+            inquiry.commercialProductsTotal == null
+              ? null
+              : `${(Number(inquiry.commercialProductsTotal) + (preferredContainerType === '20STD' ? 3100 : 3300)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`
+          }
+          incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
+          destination={headerForm?.deliveryDestination || (inquiry.commercialMetadata?.deliveryDestination as string) || 'Doncaster'}
+          containerType={preferredContainerType || '20STD'}
         />
       )}
       </div>
+      )}
 
       {/* Summary KPI Bar */}
       {!isCustomer && summary && (
@@ -2798,6 +3296,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           summary={summary}
           commercialValue={inquiry.commercialProductsTotal ?? null}
           recalculationRequired={inquiry.commercialValueState === 'RECALCULATION_REQUIRED'}
+          freightValue={inquiry.commercialProductsTotal == null ? null : (preferredContainerType === '20STD' ? 3100 : 3300)}
+          grandTotalValue={inquiry.commercialProductsTotal == null ? null : (Number(inquiry.commercialProductsTotal) + (preferredContainerType === '20STD' ? 3100 : 3300))}
+          incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
+          containerType={preferredContainerType || '20STD'}
         />
       )}
 
@@ -2953,7 +3455,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           isOpen={Boolean(scheduleLine)}
           onClose={() => setScheduleLine(null)}
           inquiryId={inquiry.id}
-          line={scheduleLine}
+          line={inquiry.lines.find((l) => l.id === scheduleLine.id) || scheduleLine}
           drums={drumMaster}
           jwtToken={jwtToken}
           onConfirmed={() => {

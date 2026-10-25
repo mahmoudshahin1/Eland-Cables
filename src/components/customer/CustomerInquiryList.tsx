@@ -31,7 +31,10 @@ import {
   Plus,
   Search,
   Send,
+  Sparkles,
 } from 'lucide-react';
+import { VipCustomerJourneyWizard } from './VipCustomerJourneyWizard';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import {
   buildCustomerInquiryListRow,
   CUSTOMER_CABLE_TYPE_FILTERS,
@@ -115,6 +118,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [showVipJourney, setShowVipJourney] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState(
     initialStatus && initialStatus !== 'QUOTED' ? initialStatus : initialStatus === 'QUOTED' ? 'QUOTED' : ''
@@ -489,55 +493,76 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
 
   return (
     <div className="space-y-4">
-      <CustomerPageHero
-        breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Inquiry / Quotation' }]}
-        title="Inquiry / Quotation"
-        subtitle="Create new inquiries, track your quotations and request updates."
-      />
+      {showVipJourney ? (
+        <ErrorBoundary fallbackTitle="VIP Customer Journey Encountered an Error">
+          <VipCustomerJourneyWizard
+            onBackToInquiries={() => setShowVipJourney(false)}
+            onCompletedSubmission={() => {
+              setShowVipJourney(false);
+              void load();
+            }}
+          />
+        </ErrorBoundary>
+      ) : (
+        <>
+          <CustomerPageHero
+            breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Inquiry / Quotation' }]}
+            title="Inquiry / Quotation"
+            subtitle="Create new inquiries, track your quotations and request updates."
+          />
 
-      <div className="min-w-0 overflow-hidden space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="flex items-center gap-1 border-b border-slate-200" role="tablist">
-              {(['inquiries', 'quotations'] as const).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === id}
-                  onClick={() => {
-                    setTab(id);
-                    setPage(1);
-                    setSelectedIds(new Set());
-                    setExpandedId(null);
-                    if (id === 'quotations') setStatusFilter('QUOTED');
-                    if (id === 'inquiries' && statusFilter === 'QUOTED') setStatusFilter('');
-                  }}
-                  className={`px-3 py-2.5 -mb-px text-sm font-semibold border-b-2 ${
-                    tab === id ? 'border-brand-500 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
+          <div className="min-w-0 overflow-hidden space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div className="flex items-center gap-1 border-b border-slate-200" role="tablist">
+                {(['inquiries', 'quotations'] as const).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === id}
+                    onClick={() => {
+                      setTab(id);
+                      setPage(1);
+                      setSelectedIds(new Set());
+                      setExpandedId(null);
+                      if (id === 'quotations') setStatusFilter('QUOTED');
+                      if (id === 'inquiries' && statusFilter === 'QUOTED') setStatusFilter('');
+                    }}
+                    className={`px-3 py-2.5 -mb-px text-sm font-semibold border-b-2 ${
+                      tab === id ? 'border-brand-500 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {id === 'inquiries' ? 'Inquiries' : 'Quotations'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  className="lg:hidden"
+                  variant="secondary"
+                  size="sm"
+                  leadingIcon={Filter}
+                  onClick={() => setFilterDrawerOpen(true)}
                 >
-                  {id === 'inquiries' ? 'Inquiries' : 'Quotations'}
-                </button>
-              ))}
+                  Filters
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-md"
+                  onClick={() => setShowVipJourney(true)}
+                >
+                  <Sparkles className="w-3.5 h-3.5 me-1.5 text-amber-300" />
+                  VIP 9-Step Journey
+                </Button>
+                <Button variant="primary" size="sm" leadingIcon={Plus} disabled={creating} onClick={() => void handleCreate()}>
+                  {creating ? 'Creating…' : 'New Inquiry'}
+                </Button>
+                <Button variant="secondary" size="sm" leadingIcon={Download} onClick={handleExport}>
+                  Export
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                className="lg:hidden"
-                variant="secondary"
-                size="sm"
-                leadingIcon={Filter}
-                onClick={() => setFilterDrawerOpen(true)}
-              >
-                Filters
-              </Button>
-              <Button variant="primary" size="sm" leadingIcon={Plus} disabled={creating} onClick={() => void handleCreate()}>
-                {creating ? 'Creating…' : 'New Inquiry'}
-              </Button>
-              <Button variant="secondary" size="sm" leadingIcon={Download} onClick={handleExport}>
-                Export
-              </Button>
-            </div>
-          </div>
 
           <Card className="hidden lg:block" flushBody>
             <div className="p-3">{filterControls}</div>
@@ -911,6 +936,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
       >
         {filterControls}
       </Drawer>
+        </>
+      )}
     </div>
   );
 };

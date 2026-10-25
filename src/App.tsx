@@ -44,7 +44,7 @@ import { ShipmentTracker } from './components/customer/ShipmentTracker';
 import { TdsDocumentLibrary } from './components/customer/TdsDocumentLibrary';
 import { SupportCenter } from './components/customer/SupportCenter';
 import { CustomerProductsPage } from './components/customer/CustomerProductsPage';
-import { ElandProcessFlowDiagram } from './components/customer/ElandProcessFlowDiagram';
+import { CustomerJourney } from './components/customer/CustomerJourney';
 import { SalesOrders } from './components/common/SalesOrders';
 import { CommercialFulfillmentWorkspace } from './components/fulfillment/CommercialFulfillmentWorkspace';
 
@@ -61,6 +61,7 @@ import { ReportsAnalytics } from './components/internal/ReportsAnalytics';
 import { AiAssistantWidget } from './components/ai/AiAssistantWidget';
 import { ENABLE_AI_QUOTATION_ASSISTANT } from './config/featureFlags';
 import { UserProfilePage } from './components/profile/UserProfilePage';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 type CustomerNavState = {
   inquiryId?: string;
@@ -102,10 +103,12 @@ function CustomerPortalPages({
   return (
     <>
       {inquiryDetailId ? (
-        <CustomerInquiryDetail
-          inquiryId={inquiryDetailId}
-          onBack={() => navigate(customerPathForTab('price_estimation'))}
-        />
+        <ErrorBoundary fallbackTitle="Inquiry Workspace Notice">
+          <CustomerInquiryDetail
+            inquiryId={inquiryDetailId}
+            onBack={() => navigate(customerPathForTab('price_estimation'))}
+          />
+        </ErrorBoundary>
       ) : (
         <>
       {customerTab === 'dashboard' && (
@@ -117,15 +120,7 @@ function CustomerPortalPages({
       )}
       {customerTab === 'products' && <CustomerProductsPage />}
       {(customerTab === 'process' || customerTab === 'journey') && (
-        <ElandProcessFlowDiagram
-          onSelectStep={(stepNumber) => {
-            if (stepNumber === 9) {
-              goCustomerTab('support');
-            } else {
-              goCustomerTab('price_estimation');
-            }
-          }}
-        />
+        <CustomerJourney onNavigateTab={goCustomerTab} />
       )}
       {customerTab === 'drum_optimizer' && <DrumOptimizer onNavigateTab={goCustomerTab} />}
       {customerTab === 'price_estimation' && (

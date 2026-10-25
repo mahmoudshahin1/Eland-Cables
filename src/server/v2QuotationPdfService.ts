@@ -153,19 +153,23 @@ async function auditOfferGeneration(input: {
 export async function generateV2QuotationPdf(
   quotationId: string,
   actor: RequestActor,
-  options?: { draft?: boolean }
+  options?: { draft?: boolean; vipFastTrack?: boolean }
 ): Promise<V2QuotationPdfDocument> {
-  if (options?.draft) {
-    if (actor.userType === 'customer') {
+  if (options?.draft || options?.vipFastTrack) {
+    if (actor.userType === 'customer' && !options?.vipFastTrack) {
       const err = new Error('Draft commercial offers are internal only.');
       (err as Error & { code: string }).code = 'UNAUTHORIZED';
       throw err;
     }
-    const offer = hydrateCommercialOfferDocument(await buildCurrentCommercialOfferDocument(quotationId, actor));
+    const rawOffer = await buildCurrentCommercialOfferDocument(quotationId, actor);
+    const offer = hydrateCommercialOfferDocument({
+      ...rawOffer,
+      draft: !options?.vipFastTrack && Boolean(options?.draft),
+    });
     const html = renderHtml(offer);
     const pdf = await renderCommercialOfferPdf(offer);
     const quotation = await getV2QuotationById(quotationId, actor);
-    await auditOfferGeneration({ actor, quotation, offer, draft: true });
+    await auditOfferGeneration({ actor, quotation, offer, draft: Boolean(options?.draft && !options?.vipFastTrack) });
     return packOffer(offer, quotation, html, pdf);
   }
 

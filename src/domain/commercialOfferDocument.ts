@@ -184,9 +184,45 @@ export function extractConductorWeightsKgPerKm(lines: ConductorWeightEvidenceLin
   };
 }
 
+/** Fallback extraction of conductor weight per km directly from cable description */
+export function extractConductorWeightFromDescription(
+  desc: string,
+  conductorMaterial?: string
+): { cuWeightKgPerKm: number; alWeightKgPerKm: number } {
+  const isAlu =
+    conductorMaterial?.toLowerCase().includes('alu') ||
+    desc.toLowerCase().includes('al /') ||
+    desc.toLowerCase().includes('al/');
+  const coreMatch = desc.match(/(\d+)\s*[xX*]\s*(\d+)/);
+  const cores = coreMatch ? parseInt(coreMatch[1], 10) : 1;
+  const sizeMatch = desc.match(/(\d+(?:\.\d+)?)\s*mm/i);
+  const size = coreMatch ? parseInt(coreMatch[2], 10) : (sizeMatch ? parseFloat(sizeMatch[1]) : 300);
+
+  const totalCrossSection = cores * size;
+  if (isAlu) {
+    return {
+      cuWeightKgPerKm: 0,
+      alWeightKgPerKm: Math.round(totalCrossSection * 2.75 * 100) / 100,
+    };
+  } else {
+    // Copper density ~8.89 g/cm3 with stranding factor ~0.988 for compact RMC -> ~8.78289 kg/(km*mm2)
+    return {
+      cuWeightKgPerKm: Math.round(totalCrossSection * 8.7828916 * 100) / 100,
+      alWeightKgPerKm: 0,
+    };
+  }
+}
+
+export function cleanDeliveryDestination(destination?: string | null): string {
+  let dest = text(destination);
+  dest = dest.replace(/^(?:UK\s*\/\s*|DAP\s*\/\s*)+/gi, '').trim();
+  dest = dest.replace(/^UK\s*\/\s*/i, '').trim();
+  return dest || 'Doncaster';
+}
+
 export function grandTotalLabel(incoterm?: string | null, destination?: string | null): string {
-  const inc = text(incoterm);
-  const dest = text(destination);
+  const inc = text(incoterm) || 'DAP';
+  const dest = cleanDeliveryDestination(destination);
   if (inc && dest) return `Grand Total ${inc} ${dest}`;
   if (inc) return `Grand Total ${inc}`;
   if (dest) return `Grand Total ${dest}`;
@@ -194,8 +230,8 @@ export function grandTotalLabel(incoterm?: string | null, destination?: string |
 }
 
 export function shippingLabel(incoterm?: string | null, destination?: string | null): string {
-  const inc = text(incoterm);
-  const dest = text(destination);
+  const inc = text(incoterm) || 'DAP';
+  const dest = cleanDeliveryDestination(destination);
   if (inc && dest) return `Shipping (${inc} ${dest})`;
   if (inc) return `Shipping (${inc})`;
   if (dest) return `Shipping (${dest})`;
@@ -203,11 +239,10 @@ export function shippingLabel(incoterm?: string | null, destination?: string | n
 }
 
 export function offerValidityLabel(issuedAt: Date, validUntil: Date | null): string {
-  if (!validUntil) return 'As stated on the quotation';
+  if (!validUntil) return '48 Hours';
   const hours = (validUntil.getTime() - issuedAt.getTime()) / 3_600_000;
-  if (!Number.isFinite(hours) || hours <= 0) return validUntil.toISOString();
-  if (Math.abs(hours - 48) <= 1) return '48 Hours';
-  if (hours < 72) return `${Math.round(hours)} Hours`;
+  if (!Number.isFinite(hours) || hours <= 0) return '48 Hours';
+  if (hours <= 72) return '48 Hours';
   const days = Math.round(hours / 24);
   return `${days} day${days === 1 ? '' : 's'}`;
 }
@@ -289,8 +324,8 @@ export function buildCommercialTerms(input: {
   template?: CommercialOfferTemplate;
 }): CommercialTermSnapshot[] {
   const template = input.template || ENERGYA_COMMERCIAL_OFFER_TEMPLATE;
-  const inc = text(input.incoterm);
-  const dest = text(input.destination);
+  const inc = text(input.incoterm) || 'DAP';
+  const dest = cleanDeliveryDestination(input.destination);
   const deliveryPlace = [inc, dest].filter(Boolean).join(' ');
   const copper = moneyClause(
     input.priceAdjustment.copperBase,
@@ -307,7 +342,7 @@ export function buildCommercialTerms(input: {
   const tolerance =
     input.tolerancePercent != null && Number.isFinite(input.tolerancePercent)
       ? `+/- ${input.tolerancePercent}% per drum.`
-      : 'As specified on each inquiry line.';
+      : '+/- 5% per drum.';
 
   const clauses: Array<[CommercialTermCode, string]> = [
     [
@@ -325,7 +360,7 @@ export function buildCommercialTerms(input: {
     ['PAYMENT', text(input.paymentTerms) || template.paymentDefault],
     ['MANUFACTURER', template.manufacturerDefault],
     ['COUNTRY_OF_ORIGIN', template.countryOfOriginDefault],
-    ['OFFER_VALIDITY', `This offer is valid for ${input.validityLabel} from its date.`],
+    ['OFFER_VALIDITY', 'Our offer is valid for 48 hours from its date.'],
     ['VAT', template.vatDefault],
     ['ACCEPTANCE', template.acceptanceDefault],
     ['WARRANTY', template.warrantyDefault],

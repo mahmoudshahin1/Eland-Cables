@@ -4,14 +4,17 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Loader2,
   Ruler,
   Scale,
   Settings2,
   ShoppingBag,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { CommercialInquiryDto, CommercialInquiryLineDto, resolveInquiryLineTotalLengthMeters } from '../../services/commercialInquiryApiService';
 import { validateCuttingLength } from '../../domain/drumPlanService';
+import { optimizeDrumPlanApi } from '../../services/drumOptimizationApiService';
 import { CableConfiguratorV2 } from '../cable-configurator/v2/components/CableConfiguratorV2';
 
 export type InquiryLineEditorStep = 'cable' | 'technical' | 'length' | 'cutting' | 'drum' | 'commercial';
@@ -77,6 +80,48 @@ export const InquiryLineEditorModal: React.FC<InquiryLineEditorModalProps> = ({
   initialStep = 'cable',
 }) => {
   const [step, setStep] = useState<InquiryLineEditorStep>(initialStep);
+  const [optimizingDrum, setOptimizingDrum] = useState(false);
+  const [optimizeFeedback, setOptimizeFeedback] = useState<string | null>(null);
+
+  const handleAutoOptimizeDrum = async () => {
+    setOptimizingDrum(true);
+    setOptimizeFeedback(null);
+    try {
+      const lengthM = positiveNumber(form.cuttingLengthMeters) || positiveNumber(form.requestedLengthMeters) || 1000;
+      let diameter = 35.9;
+      let weight = 3522;
+      try {
+        const res = await fetch('/api/master/cables');
+        if (res.ok) {
+          const data = await res.json();
+          const cable = data.cables?.find((c: any) => c.materialNumber === line.materialNumber || c.cableCode === line.materialNumber);
+          if (cable) {
+            diameter = Number(cable.outerDiameterMm) || diameter;
+            weight = Number(cable.approxWeightKgKm) || weight;
+          }
+        }
+      } catch {
+        // Fallback to defaults
+      }
+      const result = await optimizeDrumPlanApi({
+        cable: { cableDiameterMm: diameter, approxWeightKgKm: weight },
+        totalOrderLengthM: lengthM,
+        cableTolerancePercent: 0,
+      });
+      if (result.plan?.lines?.length && result.plan.lines[0].drumCode) {
+        const best = result.plan.lines[0];
+        onChange({ drumType: best.drumCode });
+        setOptimizeFeedback(`Recommended: ${best.drumCode} (${best.lengthUtilizationPercent.toFixed(1)}% length util)`);
+      } else {
+        setOptimizeFeedback('No optimal drum recommendation found for this length.');
+      }
+    } catch (err: any) {
+      setOptimizeFeedback(err?.message || 'Auto-optimize failed.');
+    } finally {
+      setOptimizingDrum(false);
+    }
+  };
+
   const stepIndex = STEPS.findIndex((s) => s.id === step);
   const requestedQuantity = positiveNumber(form.requestedQuantity);
   const cuttingLength = positiveNumber(form.cuttingLengthMeters);
@@ -298,28 +343,53 @@ export const InquiryLineEditorModal: React.FC<InquiryLineEditorModalProps> = ({
           )}
 
           {step === 'drum' && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="block font-semibold text-slate-700 mb-1">Drum Required</label>
-              <input
-                disabled={!isEditable}
-                value={form.drumType}
-                onChange={(e) => onChange({ drumType: e.target.value })}
-                placeholder="Drum code or schedule reference"
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 disabled:bg-slate-50"
-              />
+              <div className="flex gap-2">
+                <input
+                  disabled={!isEditable}
+                  value={form.drumType}
+                  onChange={(e) => onChange({ drumType: e.target.value })}
+                  placeholder="Drum code (e.g. EWD1800-23)"
+                  className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 disabled:bg-slate-50 font-mono font-bold"
+                />
+                {isEditable && (
+                  <button
+                    type="button"
+                    disabled={optimizingDrum}
+                    onClick={() => void handleAutoOptimizeDrum()}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm disabled:opacity-50 transition-colors shrink-0"
+                    title="Auto-calculate optimal drum based on cable diameter, weight, and cutting length"
+                  >
+                    {optimizingDrum ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3.5 w-3.5 text-amber-200" />
+                    )}
+                    <span>{optimizingDrum ? 'Optimizing…' : 'Auto-Optimize Drum'}</span>
+                  </button>
+                )}
+              </div>
+              {optimizeFeedback && (
+                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>{optimizeFeedback}</span>
+                </div>
+              )}
               {isEditable && (
-                <button
-                  type="button"
-                  onClick={openCuttingDrumSelection}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/70 text-blue-700 font-bold hover:bg-blue-100"
-                >
-                  <Ruler className="h-3.5 w-3.5" />
-                  {OPEN_CUTTING_DRUM_SELECTION_LABEL}
-                </button>
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={openCuttingDrumSelection}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/70 text-blue-700 font-bold hover:bg-blue-100"
+                  >
+                    <Ruler className="h-3.5 w-3.5" />
+                    {OPEN_CUTTING_DRUM_SELECTION_LABEL}
+                  </button>
+                </div>
               )}
               <p className="text-[11px] text-slate-500">
-                Drum type, quantities, and cutting lengths are edited together in Cutting Length and Drum Selection.
-                Manual Selection and Automatic Optimization stay on that popup.
+                Click <strong>Auto-Optimize Drum</strong> to let the engineering engine pick the best drum automatically, or open full selection for multi-cut schedule.
               </p>
             </div>
           )}

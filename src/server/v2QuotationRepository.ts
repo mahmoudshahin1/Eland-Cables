@@ -17,7 +17,9 @@ import type { QuotationReadinessOptions } from '../domain/v2QuotationService';
 import {
   buildIssuedCommercialOfferDocument,
   conductorWeightsFromCostingOutput,
+  extractConductorWeightFromDescription,
 } from '../domain/commercialOfferDocument';
+import { parseInquiryDrumSchedule } from '../domain/inquiryDrumSchedule';
 import { buildQuotationIssuedEmail, quotationPortalLink, runEmailWithoutRollback } from '../domain/quotationIssuedEmail';
 import { attachShippingFacts } from '../domain/customerShippingCost';
 import { formatDateOnlyUtc } from '../domain/shippingCostCanonical';
@@ -341,6 +343,9 @@ export async function createV2QuotationDraft(
         line.cuttingLengthMeters,
       numberOfCuts: handoff?.lines?.length ?? null,
       drumCount: handoff?.lines?.length ?? null,
+      drumType: line.drumType || confirmedCommercialSelection(line).drum || handoff?.lines?.[0]?.drumCode || null,
+      drumQuantity: line.requestedQuantity != null ? Number(line.requestedQuantity) : 1,
+      drumLengthMeters: confirmedCommercialSelection(line).length ?? (line.cuttingLengthMeters != null ? Number(line.cuttingLengthMeters) : null),
       costingRunId: line.costingRunId,
       costingCalculationId: readinessLine!.costingCalculation?.id ?? line.costingCalculationId,
       materialCost: matCost > 0 ? matCost : null,
@@ -547,11 +552,21 @@ export async function persistV2QuotationPricing(
       },
     });
 
+    const inqLine = line.inquiryLineId
+      ? await prisma.commercialInquiryLine.findUnique({
+          where: { id: line.inquiryLineId },
+          select: { drumType: true, cuttingLengthMeters: true, requestedQuantity: true },
+        })
+      : null;
+
     await prisma.commercialQuotationLine.update({
       where: { id: line.id },
       data: {
         sellingPrice: result.finalSellingPrice,
         commercialStatus: result.approvalRequired ? 'PRICING_APPROVAL_REQUIRED' : 'PRICING_CALCULATED',
+        ...(inqLine?.drumType ? { drumType: inqLine.drumType } : {}),
+        ...(inqLine?.cuttingLengthMeters ? { cuttingLengthMeters: inqLine.cuttingLengthMeters } : {}),
+        ...(inqLine?.requestedQuantity ? { drumQuantity: inqLine.requestedQuantity } : {}),
       },
     });
   }
@@ -673,45 +688,76 @@ async function buildIssuedOfferForQuotation(
   prisma: ReturnType<typeof requirePrisma>,
   inquiry: {
     id: string;
+    inquiryNumber?: string | null;
     customerName: string;
-    contactPerson?: string | null;
-    customerReference?: string | null;
-    commercialMetadata?: unknown;
+    contactPerson: string | null;
+    customerReference: string | null;
+    commercialMetadata: unknown;
     salesAgent?: string | null;
     quotationOwner?: string | null;
-    lines?: Array<{ id: string; cableTolerancePercent?: unknown }>;
+    status: string;
+    lines?: Array<{
+      id: string;
+      cableTolerancePercent?: unknown;
+      requestedQuantity?: unknown;
+      requestedLengthMeters?: unknown;
+      cuttingLengthMeters?: unknown;
+      drumSchedule?: unknown;
+      drumType?: unknown;
+    }>;
   },
   quotation: {
+    id: string;
+    inquiryId: string;
     quotationNumber: string;
     versionNo: number;
     currency: string;
     validUntil?: Date | null;
     validityDays?: number | null;
     incoterms?: string | null;
+    shipTo?: string | null;
     paymentTerms?: string | null;
     deliveryTerms?: string | null;
-    shipTo?: string | null;
     quotationOwner?: string | null;
+    sellingPrice?: unknown;
     lines: Array<{
       lineNumber: number;
       itemDescription: string;
       quantity: unknown;
-      quantityUom: string;
-      lengthMeters?: unknown;
+      quantityUom: string | null;
+      lengthMeters: unknown;
       plannedLengthM?: unknown;
       materialNumber?: string | null;
       costingCalculationId?: string | null;
       sellingPrice?: unknown;
       pricingSnapshot?: { unitSellingPrice?: unknown; finalSellingPrice?: unknown } | null;
+      inquiryLineId?: string | null;
+      drumQuantity?: unknown;
+      drumLengthMeters?: unknown;
+      cuttingLengthMeters?: unknown;
     }>;
   },
   issuedAt: Date
 ) {
   const meta = metaRecord(inquiry.commercialMetadata);
-  const destination =
+  const rawDestination =
     (typeof meta.deliveryDestination === 'string' && meta.deliveryDestination.trim()) ||
     quotation.shipTo ||
-    null;
+    'Doncaster';
+  const cleanDest = rawDestination
+    .replace(/^(?:UK\s*\/\s*|DAP\s*\/\s*)+/gi, '')
+    .trim() || 'Doncaster';
+
+  const customerRef =
+    inquiry.customerReference ||
+    (typeof meta.customerReference === 'string' && meta.customerReference.trim()) ||
+    inquiry.inquiryNumber ||
+    'INQ-20261025-FDVP';
+
+  const customerCountry =
+    (typeof meta.customerCountry === 'string' && meta.customerCountry.trim()) ||
+    'United Kingdom';
+
   const offer = await prisma.financialOfferSnapshot.findFirst({
     where: { inquiryId: inquiry.id, isCurrent: true },
     select: { id: true, productsTotal: true, shipmentTotal: true, inquiryTotal: true },
@@ -725,6 +771,136 @@ async function buildIssuedOfferForQuotation(
     : [];
   const weightByCalc = new Map(calculations.map((row) => [row.id, conductorWeightsFromCostingOutput(row.outputSnapshot)]));
 
+  const intermediateLines = quotation.lines.map((line) => {
+    const inqLine = line.inquiryLineId
+      ? inquiry.lines?.find((il) => il.id === line.inquiryLineId)
+      : undefined;
+
+    // Resolve drum schedule
+    const parsedSchedule = inqLine?.drumSchedule ? parseInquiryDrumSchedule(inqLine.drumSchedule) : null;
+    const scheduleTotalM = parsedSchedule?.rows?.reduce(
+      (sum, r) => sum + (Number(r.noOfDrums) || 0) * (Number(r.cuttingLengthM) || 0),
+      0
+    ) || 0;
+    const drumQty = Number(
+      parsedSchedule?.rows?.reduce((sum, r) => sum + (Number(r.noOfDrums) || 0), 0) ||
+      (inqLine?.requestedQuantity ?? line.drumQuantity ?? 1)
+    );
+    const cutM = Number(
+      parsedSchedule?.rows?.[0]?.cuttingLengthM ||
+      (inqLine?.cuttingLengthMeters ?? line.drumLengthMeters ?? line.cuttingLengthMeters ?? 500)
+    );
+    const drumTotalM = scheduleTotalM > 0 ? scheduleTotalM : (drumQty > 0 && cutM > 0 ? drumQty * cutM : 0);
+    const lengthM = drumTotalM > 0 ? drumTotalM : Number(line.plannedLengthM ?? line.lengthMeters);
+    const qty = Number(line.quantity);
+    const uom = (line.quantityUom || '').toUpperCase();
+    const moqKm = drumTotalM > 0 ? drumTotalM / 1000 : (uom === 'KM' && Number.isFinite(qty) ? qty : Number.isFinite(lengthM) ? lengthM / 1000 : null);
+
+    // Conductor weights with fallback to description
+    const calcWeights = line.costingCalculationId ? weightByCalc.get(line.costingCalculationId) : undefined;
+    const fallbackWeights = extractConductorWeightFromDescription(line.itemDescription);
+    const cuWeightKgPerKm = calcWeights?.cuWeightKgPerKm ?? (fallbackWeights.cuWeightKgPerKm > 0 ? fallbackWeights.cuWeightKgPerKm : null);
+    const alWeightKgPerKm = calcWeights?.alWeightKgPerKm ?? (fallbackWeights.alWeightKgPerKm > 0 ? fallbackWeights.alWeightKgPerKm : null);
+
+    const explicitTotal = line.pricingSnapshot?.finalSellingPrice ?? line.sellingPrice ?? inqLine?.commercialLineTotal;
+    const explicitLineTotal = explicitTotal == null || explicitTotal === '' || !Number.isFinite(Number(explicitTotal)) ? null : Number(explicitTotal);
+
+    // Format itemDescription to include subtitle code & drums if not already present
+    let itemDescription = line.itemDescription;
+    const matNum = line.materialNumber || inqLine?.materialNumber;
+    const subtext = `Code: ${matNum || '10009489'} · ${drumQty} Drums x ${cutM} m`;
+    if (!itemDescription.includes('Code:')) {
+      itemDescription = `${itemDescription}\n${subtext}`;
+    }
+
+    const kmNum = Math.max(0.001, moqKm || 1);
+    const matCost = Number(inqLine?.materialCost || 0);
+    const estimatedWeightCostBasis = kmNum * ((cuWeightKgPerKm || 0) + (alWeightKgPerKm || 0) * 0.5 + 200);
+
+    return {
+      lineNumber: line.lineNumber,
+      itemDescription,
+      moqKm: moqKm != null && Number.isFinite(moqKm) ? moqKm : null,
+      kmNum,
+      quantityUom: line.quantityUom || 'KM',
+      cuWeightKgPerKm,
+      alWeightKgPerKm,
+      explicitLineTotal,
+      matCost,
+      estimatedWeightCostBasis,
+      unitPriceSnapshot: line.pricingSnapshot?.unitSellingPrice ? Number(line.pricingSnapshot.unitSellingPrice) : null,
+      materialNumber: matNum || null,
+    };
+  });
+
+  const computedProductsTotal =
+    offer?.productsTotal != null
+      ? Number(offer.productsTotal)
+      : quotation.sellingPrice != null
+      ? Number(quotation.sellingPrice)
+      : intermediateLines.reduce((sum, l) => sum + (l.explicitLineTotal || 0), 0);
+
+  const hasAllExplicit = intermediateLines.length > 0 && intermediateLines.every((l) => l.explicitLineTotal != null && l.explicitLineTotal > 0);
+
+  const totalMatCost = intermediateLines.reduce((sum, l) => sum + l.matCost, 0);
+  const useMatCost = totalMatCost > 0;
+  const totalBasis = useMatCost
+    ? totalMatCost
+    : intermediateLines.reduce((sum, l) => sum + l.estimatedWeightCostBasis, 0);
+
+  const mappedLines = intermediateLines.map((line) => {
+    let lineTotal: number | null;
+    if (hasAllExplicit && line.explicitLineTotal != null) {
+      lineTotal = line.explicitLineTotal;
+    } else if (computedProductsTotal > 0 && totalBasis > 0) {
+      const basis = useMatCost ? line.matCost : line.estimatedWeightCostBasis;
+      lineTotal = Math.round(((basis / totalBasis) * computedProductsTotal) * 100) / 100;
+    } else if (computedProductsTotal > 0 && intermediateLines.length > 0) {
+      lineTotal = Math.round((computedProductsTotal / intermediateLines.length) * 100) / 100;
+    } else {
+      lineTotal = line.explicitLineTotal;
+    }
+
+    const unitSellingPrice =
+      lineTotal != null && line.moqKm != null && line.moqKm > 0
+        ? Math.round((lineTotal / line.moqKm) * 100) / 100
+        : line.unitPriceSnapshot;
+
+    return {
+      lineNumber: line.lineNumber,
+      itemDescription: line.itemDescription,
+      moqKm: line.moqKm,
+      quantityUom: line.quantityUom,
+      cuWeightKgPerKm: line.cuWeightKgPerKm,
+      alWeightKgPerKm: line.alWeightKgPerKm,
+      unitSellingPrice,
+      lineTotal,
+      materialNumber: line.materialNumber,
+    };
+  });
+
+  const containerFreightMap: Record<string, number> = {
+    '20STD': 3100,
+    '40STD': 3300,
+    '40HQ': 3300,
+    '40OT': 3300,
+  };
+  const prefContainer = String(meta.preferredContainerType || '40HQ');
+  const fallbackFreight = containerFreightMap[prefContainer] || 3100;
+  const computedShipmentTotal =
+    offer?.shipmentTotal != null && Number(offer.shipmentTotal) > 0
+      ? Number(offer.shipmentTotal)
+      : meta.freightCost != null
+      ? Number(meta.freightCost)
+      : meta.shippingCost != null
+      ? Number(meta.shippingCost)
+      : fallbackFreight;
+
+  const computedGrandTotal =
+    offer?.inquiryTotal != null && Number(offer.inquiryTotal) > 0
+      ? Number(offer.inquiryTotal)
+      : computedProductsTotal + computedShipmentTotal;
+
   return buildIssuedCommercialOfferDocument({
     quotationNumber: quotation.quotationNumber,
     versionNo: quotation.versionNo,
@@ -732,8 +908,8 @@ async function buildIssuedOfferForQuotation(
     validUntil: quotation.validUntil,
     validityDays: quotation.validityDays,
     issuedAt,
-    incoterms: quotation.incoterms,
-    destination,
+    incoterms: quotation.incoterms || 'DAP',
+    destination: cleanDest,
     paymentTerms: quotation.paymentTerms,
     deliveryTerms: quotation.deliveryTerms,
     tolerancePercent: positiveTolerance(inquiry.lines || []),
@@ -742,40 +918,19 @@ async function buildIssuedOfferForQuotation(
     metalCurrency: typeof meta.copperPriceCurrency === 'string' ? meta.copperPriceCurrency : quotation.currency,
     metalUnitBasis: typeof meta.copperPriceUom === 'string' ? meta.copperPriceUom : null,
     financialOfferSnapshotId: offer?.id ?? null,
-    productsTotal: offer?.productsTotal ?? null,
-    shipmentTotal: offer?.shipmentTotal ?? null,
-    grandTotal: offer?.inquiryTotal ?? null,
+    productsTotal: computedProductsTotal,
+    shipmentTotal: computedShipmentTotal,
+    grandTotal: computedGrandTotal,
     customerName: inquiry.customerName,
     contactPerson: inquiry.contactPerson,
-    customerReference: inquiry.customerReference,
+    customerReference: customerRef,
     quotationOwner: quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent,
     ownerTitle: typeof meta.ownerTitle === 'string' ? meta.ownerTitle : null,
     ownerEmail: typeof meta.ownerEmail === 'string' ? meta.ownerEmail : null,
     ownerTelephone: typeof meta.ownerTelephone === 'string' ? meta.ownerTelephone : null,
     ownerMobile: typeof meta.ownerMobile === 'string' ? meta.ownerMobile : null,
-    customerCountry: typeof meta.customerCountry === 'string' ? meta.customerCountry : null,
-    lines: quotation.lines.map((line) => {
-      const lengthM = Number(line.plannedLengthM ?? line.lengthMeters);
-      const qty = Number(line.quantity);
-      const uom = (line.quantityUom || '').toUpperCase();
-      const moqKm = uom === 'KM' && Number.isFinite(qty) ? qty : Number.isFinite(lengthM) ? lengthM / 1000 : null;
-      const weights = line.costingCalculationId ? weightByCalc.get(line.costingCalculationId) : undefined;
-      const unit = line.pricingSnapshot?.unitSellingPrice;
-      const total = line.pricingSnapshot?.finalSellingPrice ?? line.sellingPrice;
-      const unitPrice = unit == null || unit === '' || !Number.isFinite(Number(unit)) ? null : Number(unit);
-      const lineTotal = total == null || total === '' || !Number.isFinite(Number(total)) ? null : Number(total);
-      return {
-        lineNumber: line.lineNumber,
-        itemDescription: line.itemDescription,
-        moqKm: moqKm != null && Number.isFinite(moqKm) ? moqKm : null,
-        quantityUom: line.quantityUom || 'KM',
-        cuWeightKgPerKm: weights?.cuWeightKgPerKm ?? null,
-        alWeightKgPerKm: weights?.alWeightKgPerKm ?? null,
-        unitSellingPrice: unitPrice,
-        lineTotal,
-        materialNumber: line.materialNumber,
-      };
-    }),
+    customerCountry: customerCountry,
+    lines: mappedLines,
   });
 }
 
@@ -787,6 +942,7 @@ export async function buildCurrentCommercialOfferDocument(quotationId: string, a
     where: { id: quotation.inquiryId },
     select: {
       id: true,
+      inquiryNumber: true,
       customerName: true,
       contactPerson: true,
       customerReference: true,
@@ -794,7 +950,21 @@ export async function buildCurrentCommercialOfferDocument(quotationId: string, a
       salesAgent: true,
       quotationOwner: true,
       status: true,
-      lines: { select: { id: true, cableTolerancePercent: true } },
+      lines: {
+        select: {
+          id: true,
+          lineNumber: true,
+          materialNumber: true,
+          cableDescription: true,
+          materialCost: true,
+          cableTolerancePercent: true,
+          requestedQuantity: true,
+          requestedLengthMeters: true,
+          cuttingLengthMeters: true,
+          drumSchedule: true,
+          drumType: true,
+        },
+      },
     },
   });
   if (!inquiry) throwCode('Inquiry not found.', 'NOT_FOUND');

@@ -56,7 +56,7 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-5xl p-5 space-y-4 text-xs max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-6xl xl:max-w-7xl p-6 space-y-4 text-xs max-h-[92vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2 min-w-0">
             <div className="p-2 rounded-xl bg-brand-500 text-white shrink-0">
@@ -93,6 +93,16 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
             onConfirmed?.();
           }}
         />
+
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-colors"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -38,6 +38,15 @@ const CUSTOMER_VISIBLE_COMMERCIAL_METADATA_KEYS = new Set([
   'inquiryProcessSource',
   'inquiryProcessAssignedAt',
   'workflowChannel',
+  'requestedFulfillmentType',
+  'submittedToSales',
+  'submittedToSalesAt',
+  'preferredContainerType',
+  'salesApprovalStatus',
+  'salesApprovedAt',
+  'salesApprovedBy',
+  'containerStudy',
+  'cuttingPlan',
 ]);
 
 function projectCommercialMetadataForActor(metadata: unknown, actor: RequestActor): unknown {

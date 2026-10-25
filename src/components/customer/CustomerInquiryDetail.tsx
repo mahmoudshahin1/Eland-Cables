@@ -1,5 +1,6 @@
 import React from 'react';
 import { CommercialInquiryDetail } from '../inquiry-quotation/CommercialInquiryDetail';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 
 interface CustomerInquiryDetailProps {
   inquiryId: string;
@@ -8,5 +9,10 @@ interface CustomerInquiryDetailProps {
 
 /** Customer portal inquiry workspace — same 8 tabs as internal; costing content is commercial-facing only. */
 export const CustomerInquiryDetail: React.FC<CustomerInquiryDetailProps> = ({ inquiryId, onBack }) => {
-  return <CommercialInquiryDetail inquiryId={inquiryId} onBack={onBack} portalMode="customer" />;
+  return (
+    <ErrorBoundary fallbackTitle="Inquiry Workspace Notice">
+      <CommercialInquiryDetail inquiryId={inquiryId} onBack={onBack} portalMode="customer" />
+    </ErrorBoundary>
+  );
 };
+

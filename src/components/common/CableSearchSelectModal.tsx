@@ -715,7 +715,7 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
 
       {pendingCable && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-5xl p-5 space-y-4 text-xs max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-6xl xl:max-w-7xl p-6 space-y-4 text-xs max-h-[92vh] overflow-y-auto">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-2 min-w-0">
                 <div className="p-2 rounded-xl bg-brand-500 text-white shrink-0">
