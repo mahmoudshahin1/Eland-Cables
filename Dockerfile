@@ -21,14 +21,9 @@ RUN npm run build
 
 # Default environment
 ENV NODE_ENV=production
-ENV PORT=7860
+ENV PORT=3000
 ENV HOST=0.0.0.0
 
-EXPOSE 7860
-
-# Ensure non-root user (Hugging Face default user UID 1000)
-RUN useradd -m -u 1000 user || true
-RUN chown -R 1000:1000 /app
-USER 1000
+EXPOSE 3000
 
 CMD ["npm", "start"]
