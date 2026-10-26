@@ -15,8 +15,9 @@ RUN npm ci --omit=dev
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Copy prebuilt distribution bundle
+# Copy prebuilt distribution bundle and deploy scripts
 COPY dist ./dist/
+COPY scripts ./scripts/
 
 # Default environment
 ENV NODE_ENV=production
