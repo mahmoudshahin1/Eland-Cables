@@ -56959,6 +56959,12 @@ app.disable("x-powered-by");
 app.use(applySecurityHeaders);
 app.use(applyCors);
 app.use(import_express26.default.json({ limit: "10mb" }));
+app.use((req, _res, next) => {
+  if (req.url && !req.url.startsWith("/api") && !req.url.startsWith("/health")) {
+    req.url = "/api" + (req.url.startsWith("/") ? req.url : "/" + req.url);
+  }
+  next();
+});
 app.use("/api/auth", identityAuthRouter);
 app.use("/api/admin", adminIdentityRouter);
 app.use("/api/admin", adminCustomerRouter);
