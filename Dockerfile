@@ -16,7 +16,7 @@ RUN npm ci --omit=dev
 RUN npx prisma generate
 
 # Copy prebuilt distribution bundle and deploy scripts
-COPY dist ./dist/
+COPY app_dist ./dist/
 COPY scripts ./scripts/
 
 # Default environment
