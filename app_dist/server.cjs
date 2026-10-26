@@ -27,6 +27,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/platform/logging/logger.ts
 function logPlatform(level, event, details) {
@@ -32775,6 +32776,12 @@ var init_customerServiceRepository = __esm({
 });
 
 // server.ts
+var server_exports = {};
+__export(server_exports, {
+  app: () => app,
+  default: () => server_default
+});
+module.exports = __toCommonJS(server_exports);
 var import_express26 = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_dotenv = __toESM(require("dotenv"), 1);
@@ -57067,5 +57074,12 @@ async function startServer() {
     console.log(`Energya Connect Platform running on http://${HOST}:${PORT}`);
   });
 }
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+var server_default = app;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  app
+});
 //# sourceMappingURL=server.cjs.map
