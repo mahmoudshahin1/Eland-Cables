@@ -1,3 +1,13 @@
+---
+title: Energya Connect
+emoji: ⚡
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # ENERGYA Cable Manufacturing Platform
 
 CEO-accepted Google AI Studio prototype, evolved in place. Do not treat this as a greenfield ERP rebuild.
