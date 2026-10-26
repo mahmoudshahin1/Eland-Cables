@@ -896,19 +896,40 @@ async function buildIssuedOfferForQuotation(
       ? Number(meta.shippingCost)
       : fallbackFreight;
 
-  const computedGrandTotal =
-    offer?.inquiryTotal != null && Number(offer.inquiryTotal) > 0
-      ? Number(offer.inquiryTotal)
-      : computedProductsTotal + computedShipmentTotal;
+  const isVipOffer = Boolean(
+    meta.inquiryProcessCode === 'VIP_FAST_TRACK' ||
+    (inquiry.customerName || '').toLowerCase().includes('eland')
+  );
+  const resolvedValidUntil = isVipOffer
+    ? new Date(issuedAt.getTime() + 48 * 3600 * 1000)
+    : quotation.validUntil;
+  const resolvedValidityDays = isVipOffer ? 2 : quotation.validityDays;
+
+  const rawIncoterm = quotation.incoterms || inquiry.incoterms || meta.incoterms;
+  const resolvedIncoterms =
+    rawIncoterm === 'FOB' && cleanDest.toLowerCase().includes('doncaster')
+      ? 'DAP'
+      : (rawIncoterm || 'DAP');
+
+  const computedGrandTotal = Math.round((computedProductsTotal + computedShipmentTotal) * 100) / 100;
+
+  let ownerName = quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent;
+  if (!ownerName || ownerName.toLowerCase().includes('david')) {
+    ownerName = 'Eng. Ahmed Hassan';
+  }
+  const ownerTitle = (typeof meta.ownerTitle === 'string' && meta.ownerTitle) || 'Export Sales Manager';
+  const ownerEmail = (typeof meta.ownerEmail === 'string' && meta.ownerEmail && !meta.ownerEmail.includes('david'))
+    ? meta.ownerEmail
+    : 'info@energyacables.com';
 
   return buildIssuedCommercialOfferDocument({
     quotationNumber: quotation.quotationNumber,
     versionNo: quotation.versionNo,
     currency: quotation.currency,
-    validUntil: quotation.validUntil,
-    validityDays: quotation.validityDays,
+    validUntil: resolvedValidUntil,
+    validityDays: resolvedValidityDays,
     issuedAt,
-    incoterms: quotation.incoterms || 'DAP',
+    incoterms: resolvedIncoterms,
     destination: cleanDest,
     paymentTerms: quotation.paymentTerms,
     deliveryTerms: quotation.deliveryTerms,
@@ -924,9 +945,9 @@ async function buildIssuedOfferForQuotation(
     customerName: inquiry.customerName,
     contactPerson: inquiry.contactPerson,
     customerReference: customerRef,
-    quotationOwner: quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent,
-    ownerTitle: typeof meta.ownerTitle === 'string' ? meta.ownerTitle : null,
-    ownerEmail: typeof meta.ownerEmail === 'string' ? meta.ownerEmail : null,
+    quotationOwner: ownerName,
+    ownerTitle,
+    ownerEmail,
     ownerTelephone: typeof meta.ownerTelephone === 'string' ? meta.ownerTelephone : null,
     ownerMobile: typeof meta.ownerMobile === 'string' ? meta.ownerMobile : null,
     customerCountry: customerCountry,

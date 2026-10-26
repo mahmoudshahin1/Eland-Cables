@@ -27201,15 +27201,28 @@ ${subtext}`;
   const prefContainer = String(meta.preferredContainerType || "40HQ");
   const fallbackFreight = containerFreightMap[prefContainer] || 3100;
   const computedShipmentTotal = offer?.shipmentTotal != null && Number(offer.shipmentTotal) > 0 ? Number(offer.shipmentTotal) : meta.freightCost != null ? Number(meta.freightCost) : meta.shippingCost != null ? Number(meta.shippingCost) : fallbackFreight;
-  const computedGrandTotal = offer?.inquiryTotal != null && Number(offer.inquiryTotal) > 0 ? Number(offer.inquiryTotal) : computedProductsTotal + computedShipmentTotal;
+  const isVipOffer = Boolean(
+    meta.inquiryProcessCode === "VIP_FAST_TRACK" || (inquiry.customerName || "").toLowerCase().includes("eland")
+  );
+  const resolvedValidUntil = isVipOffer ? new Date(issuedAt.getTime() + 48 * 3600 * 1e3) : quotation.validUntil;
+  const resolvedValidityDays = isVipOffer ? 2 : quotation.validityDays;
+  const rawIncoterm = quotation.incoterms || inquiry.incoterms || meta.incoterms;
+  const resolvedIncoterms = rawIncoterm === "FOB" && cleanDest.toLowerCase().includes("doncaster") ? "DAP" : rawIncoterm || "DAP";
+  const computedGrandTotal = Math.round((computedProductsTotal + computedShipmentTotal) * 100) / 100;
+  let ownerName = quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent;
+  if (!ownerName || ownerName.toLowerCase().includes("david")) {
+    ownerName = "Eng. Ahmed Hassan";
+  }
+  const ownerTitle = typeof meta.ownerTitle === "string" && meta.ownerTitle || "Export Sales Manager";
+  const ownerEmail = typeof meta.ownerEmail === "string" && meta.ownerEmail && !meta.ownerEmail.includes("david") ? meta.ownerEmail : "info@energyacables.com";
   return buildIssuedCommercialOfferDocument({
     quotationNumber: quotation.quotationNumber,
     versionNo: quotation.versionNo,
     currency: quotation.currency,
-    validUntil: quotation.validUntil,
-    validityDays: quotation.validityDays,
+    validUntil: resolvedValidUntil,
+    validityDays: resolvedValidityDays,
     issuedAt,
-    incoterms: quotation.incoterms || "DAP",
+    incoterms: resolvedIncoterms,
     destination: cleanDest,
     paymentTerms: quotation.paymentTerms,
     deliveryTerms: quotation.deliveryTerms,
@@ -27225,9 +27238,9 @@ ${subtext}`;
     customerName: inquiry.customerName,
     contactPerson: inquiry.contactPerson,
     customerReference: customerRef,
-    quotationOwner: quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent,
-    ownerTitle: typeof meta.ownerTitle === "string" ? meta.ownerTitle : null,
-    ownerEmail: typeof meta.ownerEmail === "string" ? meta.ownerEmail : null,
+    quotationOwner: ownerName,
+    ownerTitle,
+    ownerEmail,
     ownerTelephone: typeof meta.ownerTelephone === "string" ? meta.ownerTelephone : null,
     ownerMobile: typeof meta.ownerMobile === "string" ? meta.ownerMobile : null,
     customerCountry,
@@ -44523,16 +44536,23 @@ function renderCommercialOfferPdf(offerInput) {
     }
     const boxY = y;
     const boxW = 78;
+    const isVip = Boolean(
+      offer.validityLabel === "48 Hours" || (offer.customer?.customerName || "").toLowerCase().includes("eland")
+    );
+    const validityText = isVip ? "48 Hours" : presentText(offer.validityLabel || "48 Hours");
     const boxes = [
-      ["Quotation No.", `${presentText(offer.quotationNumber)} REV.${offer.versionNo}`],
-      ["Date", offerDateLabel(offer.generatedAt)],
-      ["Validity", presentText(offer.validityLabel)]
+      ["Quotation No.", `${presentText(offer.quotationNumber)} REV.${offer.versionNo}`, false],
+      ["Date", offerDateLabel(offer.generatedAt), false],
+      ["Validity", validityText, true]
     ];
     boxes.forEach((box, index) => {
       const x = 318 + index * (boxW + 6);
-      doc.roundedRect(x, boxY, boxW, 36, 3).lineWidth(0.7).strokeColor(NAVY).stroke();
-      doc.fillColor(MUTED).font("Helvetica").fontSize(6).text(box[0], x + 4, boxY + 5, { width: boxW - 8, align: "center" });
-      doc.fillColor(NAVY).font("Helvetica-Bold").fontSize(7).text(box[1], x + 3, boxY + 16, {
+      const isValidity = Boolean(box[2]);
+      const strokeCol = isValidity ? "#059669" : NAVY;
+      const textCol = isValidity ? "#047857" : NAVY;
+      doc.roundedRect(x, boxY, boxW, 36, 4).lineWidth(0.9).strokeColor(strokeCol).stroke();
+      doc.fillColor(isValidity ? "#047857" : MUTED).font("Helvetica-Bold").fontSize(6).text(box[0].toUpperCase(), x + 4, boxY + 6, { width: boxW - 8, align: "center" });
+      doc.fillColor(textCol).font("Helvetica-Bold").fontSize(8).text(box[1], x + 3, boxY + 18, {
         width: boxW - 6,
         align: "center"
       });

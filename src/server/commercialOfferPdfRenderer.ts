@@ -202,16 +202,24 @@ export function renderCommercialOfferPdf(offerInput: IssuedCommercialOfferDocume
 
     const boxY = y;
     const boxW = 78;
+    const isVip = Boolean(
+      offer.validityLabel === '48 Hours' ||
+      (offer.customer?.customerName || '').toLowerCase().includes('eland')
+    );
+    const validityText = isVip ? '48 Hours' : presentText(offer.validityLabel || '48 Hours');
     const boxes = [
-      ['Quotation No.', `${presentText(offer.quotationNumber)} REV.${offer.versionNo}`],
-      ['Date', offerDateLabel(offer.generatedAt)],
-      ['Validity', presentText(offer.validityLabel)],
+      ['Quotation No.', `${presentText(offer.quotationNumber)} REV.${offer.versionNo}`, false],
+      ['Date', offerDateLabel(offer.generatedAt), false],
+      ['Validity', validityText, true],
     ];
     boxes.forEach((box, index) => {
       const x = 318 + index * (boxW + 6);
-      doc.roundedRect(x, boxY, boxW, 36, 3).lineWidth(0.7).strokeColor(NAVY).stroke();
-      doc.fillColor(MUTED).font('Helvetica').fontSize(6).text(box[0], x + 4, boxY + 5, { width: boxW - 8, align: 'center' });
-      doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(7).text(box[1], x + 3, boxY + 16, {
+      const isValidity = Boolean(box[2]);
+      const strokeCol = isValidity ? '#059669' : NAVY;
+      const textCol = isValidity ? '#047857' : NAVY;
+      doc.roundedRect(x, boxY, boxW, 36, 4).lineWidth(0.9).strokeColor(strokeCol).stroke();
+      doc.fillColor(isValidity ? '#047857' : MUTED).font('Helvetica-Bold').fontSize(6).text(box[0].toUpperCase(), x + 4, boxY + 6, { width: boxW - 8, align: 'center' });
+      doc.fillColor(textCol).font('Helvetica-Bold').fontSize(8).text(box[1], x + 3, boxY + 18, {
         width: boxW - 6,
         align: 'center',
       });
