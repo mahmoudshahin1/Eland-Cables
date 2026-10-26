@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import { checkDatabase } from './src/server/db';
 import { applyCors, applySecurityHeaders } from './src/server/httpSecurity';
 import { masterDataRouter, platformDbRouter } from './src/server/masterDataRoutes';
@@ -146,7 +145,10 @@ async function startServer() {
   });
 
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
+    const viteModule = await (Function('return import("vite")')() as Promise<{
+      createServer: (options: any) => Promise<any>;
+    }>);
+    const vite = await viteModule.createServer({
       server: { middlewareMode: true, allowedHosts: true, host: true },
       appType: 'spa',
     });

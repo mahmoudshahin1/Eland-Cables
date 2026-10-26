@@ -785,6 +785,71 @@ export async function updateInquiry(
     });
   }
 
+  // Handle Contract / Order Submission Notifications
+  if (nextCommercialMetadata) {
+    const meta = nextCommercialMetadata as Record<string, any>;
+    const prevMeta = commercialMetadataRecord(inquiry.commercialMetadata);
+    const quoteNo = updated.quotations?.[0]?.quotationNumber || inquiry.inquiryNumber;
+
+    // 1. Customer submitted contract to Sales
+    if (meta.submittedToSales === true && (!prevMeta.submittedToSales || meta.submittedToSalesAt !== prevMeta.submittedToSalesAt)) {
+      const fType =
+        meta.requestedFulfillmentType === 'SALES_AGREEMENT'
+          ? 'Sales Agreement (اتفاقية توريد)'
+          : 'Direct Sales Order (أمر بيع مباشر)';
+
+      try {
+        const { createUserNotification } = await import('./userNotificationService');
+        await createUserNotification({
+          roleCode: 'SALES_MANAGER',
+          title: `New VIP Order Submitted: ${inquiry.inquiryNumber}`,
+          message: `Customer ${inquiry.customerName || 'VIP Customer'} submitted contract [${fType}] for quotation ${quoteNo}. Awaiting Sales review and release to production floor.`,
+          eventCode: 'COMMERCIAL_ORDER_SUBMITTED_TO_SALES',
+          entityType: 'COMMERCIAL_INQUIRY',
+          entityId: inquiry.id,
+        });
+
+        if (inquiry.customerMasterId) {
+          const { notifyStandardWorkflowEvent } = await import('./standardWorkflowNotifications');
+          await notifyStandardWorkflowEvent({
+            eventCode: 'COMMERCIAL_ORDER_SUBMITTED_TO_SALES',
+            title: `Order Transmitted to Sales: ${quoteNo}`,
+            message: `Your contract request (${fType}) has been transmitted to Sales. You will receive an instant notification as soon as it is released to the Production Floor (صالة الإنتاج).`,
+            inquiryId: inquiry.id,
+            inquiryNumber: inquiry.inquiryNumber,
+            customerMasterId: inquiry.customerMasterId,
+            notifyCustomer: true,
+          });
+        }
+      } catch (notifErr) {
+        console.warn('Failed to dispatch submitted-to-sales notification:', notifErr);
+      }
+    }
+
+    // 2. Sales approved contract and released to production
+    if (
+      meta.commercialApprovalStatus === 'APPROVED' &&
+      prevMeta.commercialApprovalStatus !== 'APPROVED'
+    ) {
+      try {
+        if (inquiry.customerMasterId) {
+          const { notifyStandardWorkflowEvent } = await import('./standardWorkflowNotifications');
+          await notifyStandardWorkflowEvent({
+            eventCode: 'COMMERCIAL_ORDER_APPROVED',
+            title: '🎉 Contract Approved & Released to Production Floor!',
+            message: `Sales approved quotation ${quoteNo}! Your order has officially been released to the Production Floor (صالة الإنتاج) for cable manufacturing.`,
+            inquiryId: inquiry.id,
+            inquiryNumber: inquiry.inquiryNumber,
+            customerMasterId: inquiry.customerMasterId,
+            notifyCustomer: true,
+          });
+        }
+      } catch (notifErr) {
+        console.warn('Failed to dispatch approved-by-sales notification:', notifErr);
+      }
+    }
+  }
+
   appendAudit({
     actorId: actor.id,
     actorName: actor.name || actor.email,

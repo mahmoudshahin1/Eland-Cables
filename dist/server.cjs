@@ -23582,6 +23582,57 @@ async function updateInquiry(inquiryId, input, actor) {
       data: { incotermCode: nextCode }
     });
   }
+  if (nextCommercialMetadata) {
+    const meta = nextCommercialMetadata;
+    const prevMeta = commercialMetadataRecord(inquiry.commercialMetadata);
+    const quoteNo = updated.quotations?.[0]?.quotationNumber || inquiry.inquiryNumber;
+    if (meta.submittedToSales === true && (!prevMeta.submittedToSales || meta.submittedToSalesAt !== prevMeta.submittedToSalesAt)) {
+      const fType = meta.requestedFulfillmentType === "SALES_AGREEMENT" ? "Sales Agreement (\u0627\u062A\u0641\u0627\u0642\u064A\u0629 \u062A\u0648\u0631\u064A\u062F)" : "Direct Sales Order (\u0623\u0645\u0631 \u0628\u064A\u0639 \u0645\u0628\u0627\u0634\u0631)";
+      try {
+        const { createUserNotification: createUserNotification2 } = await Promise.resolve().then(() => (init_userNotificationService(), userNotificationService_exports));
+        await createUserNotification2({
+          roleCode: "SALES_MANAGER",
+          title: `New VIP Order Submitted: ${inquiry.inquiryNumber}`,
+          message: `Customer ${inquiry.customerName || "VIP Customer"} submitted contract [${fType}] for quotation ${quoteNo}. Awaiting Sales review and release to production floor.`,
+          eventCode: "COMMERCIAL_ORDER_SUBMITTED_TO_SALES",
+          entityType: "COMMERCIAL_INQUIRY",
+          entityId: inquiry.id
+        });
+        if (inquiry.customerMasterId) {
+          const { notifyStandardWorkflowEvent: notifyStandardWorkflowEvent2 } = await Promise.resolve().then(() => (init_standardWorkflowNotifications(), standardWorkflowNotifications_exports));
+          await notifyStandardWorkflowEvent2({
+            eventCode: "COMMERCIAL_ORDER_SUBMITTED_TO_SALES",
+            title: `Order Transmitted to Sales: ${quoteNo}`,
+            message: `Your contract request (${fType}) has been transmitted to Sales. You will receive an instant notification as soon as it is released to the Production Floor (\u0635\u0627\u0644\u0629 \u0627\u0644\u0625\u0646\u062A\u0627\u062C).`,
+            inquiryId: inquiry.id,
+            inquiryNumber: inquiry.inquiryNumber,
+            customerMasterId: inquiry.customerMasterId,
+            notifyCustomer: true
+          });
+        }
+      } catch (notifErr) {
+        console.warn("Failed to dispatch submitted-to-sales notification:", notifErr);
+      }
+    }
+    if (meta.commercialApprovalStatus === "APPROVED" && prevMeta.commercialApprovalStatus !== "APPROVED") {
+      try {
+        if (inquiry.customerMasterId) {
+          const { notifyStandardWorkflowEvent: notifyStandardWorkflowEvent2 } = await Promise.resolve().then(() => (init_standardWorkflowNotifications(), standardWorkflowNotifications_exports));
+          await notifyStandardWorkflowEvent2({
+            eventCode: "COMMERCIAL_ORDER_APPROVED",
+            title: "\u{1F389} Contract Approved & Released to Production Floor!",
+            message: `Sales approved quotation ${quoteNo}! Your order has officially been released to the Production Floor (\u0635\u0627\u0644\u0629 \u0627\u0644\u0625\u0646\u062A\u0627\u062C) for cable manufacturing.`,
+            inquiryId: inquiry.id,
+            inquiryNumber: inquiry.inquiryNumber,
+            customerMasterId: inquiry.customerMasterId,
+            notifyCustomer: true
+          });
+        }
+      } catch (notifErr) {
+        console.warn("Failed to dispatch approved-by-sales notification:", notifErr);
+      }
+    }
+  }
   appendAudit({
     actorId: actor.id,
     actorName: actor.name || actor.email,
@@ -32727,7 +32778,6 @@ var init_customerServiceRepository = __esm({
 var import_express26 = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_dotenv = __toESM(require("dotenv"), 1);
-var import_vite = require("vite");
 init_db();
 
 // src/server/httpSecurity.ts
@@ -56991,7 +57041,8 @@ async function startServer() {
     });
   });
   if (process.env.NODE_ENV !== "production") {
-    const vite = await (0, import_vite.createServer)({
+    const viteModule = await Function('return import("vite")')();
+    const vite = await viteModule.createServer({
       server: { middlewareMode: true, allowedHosts: true, host: true },
       appType: "spa"
     });

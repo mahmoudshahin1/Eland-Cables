@@ -333,39 +333,46 @@ function AuthenticatedShell() {
   useEffect(() => {
     if (!jwtToken) return;
     let cancelled = false;
-    void fetch('/api/notifications', { headers: { Authorization: `Bearer ${jwtToken}` } })
-      .then((r) => r.json())
-      .then((body) => {
-        if (cancelled || !Array.isArray(body.notifications)) return;
-        setNotifications((prev) => {
-          const server = (body.notifications as Array<{
-            id: string;
-            title: string;
-            message: string;
-            timestamp: string;
-            read: boolean;
-            type?: string;
-            refNo?: string;
-            entityType?: string | null;
-            entityId?: string | null;
-          }>).map((n) => ({
-            id: n.id,
-            title: n.title,
-            message: n.message,
-            timestamp: n.timestamp,
-            read: n.read,
-            type: (n.type as SystemNotification['type']) || 'system',
-            refNo: n.refNo,
-            entityType: n.entityType,
-            entityId: n.entityId,
-          }));
-          const localOnly = prev.filter((p) => !server.some((s) => s.id === p.id));
-          return [...server, ...localOnly];
-        });
-      })
-      .catch(() => undefined);
+
+    const loadNotifications = () => {
+      void fetch('/api/notifications', { headers: { Authorization: `Bearer ${jwtToken}` } })
+        .then((r) => r.json())
+        .then((body) => {
+          if (cancelled || !Array.isArray(body.notifications)) return;
+          setNotifications((prev) => {
+            const server = (body.notifications as Array<{
+              id: string;
+              title: string;
+              message: string;
+              timestamp: string;
+              read: boolean;
+              type?: string;
+              refNo?: string;
+              entityType?: string | null;
+              entityId?: string | null;
+            }>).map((n) => ({
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              timestamp: n.timestamp,
+              read: n.read,
+              type: (n.type as SystemNotification['type']) || 'system',
+              refNo: n.refNo,
+              entityType: n.entityType,
+              entityId: n.entityId,
+            }));
+            const localOnly = prev.filter((p) => !server.some((s) => s.id === p.id));
+            return [...server, ...localOnly];
+          });
+        })
+        .catch(() => undefined);
+    };
+
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 10000);
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, [jwtToken]);
 
