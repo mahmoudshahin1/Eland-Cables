@@ -56956,9 +56956,9 @@ app.use("/api/auth", identityAuthRouter);
 app.use("/api/admin", adminIdentityRouter);
 app.use("/api/admin", adminCustomerRouter);
 app.post("/api/ai/assistant", postAiAssistant);
-app.get("/api/platform/health", async (_req, res) => {
+app.get(["/health", "/api/health", "/api/platform/health"], async (_req, res) => {
   const db = await checkDatabase();
-  res.status(db.ok ? 200 : 200).json({
+  res.status(200).json({
     ok: true,
     service: "energya-connect",
     architecture: "modular-monolith",
