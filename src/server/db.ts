@@ -6,7 +6,12 @@ let prisma: PrismaClient | null | undefined;
 export function getPrisma(): PrismaClient | null {
   if (!process.env.DATABASE_URL) return null;
   if (prisma === undefined) {
-    prisma = new PrismaClient();
+    prisma = new PrismaClient({
+      transactionOptions: {
+        maxWait: 15000,
+        timeout: 60000,
+      },
+    });
   }
   return prisma;
 }

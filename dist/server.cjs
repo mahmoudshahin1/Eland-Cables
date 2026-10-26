@@ -59,7 +59,12 @@ __export(db_exports, {
 function getPrisma() {
   if (!process.env.DATABASE_URL) return null;
   if (prisma === void 0) {
-    prisma = new import_client.PrismaClient();
+    prisma = new import_client.PrismaClient({
+      transactionOptions: {
+        maxWait: 15e3,
+        timeout: 6e4
+      }
+    });
   }
   return prisma;
 }
