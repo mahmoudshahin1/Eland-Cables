@@ -464,7 +464,8 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       if (!res.ok) {
-        throw new Error('Failed to generate PDF. Falling back to print.');
+        const errorJson = await res.json().catch(() => ({}));
+        throw new Error(errorJson.error || `Download failed with HTTP ${res.status}`);
       }
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
@@ -473,8 +474,9 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
       a.download = `COMMERCIAL-OFFER-${quoteNumber}-REV${revision}.pdf`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-    } catch {
-      window.print();
+    } catch (err: any) {
+      console.error('Failed to download offer PDF:', err);
+      alert(`Could not download PDF quotation: ${err.message || 'Unknown error'}. Please click "⚡ Instant Costing & Commercial Offer" above or refresh the page.`);
     } finally {
       setDownloading(false);
     }

@@ -728,12 +728,24 @@ v2InquiryConfigurationRouter.get('/:id/quotation/pdf', async (req, res) => {
   const actor = await requireV2InquiryAuth(req, res);
   if (!actor) return;
   try {
-    const quotation = await getV2CurrentQuotation(req.params.id, actor);
+    let quotation = await getV2CurrentQuotation(req.params.id, actor);
+    if (!quotation) {
+      try {
+        const { calculateInquiry } = await import('./vipCalculateService');
+        await calculateInquiry(req.params.id, actor, { recalculate: true });
+        quotation = await getV2CurrentQuotation(req.params.id, actor);
+      } catch (autoErr) {
+        console.warn('Auto-calculate quotation for PDF draft encountered:', autoErr);
+      }
+    }
     if (!quotation) {
       return res.status(404).json({ error: 'No quotation found.', code: 'NOT_FOUND' });
     }
-    const isVip = quotation.inquiry?.commercialMetadata &&
-      (quotation.inquiry.commercialMetadata as any)?.inquiryProcessCode === 'VIP_FAST_TRACK';
+    const inqMeta = (quotation.inquiry?.commercialMetadata as any) || {};
+    const isVip =
+      inqMeta.inquiryProcessCode === 'VIP_FAST_TRACK' ||
+      (quotation.inquiry?.customerName || '').toLowerCase().includes('eland') ||
+      (quotation.customerName || '').toLowerCase().includes('eland');
     const draft = req.query.draft === '1' || req.query.draft === 'true';
     if (draft && actor.userType === 'customer' && !isVip) {
       return res.status(403).json({

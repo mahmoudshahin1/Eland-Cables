@@ -469,17 +469,23 @@ export async function persistV2QuotationPricing(
   const storedRules = pricingRules.map(toStoredPricingRule);
 
   let totalSelling = 0;
+  let totalMaterialCost = 0;
   let hasApprovalRequired = false;
 
   for (const line of quotation.lines) {
-    const matCost = Number(line.materialCost ?? 0);
+    const readinessLine = readinessLines.find((r) => r.lineId === line.inquiryLineId);
+    const freshCost = readinessLine?.costingRun?.materialCost != null
+      ? Number(readinessLine.costingRun.materialCost)
+      : Number(line.materialCost ?? 0);
+    const matCost = freshCost > 0 ? freshCost : Number(line.materialCost ?? 0);
     if (matCost <= 0) throwCode(`Line ${line.lineNumber} has no material cost.`, 'PRICE_NOT_READY');
+    totalMaterialCost += matCost;
 
     const customerId = quotation.customerMasterId || quotation.customerId;
     const context = await loadPricingResolutionContext(customerId, line.materialNumber);
     const result = calculateCommercialSellingPrice(
       {
-        materialCost: line.materialCost ?? matCost,
+        materialCost: matCost,
         currency: quotation.currency,
         materialNumber: line.materialNumber || undefined,
         customerId,
@@ -510,10 +516,10 @@ export async function persistV2QuotationPricing(
         quotationNumber: quotation.quotationNumber,
         versionNo: quotation.versionNo,
         materialNumber: line.materialNumber || 'UNMAPPED',
-        costingRunId: line.costingRunId,
-        v2CostingCalculationId: line.costingCalculationId,
-        drumPlanId: line.v2DrumPlanId,
-        materialCost: line.materialCost ?? matCost,
+        costingRunId: readinessLine?.costingRun?.id || line.costingRunId,
+        v2CostingCalculationId: readinessLine?.costingCalculation?.id || line.costingCalculationId,
+        drumPlanId: readinessLine?.handoff?.drumPlanId ?? line.v2DrumPlanId,
+        materialCost: matCost,
         currency: result.currency,
         pricingRuleId: result.pricingRuleId || null,
         pricingRuleRevision: result.pricingRuleRevision || 1,
@@ -531,10 +537,10 @@ export async function persistV2QuotationPricing(
         approvalReason: result.approvalReason,
       },
       update: {
-        materialCost: line.materialCost ?? matCost,
-        costingRunId: line.costingRunId,
-        v2CostingCalculationId: line.costingCalculationId,
-        drumPlanId: line.v2DrumPlanId,
+        materialCost: matCost,
+        costingRunId: readinessLine?.costingRun?.id || line.costingRunId,
+        v2CostingCalculationId: readinessLine?.costingCalculation?.id || line.costingCalculationId,
+        drumPlanId: readinessLine?.handoff?.drumPlanId ?? line.v2DrumPlanId,
         pricingRuleId: result.pricingRuleId || null,
         pricingRuleRevision: result.pricingRuleRevision || 1,
         pricingRuleType: result.pricingRuleType || 'GROSS_MARGIN',
@@ -562,6 +568,9 @@ export async function persistV2QuotationPricing(
     await prisma.commercialQuotationLine.update({
       where: { id: line.id },
       data: {
+        materialCost: matCost,
+        costingRunId: readinessLine?.costingRun?.id || line.costingRunId,
+        costingCalculationId: readinessLine?.costingCalculation?.id || line.costingCalculationId,
         sellingPrice: result.finalSellingPrice,
         commercialStatus: result.approvalRequired ? 'PRICING_APPROVAL_REQUIRED' : 'PRICING_CALCULATED',
         ...(inqLine?.drumType ? { drumType: inqLine.drumType } : {}),
@@ -575,6 +584,7 @@ export async function persistV2QuotationPricing(
     where: { id: quotation.id },
     data: {
       sellingPrice: totalSelling,
+      materialCostTotal: totalMaterialCost,
       commercialPricingStatus: hasApprovalRequired ? 'PRICING_APPROVAL_REQUIRED' : 'PRICING_CALCULATED',
       commercialOfferStatus: 'READY',
       ...(options?.vipCalculateSnapshot
@@ -833,14 +843,17 @@ async function buildIssuedOfferForQuotation(
     };
   });
 
-  const computedProductsTotal =
-    offer?.productsTotal != null
-      ? Number(offer.productsTotal)
-      : quotation.sellingPrice != null
-      ? Number(quotation.sellingPrice)
-      : intermediateLines.reduce((sum, l) => sum + (l.explicitLineTotal || 0), 0);
-
   const hasAllExplicit = intermediateLines.length > 0 && intermediateLines.every((l) => l.explicitLineTotal != null && l.explicitLineTotal > 0);
+  const sumExplicit = intermediateLines.reduce((sum, l) => sum + (l.explicitLineTotal || 0), 0);
+
+  const computedProductsTotal =
+    hasAllExplicit && sumExplicit > 0
+      ? Math.round(sumExplicit * 100) / 100
+      : quotation.sellingPrice != null && Number(quotation.sellingPrice) > 0
+      ? Number(quotation.sellingPrice)
+      : offer?.productsTotal != null && Number(offer.productsTotal) > 0
+      ? Number(offer.productsTotal)
+      : Math.round(sumExplicit * 100) / 100;
 
   const totalMatCost = intermediateLines.reduce((sum, l) => sum + l.matCost, 0);
   const useMatCost = totalMatCost > 0;
@@ -879,6 +892,11 @@ async function buildIssuedOfferForQuotation(
     };
   });
 
+  const finalProductsTotal =
+    mappedLines.length > 0 && mappedLines.every((l) => l.lineTotal != null)
+      ? Math.round(mappedLines.reduce((sum, l) => sum + (l.lineTotal || 0), 0) * 100) / 100
+      : computedProductsTotal;
+
   const containerFreightMap: Record<string, number> = {
     '20STD': 3100,
     '40STD': 3300,
@@ -911,7 +929,7 @@ async function buildIssuedOfferForQuotation(
       ? 'DAP'
       : (rawIncoterm || 'DAP');
 
-  const computedGrandTotal = Math.round((computedProductsTotal + computedShipmentTotal) * 100) / 100;
+  const computedGrandTotal = Math.round((finalProductsTotal + computedShipmentTotal) * 100) / 100;
 
   let ownerName = quotation.quotationOwner || inquiry.quotationOwner || inquiry.salesAgent;
   if (!ownerName || ownerName.toLowerCase().includes('david')) {
@@ -939,7 +957,7 @@ async function buildIssuedOfferForQuotation(
     metalCurrency: typeof meta.copperPriceCurrency === 'string' ? meta.copperPriceCurrency : quotation.currency,
     metalUnitBasis: typeof meta.copperPriceUom === 'string' ? meta.copperPriceUom : null,
     financialOfferSnapshotId: offer?.id ?? null,
-    productsTotal: computedProductsTotal,
+    productsTotal: finalProductsTotal,
     shipmentTotal: computedShipmentTotal,
     grandTotal: computedGrandTotal,
     customerName: inquiry.customerName,
