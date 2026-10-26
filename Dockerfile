@@ -5,19 +5,18 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /v
 
 WORKDIR /app
 
-# Copy dependency manifests
+# Copy dependency manifests and Prisma schema
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies including devDependencies needed for build
-RUN npm ci --include=dev
+# Install ONLY production dependencies (lightweight, minimal RAM)
+RUN npm ci --omit=dev
 
-# Copy application source
-COPY . .
-
-# Generate Prisma Client and build production bundle
+# Generate Prisma Client
 RUN npx prisma generate
-RUN npm run build
+
+# Copy prebuilt distribution bundle
+COPY dist ./dist/
 
 # Default environment
 ENV NODE_ENV=production
