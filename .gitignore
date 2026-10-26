@@ -1,6 +1,5 @@
 node_modules/
 build/
-dist/
 coverage/
 .DS_Store
 *.log
@@ -9,3 +8,4 @@ coverage/
 logs/
 *.tsbuildinfo
 .cursor/mcp.json
+energya-backend/dist/
