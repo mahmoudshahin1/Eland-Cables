@@ -26,6 +26,7 @@ import {
   createSalesOrderFromCommitment,
   createSalesAgreementFromCommitment,
   createAgreementRelease,
+  mapQuotationLineToSoLine,
 } from './commercialCommitmentRepository';
 import { deleteQuoteToCashDependentsForQuotations } from './quoteToCashTestCleanup';
 import type { RequestActor } from './auth';
@@ -539,5 +540,59 @@ describe('Task 05H — standalone commercial fulfillment', () => {
     );
     const line = await prisma.epcSalesOrderLine.findFirst({ where: { salesOrderId: so.id } });
     assert.ok(line?.lineageSnapshot);
+  });
+});
+
+/**
+ * Pure math guard for fix/so-line-quantity — no DB required.
+ * Quotation line sellingPrice is the LINE TOTAL (set from costing final price, not a per-unit price),
+ * so the default Sales Order plan must pass quantity=1. Legacy data (quantity=8 drums, UOM "KM")
+ * once produced lineAmount = sellingPrice × 8 = 8× the offered total.
+ */
+describe('mapQuotationLineToSoLine — lineAmount math (fix/so-line-quantity)', () => {
+  const legacyQuotationLine = {
+    id: 'ql-fixguard-1',
+    lineNumber: 1,
+    materialNumber: 'MAT-FIXGUARD',
+    itemDescription: 'Guard cable line',
+    customerCableCode: null,
+    quantity: 8,
+    quantityUom: 'KM',
+    sellingPrice: 100,
+    configurationId: null,
+    engineeringRevision: null,
+    bomVersion: null,
+    technicalSpecificationId: null,
+    lengthMeters: 400,
+    cuttingLengthMeters: 400,
+    numberOfCuts: null,
+    drumType: null,
+    drumSize: null,
+    drumQuantity: 8,
+    drumLengthMeters: null,
+    drumWeightKg: null,
+    costingRunId: null,
+    costingCalculationId: null,
+    lineageSnapshot: null,
+    v2ConfigurationSnapshotId: null,
+    v2ConfigurationSnapshotIdString: null,
+    v2CuttingLengthPlanId: null,
+    v2CuttingLengthPlanIdString: null,
+    v2DrumPlanId: null,
+    v2DrumPlanIdString: null,
+    v2DrumPlanVersionNo: null,
+    workflowChannel: null,
+  } as unknown as Parameters<typeof mapQuotationLineToSoLine>[0];
+
+  it('fixed default plan (quantity=1) keeps the offered total: lineAmount=100, not 800', () => {
+    const soLine = mapQuotationLineToSoLine(legacyQuotationLine, 1);
+    assert.equal(Number(soLine.lineAmount), 100);
+    assert.notEqual(Number(soLine.lineAmount), 800);
+    assert.equal(Number(soLine.unitPrice), 100);
+  });
+
+  it('documents the pre-fix regression source: legacy quantity=8 drums multiplied to 800', () => {
+    const soLine = mapQuotationLineToSoLine(legacyQuotationLine, 8);
+    assert.equal(Number(soLine.lineAmount), 800);
   });
 });
