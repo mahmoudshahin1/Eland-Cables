@@ -144,7 +144,7 @@ async function writeAudit(entry: {
   });
 }
 
-function mapQuotationLineToSoLine(
+export function mapQuotationLineToSoLine(
   line: {
     id: string;
     lineNumber: number;
@@ -508,7 +508,7 @@ export async function createSalesOrderFromCommitment(
   const qLines = commitment.quotation.lines;
   const linePlan: Array<{ quotationLineId: string; quantity: number }> = input.lines?.length
     ? input.lines
-    : qLines.map((l) => ({ quotationLineId: l.id, quantity: toNum(l.quantity) }));
+    : qLines.map((l) => ({ quotationLineId: l.id, quantity: 1 }));
 
   let orderQty = 0;
   const soLineCreates = [];
