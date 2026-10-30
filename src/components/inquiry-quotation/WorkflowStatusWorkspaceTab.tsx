@@ -257,7 +257,7 @@ export function WorkflowStatusWorkspaceTab({
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-slate-600" />
             <h3 className="font-bold text-slate-800 text-xs">
-              Stage History & Durations (سجل المراحل وأزمنة الإنجاز)
+              Stage History & Durations
             </h3>
           </div>
           <span className="text-[11px] text-slate-500">
@@ -271,9 +271,9 @@ export function WorkflowStatusWorkspaceTab({
               <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-semibold text-slate-600">
                 <th className="py-2.5 px-4">Stage / Department</th>
                 <th className="py-2.5 px-4">Responsible Actor</th>
-                <th className="py-2.5 px-4">Entry (تاريخ البدء)</th>
-                <th className="py-2.5 px-4">Exit / Response (تاريخ الرد)</th>
-                <th className="py-2.5 px-4 text-right">Duration (مدة الانتظار)</th>
+                <th className="py-2.5 px-4">Entry Date & Time</th>
+                <th className="py-2.5 px-4">Exit / Response Date</th>
+                <th className="py-2.5 px-4 text-right">Stage Duration</th>
                 <th className="py-2.5 px-4 text-center">Status</th>
               </tr>
             </thead>
@@ -350,19 +350,19 @@ export function WorkflowStatusWorkspaceTab({
         <div className="p-3.5 bg-amber-50/70 border-t border-amber-200/70 text-amber-900 text-[11px] flex items-start gap-2.5">
           <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong>ملاحظة تشغيلية:</strong> النظام يسجل حالياً تاريخ ووقت إرسال الطلب لكل مرحلة وتاريخ ووقت الرد بدقة بالغة بالثانية عبر الخادم؛
-            خاصية تسجيل وقت <em>&quot;أول فتح أو استلام للطلب&quot;</em> غير مفعلة حالياً في قاعدة البيانات وسيتم جدولتها في تحديث قادم.
+            <strong>Operational Notice:</strong> The system precisely records server timestamps for stage entry and stage completion to the second.
+            Timestamp recording for <em>&quot;first opened/inspected&quot;</em> is currently pending database schema enhancement and scheduled for a future update.
           </p>
         </div>
       </div>
 
-      {/* Section C: Change Requests History (طلبات التعديل) */}
+      {/* Section C: Change Requests History */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <RotateCcw className="h-4 w-4 text-slate-600" />
             <h3 className="font-bold text-slate-800 text-xs">
-              Change Requests History (سجل طلبات التعديل والرجوع)
+              Change Requests History
             </h3>
           </div>
           <span className="text-[11px] text-slate-400">
@@ -373,9 +373,9 @@ export function WorkflowStatusWorkspaceTab({
         {changeRequests.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center">
             <RotateCcw className="h-6 w-6 text-slate-300 mx-auto mb-1.5" />
-            <p className="font-semibold text-slate-700">لا توجد طلبات تعديل مسجلة على هذا الاستفسار حتى الآن</p>
+            <p className="font-semibold text-slate-700">No change requests recorded for this inquiry yet</p>
             <p className="text-slate-400 text-[11px] mt-0.5">
-              عند قيام أي قسم بإرجاع الطلب لتعديل مواصفات أو أسعار، ستُسجل تفاصيل الملاحظة وأسباب الإرجاع هنا.
+              When any department returns the inquiry for technical or pricing revisions, reason details and notes will be recorded here.
             </p>
           </div>
         ) : (
@@ -415,11 +415,11 @@ export function WorkflowStatusWorkspaceTab({
         )}
       </div>
 
-      {/* Section D: Link to Full Audit Trail (بدون تكرار البيانات) */}
+      {/* Section D: Link to Full Audit Trail */}
       {onSelectTab && (
         <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 text-xs">
           <span className="text-slate-500">
-            للاطلاع على سجل التدقيق والأنشطة الإدارية الشاملة للطلب:
+            For comprehensive activity logs, audit events, and administrative trail:
           </span>
           <button
             type="button"
