@@ -17,6 +17,18 @@ export interface WorkflowStageTimingSummary {
   isCurrent: boolean;
 }
 
+export interface WorkflowEventSummary {
+  id: string;
+  eventType: string;
+  fromStepCode: string | null;
+  toStepCode: string | null;
+  taskId: string | null;
+  actorId: string | null;
+  actorName: string | null;
+  payloadJson: unknown;
+  createdAt: string;
+}
+
 export interface WorkflowInstanceSummary {
   id: string;
   templateCode: string;
@@ -31,6 +43,7 @@ export interface WorkflowInstanceSummary {
     steps: Array<{ stepCode: string; name: string; sortOrder: number; isTerminal: boolean }>;
   };
   openTasks: WorkflowTaskSummary[];
+  events?: WorkflowEventSummary[];
 }
 
 export interface MyWorkflowTask {

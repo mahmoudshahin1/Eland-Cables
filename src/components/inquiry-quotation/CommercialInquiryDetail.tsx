@@ -16,6 +16,7 @@ import {
   FileCheck2,
   FileSpreadsheet,
   FileText,
+  GitBranch,
   History,
   Layers,
   MessageSquare,
@@ -62,6 +63,7 @@ import { InquiryHeaderForm } from './InquiryHeaderForm';
 import { InquiryFieldVisibilityPanel } from './InquiryFieldVisibilityPanel';
 import { InquirySummaryBar } from './InquirySummaryBar';
 import { WorkflowStatusIndicator } from './WorkflowStatusIndicator';
+import { WorkflowStatusWorkspaceTab } from './WorkflowStatusWorkspaceTab';
 import { InquiryColumnVisibilityModal } from './InquiryColumnVisibilityModal';
 import { InquiryCuttingDrumSelectionModal } from './InquiryCuttingDrumSelectionModal';
 import { InquiryLineEditorModal } from './InquiryLineEditorModal';
@@ -75,7 +77,7 @@ import {
 } from './inquiryWorkspaceTabs';
 import { isV2InquiryMetadata } from '../../domain/v2InquiryWorkflow';
 import { canCalculateInquiry, canSubmitInquiry } from '../../domain/inquiryProcessCommands';
-import { fetchV2Quotation, type V2QuotationDto } from '../../services/v2QuotationApiService';
+import { fetchV2Quotation, v2QuotationPdfUrl, type V2QuotationDto } from '../../services/v2QuotationApiService';
 import { CustomerQuotationView } from '../customer/CustomerQuotationView';
 import { InquiryAutomaticProcessingPanel } from './InquiryAutomaticProcessingPanel';
 import { QuotationSectionV2 } from '../cable-configurator/v2/components/QuotationSectionV2';
@@ -498,12 +500,20 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     ? cuttingDrumsWorkspace.v2BridgeTabs[0] ?? null
     : null;
 
+  const isVipV2Inquiry = Boolean(
+    inquiry && canCalculateInquiry(inquiry) && isV2InquiryMetadata(inquiry.commercialMetadata)
+  );
+  const isStandardWorkflow = Boolean(
+    !isVipV2Inquiry && inquiry?.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK'
+  );
+
   const tabsList = useMemo(
     () =>
       resolveInquiryWorkspaceTabs({
         isCustomer,
         canViewCosting,
         canViewExtendedInternal,
+        isStandardWorkflow,
         counts: {
           lineCount: inquiry?.lines?.length || 0,
           documentCount: inquiry?.attachments?.length || 0,
@@ -515,7 +525,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           activityCount: activityEvents.length || undefined,
         },
       }),
-    [isCustomer, canViewCosting, canViewExtendedInternal, inquiry, versions.length, activityEvents.length]
+    [isCustomer, canViewCosting, canViewExtendedInternal, isStandardWorkflow, inquiry, versions.length, activityEvents.length]
   );
 
   const allowedTabIds = useMemo(() => tabsList.map((t) => t.id), [tabsList]);
@@ -584,8 +594,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const canCalculate =
     canShowInquiryCalculate(inquiry?.status, inquiry?.lines?.length || 0) &&
     (inquiry ? canCalculateInquiry(inquiry) : false);
-  const isVipV2Inquiry =
-    Boolean(inquiry && canCalculateInquiry(inquiry) && isV2InquiryMetadata(inquiry.commercialMetadata));
+  // isVipV2Inquiry is defined above for tabsList
   const canNewVersion = inquiry?.status === 'SUBMITTED' && inquiry.isCurrent !== false;
   const canCancel = inquiry && inquiry.status !== 'CANCELLED' && inquiry.status !== 'CLOSED';
 
@@ -1506,6 +1515,21 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </>
             )}
 
+            {isStandardWorkflow && (
+              <button
+                type="button"
+                onClick={() => {
+                  setTab('workflow_status');
+                  document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-200 text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 transition-colors shadow-xs"
+                title="Open Workflow Status Tab"
+              >
+                <GitBranch className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Workflow</span>
+              </button>
+            )}
+
             {isEditable && canCalculate && (
               <button
                 type="button"
@@ -1971,6 +1995,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
             </div>
           </div>
+        )}
+
+        {/* Tab: Workflow Status (Standard Workflow Only) */}
+        {tab === 'workflow_status' && isStandardWorkflow && (
+          <WorkflowStatusWorkspaceTab
+            inquiryId={inquiry.id}
+            inquiryNumber={inquiry.inquiryNumber}
+            isCustomer={isCustomer}
+            jwtToken={jwtToken}
+            onSelectTab={(selectedTab) => setTab(selectedTab as DetailTab)}
+          />
         )}
 
         {/* Tab 1: Cables & Requirements */}
