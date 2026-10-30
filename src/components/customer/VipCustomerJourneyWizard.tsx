@@ -41,15 +41,9 @@ import { Input } from '../ui/Form';
 import {
   createCommercialInquiry,
   addCommercialInquiryLine,
-  calculateInquiryCost,
-  submitCommercialInquiry,
+  updateCommercialInquiry,
 } from '../../services/commercialInquiryApiService';
-import {
-  createV2QuotationDraft,
-  priceV2Quotation,
-  approveV2Quotation,
-  issueV2Quotation,
-} from '../../services/v2QuotationApiService';
+import { calculateVipInquiry } from '../../services/v2InquiryConfigurationApiService';
 import {
   VipCableItem,
   ContainerType,
@@ -355,63 +349,58 @@ Verified by Energya Quality Assurance & Technical Office.
     setIsSubmitting(true);
     setSubmissionFeedback(null);
     try {
-      if (jwtToken) {
-        // Create inquiry in DB
-        const created = await createCommercialInquiry(jwtToken, {
-          customerName: currentUser?.companyName || 'Eland Cables Ltd',
-          contactPerson: currentUser?.fullName || 'David Smith',
-          projectName: projectName,
-          customerReference: customerRef,
-          currency: currency,
-          notes: `VIP Fast-Track CR. Drum: ${selectedDrumCode}, Container: ${containerType}, Pallet: ${palletSecuring}, Terms: ${incoterms}.`,
-        });
+      if (!jwtToken) throw new Error('Sign in is required to submit a VIP order.');
 
-        if (created?.id) {
-          // Add cable line
-          await addCommercialInquiryLine(jwtToken, created.id, {
-            materialNumber: selectedCable.code,
-            cableDescription: selectedCable.name,
-            requestedQuantity: drumCount,
-            requestedLengthMeters: orderLengthNum,
-            cuttingLengthMeters: singleDrumLength,
-            drumType: selectedDrumCode,
-            drumQuantity: drumCount,
-          });
+      const created = await createCommercialInquiry(jwtToken, {
+        customerName: currentUser?.companyName || 'Eland Cables Ltd',
+        contactPerson: currentUser?.fullName || 'David Smith',
+        projectName,
+        customerReference: customerRef,
+        currency,
+        notes: `VIP Fast-Track CR. Drum: ${selectedDrumCode}, Container: ${containerType}, Pallet: ${palletSecuring}, Terms: ${incoterms}.`,
+      });
+      if (!created.id) throw new Error('The VIP inquiry was not created.');
 
-          // Run costing engine
-          try {
-            await calculateInquiryCost(jwtToken, created.id);
-          } catch {
-            // Ignore if calculation requires sales pricing approval
-          }
+      await addCommercialInquiryLine(jwtToken, created.id, {
+        materialNumber: selectedCable.code,
+        cableDescription: selectedCable.name,
+        requestedQuantity: drumCount,
+        requestedLengthMeters: orderLengthNum,
+        cuttingLengthMeters: singleDrumLength,
+        drumType: selectedDrumCode,
+        drumQuantity: drumCount,
+      });
 
-          // Submit to sales
-          try {
-            await submitCommercialInquiry(jwtToken, created.id);
-          } catch {
-            // Submitted
-          }
-
-          // Automatically prepare V2 Quotation draft, pricing, approval and issuance so Sales sees it ready
-          try {
-            await createV2QuotationDraft(jwtToken, created.id);
-            await priceV2Quotation(jwtToken, created.id);
-            await approveV2Quotation(jwtToken, created.id);
-            await issueV2Quotation(jwtToken, created.id);
-          } catch (qErr) {
-            console.log('Quotation progression deferred to Sales workspace:', qErr);
-          }
-        }
+      // VIP Calculate creates and prices the customer offer. Sales approval and
+      // production release are handled later in the Sales workspace; no Issue step.
+      const calculation = await calculateVipInquiry(jwtToken, created.id);
+      if (calculation.status !== 'COMPLETED' || !calculation.quotation) {
+        const reason = calculation.blockingReasons?.join(' ') || 'The commercial offer is not ready.';
+        throw new Error(`VIP calculation did not complete: ${reason}`);
       }
-    } catch (err: any) {
-      console.warn('Backend sync completed with local validation:', err?.message);
-    } finally {
-      setIsSubmitting(false);
+
+      await updateCommercialInquiry(jwtToken, created.id, {
+        commercialMetadata: {
+          ...((created.commercialMetadata && typeof created.commercialMetadata === 'object')
+            ? created.commercialMetadata as Record<string, unknown>
+            : {}),
+          requestedFulfillmentType: 'DIRECT_ORDER',
+          submittedToSales: true,
+          submittedToSalesAt: new Date().toISOString(),
+          productionStatus: 'AWAITING_SALES_SIGN_OFF',
+        },
+      });
+
+      setCrNumber(created.inquiryNumber);
       setIsSubmitted(true);
       setCompletedSteps((prev) => new Set([...prev, 9]));
-      if (onCompletedSubmission) {
-        onCompletedSubmission(crNumber);
-      }
+      onCompletedSubmission?.(created.id);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'VIP order submission failed.';
+      setSubmissionFeedback(message);
+      console.warn('VIP order submission failed:', message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1572,6 +1561,12 @@ Verified by Energya Quality Assurance & Technical Office.
 
               {!isSubmitted ? (
                 <div className="space-y-6">
+                  {submissionFeedback && (
+                    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                      {submissionFeedback}
+                    </div>
+                  )}
+
                   {/* Summary Box Before Submitting */}
                   <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-lg space-y-4">
                     <div className="flex justify-between items-start">
