@@ -23,7 +23,15 @@ Updated: 2026-10-30
 - The tested route applies `assertCustomerBusinessScope` before querying the list. No unauthorized rows were returned in either test.
 - Technical debt: `listInquiries`, `listQuotations`, `listCommitments`, `listSalesOrders`, and `listSalesAgreements` retain secondary `.length` checks for scope. Review and remove reliance on these dead defenses so access control does not depend on every route applying the guard.
 
+## F2: customer VIP production tracking metadata
+
+- Merged `fix/f2-customer-metadata-visibility` to `main` in merge commit `6e01e1d`.
+- `commercialProjection.ts` now exposes `commercialApprovalStatus`, `productionStatus`, and `releasedToProductionAt` to customer actors. `submittedToSales` and `requestedFulfillmentType` were already in `CUSTOMER_VISIBLE_COMMERCIAL_METADATA_KEYS`.
+- The projection allowlist was filtering the tracking state from customer API responses even though `productionStatus=RELEASED_TO_PRODUCTION` was stored on the investigated inquiry. The unit check confirmed the five workflow fields pass through while `materialCost` and `sellingPrice` remain hidden.
+- Live GET and visual verification with David's account were not performed because no local server or customer test token was available during the fix. Confirm the UI once with David's account before treating F2 as fully closed.
+- Follow-up technical debt (not urgent): add a clear comment above `CUSTOMER_VISIBLE_COMMERCIAL_METADATA_KEYS` or evaluate a safer pattern that prevents future workflow metadata fields from being silently hidden. Keep sensitive financial fields such as costs, prices, and margins excluded; do not switch to a denylist without a separate review.
+
 ## Next work
 
-- Resume the priority list: F2, F3, F4, then WP0 0A (begin with 0A as previously agreed).
+- Resume the priority list: F3, F4, then WP0 0A (begin with 0A as previously agreed). F2 still needs one visual confirmation with David's account.
 - Request Claude review before each merge.
