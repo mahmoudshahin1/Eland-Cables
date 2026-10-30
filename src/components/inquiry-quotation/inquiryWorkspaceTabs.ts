@@ -1,5 +1,6 @@
 export type InquiryWorkspaceTab =
   | 'overview'
+  | 'workflow_status'
   | 'lines'
   | 'costing'
   | 'drum_plan'
@@ -30,6 +31,7 @@ export const CUSTOMER_PORTAL_TABS: InquiryWorkspaceTab[] = [...CANONICAL_INTERNA
 
 const TAB_LABELS: Record<InquiryWorkspaceTab, string> = {
   overview: 'Overview',
+  workflow_status: 'Workflow Status',
   lines: 'Cables',
   costing: 'Costing',
   drum_plan: 'Drums',
@@ -58,6 +60,7 @@ export function resolveInquiryWorkspaceTabs(input: {
   isCustomer: boolean;
   canViewCosting: boolean;
   canViewExtendedInternal: boolean;
+  isStandardWorkflow?: boolean;
   counts: InquiryTabCounts;
 }): { id: InquiryWorkspaceTab; label: string; count?: number }[] {
   const base = input.isCustomer
@@ -68,6 +71,15 @@ export function resolveInquiryWorkspaceTabs(input: {
       });
 
   const tabs = [...base];
+  if (input.isStandardWorkflow) {
+    const overviewIndex = tabs.indexOf('overview');
+    if (overviewIndex >= 0) {
+      tabs.splice(overviewIndex + 1, 0, 'workflow_status');
+    } else {
+      tabs.unshift('workflow_status');
+    }
+  }
+
   if (!input.isCustomer && input.canViewExtendedInternal) {
     tabs.push('technical_offer', 'notes', 'history', 'audit');
   }
