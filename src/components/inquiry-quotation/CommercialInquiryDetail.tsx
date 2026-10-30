@@ -878,12 +878,18 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       const qId = v2Quotation?.id || inquiry.quotations?.[0]?.id;
       if (!qId) throw new Error('No commercial quotation available');
 
-      const approvedQuote = await approveCommercialQuotationApi(jwtToken, qId, fulfillmentType);
+      const currentQuoteApproval =
+        v2Quotation?.commercialApprovalStatus ||
+        (inquiry.quotations?.[0] as { commercialApprovalStatus?: string } | undefined)?.commercialApprovalStatus ||
+        inquiry.commercialMetadata?.commercialApprovalStatus;
+      if (currentQuoteApproval !== 'APPROVED') {
+        await approveCommercialQuotationApi(jwtToken, qId, fulfillmentType);
+      }
 
       if (fulfillmentType === 'DIRECT_ORDER') {
-        await createSalesOrderFromQuotationApi(jwtToken, qId).catch(() => null);
+        await createSalesOrderFromQuotationApi(jwtToken, qId);
       } else {
-        await createSalesAgreementFromQuotationApi(jwtToken, qId).catch(() => null);
+        await createSalesAgreementFromQuotationApi(jwtToken, qId);
       }
 
       const updated = await updateCommercialInquiry(jwtToken, inquiry.id, {
@@ -893,23 +899,23 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           productionStatus: 'RELEASED_TO_PRODUCTION',
           releasedToProductionAt: new Date().toISOString(),
         },
-      }).catch(() => null);
+      });
 
-      if (updated) {
-        setInquiry(updated);
-        notifyInquiryChanged(updated);
-      }
+      setInquiry(updated);
+      notifyInquiryChanged(updated);
 
       const fulfillmentLabel =
         fulfillmentType === 'DIRECT_ORDER'
           ? 'Direct Sales Order'
           : 'Sales Agreement';
+      const quotationNumber =
+        v2Quotation?.quotationNumber || inquiry.quotations?.[0]?.quotationNumber || inquiry.inquiryNumber;
 
       // Notification for Customer: Sales approved and released to production floor!
       onAddNotification?.({
         id: `vip-cust-appr-${Date.now()}`,
         title: '🎉 Contract Approved & Released to Production Floor!',
-        message: `Sales approved quotation ${approvedQuote.quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor (صالة الإنتاج) for cable manufacturing.`,
+        message: `Sales approved quotation ${quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor (صالة الإنتاج) for cable manufacturing.`,
         timestamp: new Date().toLocaleTimeString(),
         read: false,
         type: 'system',
@@ -918,6 +924,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       notify(`Contract approved & released to Production Floor (صالة الإنتاج)`);
       await load();
     } catch (err) {
+      await load().catch(() => undefined);
       notify(err instanceof Error ? err.message : 'Failed to approve contract');
       throw err;
     }
@@ -2590,6 +2597,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 inquiry.quotations?.[0]?.commercialApprovalStatus ||
                 'NOT_SUBMITTED'
               }
+              isReleasedToProduction={inquiry.commercialMetadata?.productionStatus === 'RELEASED_TO_PRODUCTION'}
               isSubmittedToSales={
                 inquiry.status === 'SUBMITTED' ||
                 Boolean(inquiry.commercialMetadata?.submittedToSales)

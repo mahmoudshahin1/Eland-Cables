@@ -20,6 +20,7 @@ interface VipContractFulfillmentSelectorProps {
   initialFulfillmentType?: FulfillmentType;
   commercialApprovalStatus?: string | null;
   isSubmittedToSales?: boolean;
+  isReleasedToProduction?: boolean;
   canApprove?: boolean;
   onSubmitToSales: (type: FulfillmentType) => Promise<void>;
   onApproveCommercial?: (type: FulfillmentType) => Promise<void>;
@@ -37,6 +38,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   initialFulfillmentType = 'DIRECT_ORDER',
   commercialApprovalStatus = 'NOT_SUBMITTED',
   isSubmittedToSales = false,
+  isReleasedToProduction = false,
   canApprove = false,
   onSubmitToSales,
   onApproveCommercial,
@@ -230,7 +232,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
           )}
 
           {/* Sales Approve Button (if internal/sales role or testing) */}
-          {(canApprove || !isCustomer) && submitted && !approved && (
+          {(canApprove || !isCustomer) && submitted && !isReleasedToProduction && (
             <button
               type="button"
               disabled={busy}
@@ -238,12 +240,18 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>{busy ? 'Releasing to Production…' : 'Approve Quotation & Release to Production Floor'}</span>
+              <span>
+                {busy
+                  ? 'Releasing to Production…'
+                  : approved
+                    ? 'Retry Release to Production'
+                    : 'Approve Quotation & Release to Production Floor'}
+              </span>
             </button>
           )}
 
           {/* Customer waiting notice */}
-          {isCustomer && submitted && !approved && (
+          {isCustomer && submitted && !isReleasedToProduction && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-800">
               <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
               <span>Awaiting Sales sign-off. You will receive an instant notification once released to the Production Floor.</span>
