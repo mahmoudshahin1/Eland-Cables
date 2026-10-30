@@ -75,7 +75,7 @@ import {
 } from './inquiryWorkspaceTabs';
 import { isV2InquiryMetadata } from '../../domain/v2InquiryWorkflow';
 import { canCalculateInquiry, canSubmitInquiry } from '../../domain/inquiryProcessCommands';
-import { fetchV2Quotation, type V2QuotationDto } from '../../services/v2QuotationApiService';
+import { fetchV2Quotation, v2QuotationPdfUrl, type V2QuotationDto } from '../../services/v2QuotationApiService';
 import { CustomerQuotationView } from '../customer/CustomerQuotationView';
 import { InquiryAutomaticProcessingPanel } from './InquiryAutomaticProcessingPanel';
 import { QuotationSectionV2 } from '../cable-configurator/v2/components/QuotationSectionV2';
