@@ -189,7 +189,7 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [jwtToken]);
 
   useEffect(() => {
     fetchOrders();
