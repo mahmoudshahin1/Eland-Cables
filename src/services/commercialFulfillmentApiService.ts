@@ -201,6 +201,19 @@ export async function fetchQuotation(token: string, idOrNumber: string): Promise
   return data.quotation;
 }
 
+export async function approveQuotationPricingApi(
+  token: string,
+  quotationId: string
+): Promise<QuotationFulfillmentDto> {
+  const res = await fetch(`/api/quotations/${encodeURIComponent(quotationId)}/approve-pricing`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({}),
+  });
+  const data = await parseJson<{ quotation: QuotationFulfillmentDto }>(res);
+  return data.quotation;
+}
+
 export async function approveCommercialQuotationApi(
   token: string,
   quotationId: string,

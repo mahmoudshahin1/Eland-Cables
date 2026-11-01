@@ -74,7 +74,14 @@ export interface CommercialInquiryDto {
   createdAt?: string;
   updatedAt?: string;
   lines?: CommercialInquiryLineDto[];
-  quotations?: { id?: string; quotationNumber?: string; versionNo?: number; status?: string; costingCalculationId?: string | null }[];
+  quotations?: {
+    id?: string;
+    quotationNumber?: string;
+    versionNo?: number;
+    status?: string;
+    commercialPricingStatus?: string | null;
+    costingCalculationId?: string | null;
+  }[];
   commercialProductsTotal?: number | null;
   commercialValueState?: 'UNPRICED' | 'PRICED' | 'RECALCULATION_REQUIRED';
   attachments?: InquiryAttachmentDto[];

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   approveCommercialQuotationApi,
+  approveQuotationPricingApi,
   createSalesAgreementFromQuotationApi,
   createSalesOrderFromQuotationApi,
   fetchQuotation,
@@ -25,6 +26,8 @@ interface CommercialFulfillmentPanelProps {
   quotationNumber?: string | null;
   canManage: boolean;
   canApprove: boolean;
+  canApprovePricing: boolean;
+  onPricingApproved?: (quotation: QuotationFulfillmentDto) => void;
   onMessage?: (msg: string) => void;
 }
 
@@ -38,6 +41,8 @@ export const CommercialFulfillmentPanel: React.FC<CommercialFulfillmentPanelProp
   quotationNumber,
   canManage,
   canApprove,
+  canApprovePricing,
+  onPricingApproved,
   onMessage,
 }) => {
   const navigate = useNavigate();
@@ -46,7 +51,7 @@ export const CommercialFulfillmentPanel: React.FC<CommercialFulfillmentPanelProp
   const [busy, setBusy] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
   const [error, setError] = useState<{ title: string; message: string; kind?: string } | null>(null);
-  const [confirm, setConfirm] = useState<'approve' | 'order' | 'agreement' | null>(null);
+  const [confirm, setConfirm] = useState<'pricing' | 'approve' | 'order' | 'agreement' | null>(null);
   const [createdLinks, setCreatedLinks] = useState<{
     orderId?: string;
     agreementId?: string;
@@ -80,6 +85,9 @@ export const CommercialFulfillmentPanel: React.FC<CommercialFulfillmentPanelProp
   if (!canManage && !canApprove) return null;
 
   const pricingOk = quotation?.commercialPricingStatus === 'PRICING_APPROVED';
+  const pricingCanBeApproved = ['PRICING_CALCULATED', 'PRICING_APPROVAL_REQUIRED'].includes(
+    quotation?.commercialPricingStatus || ''
+  );
   const commerciallyApproved = quotation?.commercialApprovalStatus === 'APPROVED';
 
   const notify = (msg: string) => {
@@ -129,9 +137,18 @@ export const CommercialFulfillmentPanel: React.FC<CommercialFulfillmentPanelProp
       )}
 
       {!pricingOk && (
-        <p className="text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-          Commercial approval unavailable: pricing must be PRICING_APPROVED first.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+          <p>
+            {pricingCanBeApproved
+              ? `Release unavailable: approve pricing first (current status: ${quotation?.commercialPricingStatus}).`
+              : `Release unavailable: calculate pricing first (current status: ${quotation?.commercialPricingStatus || '—'}).`}
+          </p>
+          {canApprovePricing && quotation && pricingCanBeApproved && (
+            <Button variant="primary" size="sm" disabled={busy} onClick={() => setConfirm('pricing')}>
+              Approve pricing…
+            </Button>
+          )}
+        </div>
       )}
 
       {pricingOk && !commerciallyApproved && !canApprove && (
@@ -233,6 +250,29 @@ export const CommercialFulfillmentPanel: React.FC<CommercialFulfillmentPanelProp
           <IntegrationFutureBadge status="NOT_SENT" />
         </div>
       )}
+
+      <ConfirmCreateDialog
+        open={confirm === 'pricing'}
+        title="Confirm pricing approval"
+        confirmLabel="Approve pricing"
+        busy={busy}
+        onCancel={() => setConfirm(null)}
+        onConfirm={() =>
+          void run(async () => {
+            const q = await approveQuotationPricingApi(token, quotation!.id);
+            setQuotation(q);
+            onPricingApproved?.(q);
+            notify(`Pricing approved for ${q.quotationNumber} V${q.versionNo}`);
+          })
+        }
+        summary={
+          <p>
+            Approve the calculated commercial price for{' '}
+            <span className="font-mono">{quotation?.quotationNumber}</span> V{quotation?.versionNo}. Commercial
+            approval and production release remain pending.
+          </p>
+        }
+      />
 
       <ConfirmCreateDialog
         open={confirm === 'approve'}

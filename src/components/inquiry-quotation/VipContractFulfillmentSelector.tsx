@@ -19,6 +19,7 @@ interface VipContractFulfillmentSelectorProps {
   currency?: string | null;
   initialFulfillmentType?: FulfillmentType;
   commercialApprovalStatus?: string | null;
+  commercialPricingStatus?: string | null;
   isSubmittedToSales?: boolean;
   isReleasedToProduction?: boolean;
   canApprove?: boolean;
@@ -37,6 +38,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   currency = 'USD',
   initialFulfillmentType = 'DIRECT_ORDER',
   commercialApprovalStatus = 'NOT_SUBMITTED',
+  commercialPricingStatus = 'NOT_PRICED',
   isSubmittedToSales = false,
   isReleasedToProduction = false,
   canApprove = false,
@@ -52,6 +54,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(isSubmittedToSales);
   const [approved, setApproved] = useState(commercialApprovalStatus === 'APPROVED');
+  const [pricingApproved, setPricingApproved] = useState(commercialPricingStatus === 'PRICING_APPROVED');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -61,6 +64,10 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   React.useEffect(() => {
     setApproved(commercialApprovalStatus === 'APPROVED');
   }, [commercialApprovalStatus]);
+
+  React.useEffect(() => {
+    setPricingApproved(commercialPricingStatus === 'PRICING_APPROVED');
+  }, [commercialPricingStatus]);
 
   const handleSubmit = async () => {
     setBusy(true);
@@ -232,7 +239,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
           )}
 
           {/* Sales Approve Button (if internal/sales role or testing) */}
-          {(canApprove || !isCustomer) && submitted && !isReleasedToProduction && (
+          {(canApprove || !isCustomer) && submitted && !isReleasedToProduction && pricingApproved && (
             <button
               type="button"
               disabled={busy}
@@ -248,6 +255,12 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
                     : 'Approve Quotation & Release to Production Floor'}
               </span>
             </button>
+          )}
+
+          {(canApprove || !isCustomer) && submitted && !isReleasedToProduction && !pricingApproved && (
+            <div className="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-800">
+              Pricing approval is required before commercial approval and production release.
+            </div>
           )}
 
           {/* Customer waiting notice */}

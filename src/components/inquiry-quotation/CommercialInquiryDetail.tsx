@@ -2597,6 +2597,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 inquiry.quotations?.[0]?.commercialApprovalStatus ||
                 'NOT_SUBMITTED'
               }
+              commercialPricingStatus={
+                v2Quotation?.commercialPricingStatus ||
+                inquiry.quotations?.[0]?.commercialPricingStatus ||
+                'NOT_PRICED'
+              }
               isReleasedToProduction={inquiry.commercialMetadata?.productionStatus === 'RELEASED_TO_PRODUCTION'}
               isSubmittedToSales={
                 inquiry.status === 'SUBMITTED' ||
@@ -2640,6 +2645,25 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                         quotationNumber={q.quotationNumber}
                         canManage={canQuote}
                         canApprove={canQuote}
+                        canApprovePricing={hasPermission('costingPricing') || canQuote}
+                        onPricingApproved={(approved) => {
+                          setV2Quotation((current) =>
+                            current
+                              ? { ...current, commercialPricingStatus: approved.commercialPricingStatus || 'PRICING_APPROVED' }
+                              : current
+                          );
+                          setInquiry((current) => current
+                            ? {
+                                ...current,
+                                quotations: current.quotations?.map((quotation) =>
+                                  quotation.id === approved.id
+                                    ? { ...quotation, commercialPricingStatus: approved.commercialPricingStatus || 'PRICING_APPROVED' }
+                                    : quotation
+                                ),
+                              }
+                            : current
+                          );
+                        }}
                         onMessage={(msg) => notify(msg)}
                       />
                     )}
