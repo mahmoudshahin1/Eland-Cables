@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import {
   FileText,
@@ -295,9 +295,21 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   jwtToken,
   preferredContainerType = '40HQ',
 }) => {
-  const [activeDocTab, setActiveDocTab] = useState<'commercial_offer' | 'tds'>('commercial_offer');
+  const [expandedDocuments, setExpandedDocuments] = useState({ commercialOffer: false, tds: false });
+  const [printTarget, setPrintTarget] = useState<'commercial_offer' | 'tds' | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedLineIndex, setSelectedLineIndex] = useState(0);
+
+  useEffect(() => {
+    if (!printTarget) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      window.print();
+      setPrintTarget(null);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [printTarget]);
 
   const lines = inquiry.lines || [];
   const primaryLine: (CommercialInquiryLineDto & { cableMaterialNumber?: string }) | undefined =
@@ -482,14 +494,8 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
     }
   };
 
-  // Print offer handler
-  const handlePrintOffer = () => {
-    window.print();
-  };
-
-  // Print TDS handler
-  const handlePrintTds = () => {
-    window.print();
+  const handlePrintDocument = (target: 'commercial_offer' | 'tds') => {
+    setPrintTarget(target);
   };
 
   // Download Technical Data Sheet (TDS) as Excel (.xlsx) workbook
@@ -614,89 +620,74 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   };
 
   return (
-    <div className="space-y-4">
-      {/* Top Navigation & Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+    <div className="space-y-4 vip-document-print-root" data-print-target={printTarget ?? undefined}>
+      <style>{`
+        .vip-document-panel-content.is-collapsed { max-height: 0; overflow: hidden; }
+        .vip-document-panel-content.is-expanded { max-height: none; overflow: visible; }
+        @media print {
+          @page { margin: 12mm; }
+          body * { visibility: hidden !important; position: static !important; }
+          .vip-document-print-root[data-print-target="commercial_offer"] .vip-print-commercial-offer,
+          .vip-document-print-root[data-print-target="commercial_offer"] .vip-print-commercial-offer *,
+          .vip-document-print-root[data-print-target="tds"] .vip-print-tds,
+          .vip-document-print-root[data-print-target="tds"] .vip-print-tds * { visibility: visible !important; }
+          .vip-document-panel-content { max-height: none !important; overflow: visible !important; }
+          .vip-commercial-offer-panel,
+          .vip-tds-panel { overflow: visible !important; border: 0 !important; box-shadow: none !important; }
+          .vip-print-commercial-offer,
+          .vip-print-tds {
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          .vip-print-commercial-offer *,
+          .vip-print-tds * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
+
+      {/* Commercial Offer document controls and collapsible content */}
+      <section className="vip-commercial-offer-panel overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5">
           <button
             type="button"
-            onClick={() => setActiveDocTab('commercial_offer')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeDocTab === 'commercial_offer'
-                ? 'bg-white text-brand-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            aria-expanded={expandedDocuments.commercialOffer}
+            onClick={() => setExpandedDocuments((current) => ({ ...current, commercialOffer: !current.commercialOffer }))}
+            className="flex min-h-10 flex-1 items-center gap-2 text-left text-sm font-bold text-slate-800"
           >
+            <ChevronRight className={`h-4 w-4 transition-transform ${expandedDocuments.commercialOffer ? 'rotate-90' : ''}`} />
             <FileText className="h-4 w-4 text-brand-600" />
             <span>Commercial Offer</span>
-            <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              Official
-            </span>
+            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">Official</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveDocTab('tds')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeDocTab === 'tds'
-                ? 'bg-white text-brand-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Cpu className="h-4 w-4 text-blue-600" />
-            <span>Technical Data Sheet (TDS)</span>
-            <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              BASEC Specs
-            </span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handlePrintDocument('commercial_offer')}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span>Print Offer</span>
+            </button>
+            <button
+              type="button"
+              disabled={downloading}
+              onClick={handleDownloadOfferPdf}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:from-brand-700 hover:to-blue-700 disabled:opacity-50"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>{downloading ? 'Generating PDF…' : 'Download Commercial Offer (PDF)'}</span>
+            </button>
+          </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {activeDocTab === 'commercial_offer' ? (
-            <>
-              <button
-                type="button"
-                onClick={handlePrintOffer}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-sm"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                <span>Print Offer</span>
-              </button>
-              <button
-                type="button"
-                disabled={downloading}
-                onClick={handleDownloadOfferPdf}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-700 hover:to-blue-700 text-white text-xs font-bold transition-all shadow-sm shadow-brand-500/20 disabled:opacity-50"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span>{downloading ? 'Generating PDF…' : 'Download Commercial Offer (PDF)'}</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={handlePrintTds}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-sm"
-              >
-                <Printer className="h-3.5 w-3.5 text-blue-600" />
-                <span>Print TDS / PDF</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadTdsExcel}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold transition-all shadow-sm shadow-emerald-500/20"
-              >
-                <FileSpreadsheet className="h-3.5 w-3.5" />
-                <span>Download TDS (Excel / XLSX)</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+        <div className={`vip-document-panel-content ${expandedDocuments.commercialOffer ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.commercialOffer}>
 
       {/* DOCUMENT VIEW 1: COMMERCIAL OFFER (REPLICA OF OFFICIAL ENERGYA DOCUMENT) */}
-      {activeDocTab === 'commercial_offer' && (
-        <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-6 sm:p-8 space-y-6 text-[#122033] font-sans">
+        <div className="vip-print-commercial-offer bg-white border-2 border-slate-200 p-6 sm:p-8 space-y-6 text-[#122033] font-sans">
           {/* Top Document Header */}
           <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-5 border-slate-200">
             {/* Left: Energya Logo & Legal Header */}
@@ -1068,11 +1059,45 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             </div>
           </div>
         </div>
-      )}
+        </div>
+      </section>
 
+      {/* Technical Data Sheet document controls and collapsible content */}
+      <section className="vip-tds-panel overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5">
+          <button
+            type="button"
+            aria-expanded={expandedDocuments.tds}
+            onClick={() => setExpandedDocuments((current) => ({ ...current, tds: !current.tds }))}
+            className="flex min-h-10 flex-1 items-center gap-2 text-left text-sm font-bold text-slate-800"
+          >
+            <ChevronRight className={`h-4 w-4 transition-transform ${expandedDocuments.tds ? 'rotate-90' : ''}`} />
+            <Cpu className="h-4 w-4 text-blue-600" />
+            <span>Technical Data Sheet (TDS)</span>
+            <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">BASEC Specs</span>
+          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handlePrintDocument('tds')}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            >
+              <Printer className="h-3.5 w-3.5 text-blue-600" />
+              <span>Print TDS / PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadTdsExcel}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-emerald-500/20 transition-all hover:from-emerald-700 hover:to-teal-700"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <span>Download TDS (Excel / XLSX)</span>
+            </button>
+          </div>
+        </div>
+        <div className={`vip-document-panel-content ${expandedDocuments.tds ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.tds}>
       {/* DOCUMENT VIEW 2: TECHNICAL DATA SHEET (TDS) */}
-      {activeDocTab === 'tds' && (
-        <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-6 sm:p-8 space-y-6 text-[#122033]">
+        <div className="vip-print-tds bg-white border-2 border-slate-200 p-6 sm:p-8 space-y-6 text-[#122033]">
           {/* TDS Header */}
           <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-5 border-slate-200">
             <div>
@@ -1278,32 +1303,15 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
           </div>
 
           {/* Verification Stamp & Action Bar */}
-          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-wrap items-center gap-3 text-xs">
             <div className="flex items-center gap-2 text-emerald-900 font-semibold">
               <Award className="h-5 w-5 text-emerald-600" />
               <span>Certified Technical Offer — Compliant with International Electrotechnical Commission (IEC)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handlePrintTds}
-                className="text-xs font-bold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-colors hover:bg-slate-50"
-              >
-                <Printer className="h-3.5 w-3.5 text-blue-600" />
-                <span>Print / Save PDF</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadTdsExcel}
-                className="text-xs font-bold text-white inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 rounded-xl shadow-sm shadow-emerald-500/20 transition-all"
-              >
-                <FileSpreadsheet className="h-3.5 w-3.5" />
-                <span>Export Excel (.xlsx)</span>
-              </button>
-            </div>
           </div>
         </div>
-      )}
+        </div>
+      </section>
     </div>
   );
 };
