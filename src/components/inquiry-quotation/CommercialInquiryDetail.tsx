@@ -1383,6 +1383,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onCalculate={() => void runCalculateInquiry()}
                 onSubmit={() => void handleSubmit()}
                 hideSaveAndCalculate={Boolean(inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales))}
+                showAutoSaveAction={!(isCustomer && isVipV2Inquiry)}
                 extra={
                   <div className="relative">
                     <button
@@ -1812,7 +1813,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
       {/* VIP Fast-Track Journey Bar */}
-      <VipFastTrackJourneyBar
+      {!(isCustomer && isVipV2Inquiry) && <VipFastTrackJourneyBar
         currentTab={tab}
         onSelectTab={(selectedTab) => {
           const nextTab = isCustomer
@@ -1836,7 +1837,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         isSubmittedToSales={inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)}
         fulfillmentType={(inquiry.commercialMetadata?.requestedFulfillmentType as FulfillmentType) || v2Quotation?.fulfillmentType}
         isCustomer={isCustomer}
-      />
+      />}
 
       {/* Workspace Tabs Navigation Bar */}
       <div id="inquiry-workspace" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">

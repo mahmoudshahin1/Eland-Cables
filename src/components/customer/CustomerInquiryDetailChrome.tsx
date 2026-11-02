@@ -63,6 +63,7 @@ export function CustomerInquiryPrimaryActions({
   onSubmit,
   extra,
   hideSaveAndCalculate = false,
+  showAutoSaveAction = true,
 }: {
   isEditable: boolean;
   canCalculate: boolean;
@@ -75,10 +76,11 @@ export function CustomerInquiryPrimaryActions({
   onSubmit: () => void;
   extra?: React.ReactNode;
   hideSaveAndCalculate?: boolean;
+  showAutoSaveAction?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {!hideSaveAndCalculate && (
+      {!hideSaveAndCalculate && showAutoSaveAction && (
         <button
           type="button"
           onClick={onSave}
