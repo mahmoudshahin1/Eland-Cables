@@ -867,7 +867,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       onAddNotification?.({
         id: `vip-cust-submitted-${Date.now()}`,
         title: `Order Submitted to Sales: ${quoteNum}`,
-        message: `Your contract request (${fulfillmentLabel}) has been transmitted to Sales. You will receive an instant notification as soon as it is released to the Production Floor (صالة الإنتاج).`,
+        message: `Your contract request (${fulfillmentLabel}) has been transmitted to Sales. You will receive an instant notification as soon as it is released to the Production Floor.`,
         timestamp: new Date().toLocaleTimeString(),
         read: false,
         type: 'system',
@@ -918,13 +918,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       onAddNotification?.({
         id: `vip-cust-appr-${Date.now()}`,
         title: '🎉 Contract Approved & Released to Production Floor!',
-        message: `Sales approved quotation ${approvedQuote.quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor (صالة الإنتاج) for cable manufacturing.`,
+        message: `Sales approved quotation ${approvedQuote.quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor for cable manufacturing.`,
         timestamp: new Date().toLocaleTimeString(),
         read: false,
         type: 'system',
       });
 
-      notify(`Contract approved & released to Production Floor (صالة الإنتاج)`);
+      notify('Contract approved & released to Production Floor');
       await load();
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Failed to approve contract');
@@ -1371,6 +1371,20 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         <div className="space-y-3">
           <CustomerInquiryDetailHero
             inquiry={inquiry}
+            totalContractValueSlot={
+              isCustomer && isVipV2Inquiry && (inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)) &&
+              (v2Quotation?.sellingPrice || inquiry.commercialProductsTotal) != null ? (
+                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[180px]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
+                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5">
+                    {Number(v2Quotation?.sellingPrice || inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {inquiry.currency || 'USD'}
+                  </p>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Fulfillment: <span className="font-bold text-slate-800">{(inquiry.commercialMetadata?.requestedFulfillmentType || v2Quotation?.fulfillmentType) === 'SALES_AGREEMENT' ? 'Sales Agreement' : 'Direct Sales Order'}</span>
+                  </p>
+                </div>
+              ) : undefined
+            }
             actions={
               <CustomerInquiryPrimaryActions
                 isEditable={isEditable}
@@ -1444,22 +1458,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         <VipOrderSubmittedTrackingView
           inquiry={inquiry}
           quotation={v2Quotation}
-          jwtToken={jwtToken}
-          preferredContainerType={preferredContainerType}
-          onExploreCables={() => {
-            if (onBack) {
-              onBack();
-            } else {
-              window.location.href = '/customer/products';
-            }
-          }}
-          onViewQuotationPdf={() => {
-            if (v2Quotation?.id) {
-              window.open(v2QuotationPdfUrl(v2Quotation.id), '_blank');
-            } else {
-              printInquiryReport('offer');
-            }
-          }}
           onToggleTechnicalDetails={() => setShowTrackingDetails((v) => !v)}
           showTechnicalDetails={showTrackingDetails}
         />

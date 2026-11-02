@@ -28,10 +28,29 @@ import type { CommercialInquiryDto } from '../../services/commercialInquiryApiSe
 export function CustomerInquiryDetailHero({
   inquiry,
   actions,
+  totalContractValueSlot,
+  totalContractValuePlacement = 'actions',
 }: {
   inquiry: CommercialInquiryDto;
   actions?: React.ReactNode;
+  totalContractValueSlot?: React.ReactNode;
+  totalContractValuePlacement?: 'titleAccessory' | 'actions';
 }) {
+  const titleAccessory = (
+    <>
+      <Badge tone={customerFacingInquiryStatusTone(inquiry.status)}>
+        {customerFacingInquiryStatusLabel(inquiry.status)}
+      </Badge>
+      {totalContractValuePlacement === 'titleAccessory' ? totalContractValueSlot : null}
+    </>
+  );
+  const heroActions = totalContractValuePlacement === 'actions' && totalContractValueSlot ? (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {totalContractValueSlot}
+      {actions}
+    </div>
+  ) : actions;
+
   return (
     <CustomerPageHero
       breadcrumbs={[
@@ -40,13 +59,9 @@ export function CustomerInquiryDetailHero({
         { label: customerInquiryBreadcrumbLabel(inquiry.status) },
       ]}
       title={customerInquiryDetailTitle(inquiry)}
-      titleAccessory={
-        <Badge tone={customerFacingInquiryStatusTone(inquiry.status)}>
-          {customerFacingInquiryStatusLabel(inquiry.status)}
-        </Badge>
-      }
+      titleAccessory={titleAccessory}
       subtitle="Provide your cable requirements and we will prepare a technical and commercial offer."
-      actions={actions}
+      actions={heroActions}
     />
   );
 }
