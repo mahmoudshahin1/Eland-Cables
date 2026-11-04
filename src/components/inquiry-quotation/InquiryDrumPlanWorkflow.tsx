@@ -38,7 +38,9 @@ export function scheduleToRows(line: CommercialInquiryLineDto): DrumScheduleRow[
       drumCode: row.drumCode,
       noOfDrums: row.noOfDrums,
       cuttingLengthM: row.cuttingLengthM,
-      drumTolerancePercent: row.drumTolerancePercent,
+      drumTolerancePercent: row.drumTolerancePositivePercent ?? row.drumTolerancePercent,
+      drumTolerancePositivePercent: row.drumTolerancePositivePercent ?? row.drumTolerancePercent,
+      drumToleranceNegativePercent: row.drumToleranceNegativePercent ?? row.drumTolerancePercent,
     }));
   }
   const qty = Number(line.requestedQuantity);
@@ -52,6 +54,8 @@ export function scheduleToRows(line: CommercialInquiryLineDto): DrumScheduleRow[
       noOfDrums: Number.isFinite(qty) && qty > 0 ? qty : 1,
       cuttingLengthM: hasCut ? cut : '',
       drumTolerancePercent: hasCut || hasDrum ? '0' : '',
+      drumTolerancePositivePercent: hasCut || hasDrum ? '0' : '',
+      drumToleranceNegativePercent: hasCut || hasDrum ? '0' : '',
     },
   ];
 }

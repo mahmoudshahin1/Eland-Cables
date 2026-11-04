@@ -172,6 +172,8 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
       cuttingLengthMeters: number;
       drumCode: string;
       drumTolerancePercent: number;
+      drumTolerancePositivePercent: number;
+      drumToleranceNegativePercent: number;
     }>,
     orderCableTolerancePercent: number
   ) => {
@@ -185,6 +187,8 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
         noOfDrums: r.drums,
         cuttingLengthM: r.cuttingLengthMeters,
         drumTolerancePercent: r.drumTolerancePercent,
+        drumTolerancePositivePercent: r.drumTolerancePositivePercent,
+        drumToleranceNegativePercent: r.drumToleranceNegativePercent,
       })),
       orderCableTolerancePercent
     );
@@ -231,21 +235,19 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
       setPackagingError('Drum Plan required before continue');
       return;
     }
-    const cableTolerance = Number(cableTolerancePercent);
-    if (!Number.isFinite(cableTolerance) || cableTolerance < 0) {
-      setPackagingError('Cable tolerance (%) is required for production and logistics planning.');
-      return;
-    }
     const parsed: Array<{
       drums: number;
       cuttingLengthMeters: number;
       drumCode: string;
       drumTolerancePercent: number;
+      drumTolerancePositivePercent: number;
+      drumToleranceNegativePercent: number;
     }> = [];
     for (const row of packagingRows) {
       const drums = Number(row.noOfDrums);
       const cuttingLengthMeters = Number(row.cuttingLengthM);
-      const drumTolerancePercent = Number(row.drumTolerancePercent);
+      const drumTolerancePositivePercent = Number(row.drumTolerancePositivePercent ?? row.drumTolerancePercent);
+      const drumToleranceNegativePercent = Number(row.drumToleranceNegativePercent ?? row.drumTolerancePercent);
       if (!Number.isFinite(drums) || drums <= 0) {
         setPackagingError('Enter the number of drums for every drum line.');
         return;
@@ -254,8 +256,13 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
         setPackagingError('Enter a cutting length in meters for every drum line.');
         return;
       }
-      if (!Number.isFinite(drumTolerancePercent) || drumTolerancePercent < 0) {
-        setPackagingError('Drum tolerance (%) is required on every drum line.');
+      if (
+        !Number.isFinite(drumTolerancePositivePercent) ||
+        drumTolerancePositivePercent < 0 ||
+        !Number.isFinite(drumToleranceNegativePercent) ||
+        drumToleranceNegativePercent < 0
+      ) {
+        setPackagingError('Positive and negative drum tolerance (%) are required on every drum line.');
         return;
       }
       if (!row.drumCode.trim()) {
@@ -266,11 +273,13 @@ export const CableSearchSelectModal: React.FC<CableSearchSelectModalProps> = ({
         drums,
         cuttingLengthMeters,
         drumCode: row.drumCode.trim(),
-        drumTolerancePercent,
+        drumTolerancePercent: Math.max(drumTolerancePositivePercent, drumToleranceNegativePercent),
+        drumTolerancePositivePercent,
+        drumToleranceNegativePercent,
       });
     }
     setPackagingError(null);
-    submitSelectedCable(pendingCable, parsed, cableTolerance);
+    submitSelectedCable(pendingCable, parsed, 0);
   };
 
   const handleSelectFromTechnicalParameters = (cable: CableRecordV2) => {

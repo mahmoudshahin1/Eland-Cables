@@ -890,9 +890,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       const approvedQuote = await approveCommercialQuotationApi(jwtToken, qId, fulfillmentType);
 
       if (fulfillmentType === 'DIRECT_ORDER') {
-        await createSalesOrderFromQuotationApi(jwtToken, qId).catch(() => null);
+        await createSalesOrderFromQuotationApi(jwtToken, qId);
       } else {
-        await createSalesAgreementFromQuotationApi(jwtToken, qId).catch(() => null);
+        await createSalesAgreementFromQuotationApi(jwtToken, qId);
       }
 
       const updated = await updateCommercialInquiry(jwtToken, inquiry.id, {
@@ -1810,8 +1810,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
 
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
-      {/* VIP Fast-Track Journey Bar */}
-      {!(isCustomer && isVipV2Inquiry) && <VipFastTrackJourneyBar
+      {/* VIP Fast-Track Order Journey stays off the sales order page and off the VIP customer page. */}
+      {isCustomer && !isVipV2Inquiry && inquiry.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK' && <VipFastTrackJourneyBar
         currentTab={tab}
         onSelectTab={(selectedTab) => {
           const nextTab = isCustomer

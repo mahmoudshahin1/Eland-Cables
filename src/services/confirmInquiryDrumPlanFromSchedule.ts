@@ -29,18 +29,46 @@ function positiveLength(value: unknown): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
+function nonNegativePercent(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
 export function normalizeConfirmScheduleRows(rows: DrumPlanConfirmRowInput[]): Array<{
   drumCode: string;
   noOfDrums: number;
   cuttingLengthM: number;
+  drumTolerancePercent: number;
+  drumTolerancePositivePercent: number;
+  drumToleranceNegativePercent: number;
 }> {
-  const out: Array<{ drumCode: string; noOfDrums: number; cuttingLengthM: number }> = [];
+  const out: Array<{
+    drumCode: string;
+    noOfDrums: number;
+    cuttingLengthM: number;
+    drumTolerancePercent: number;
+    drumTolerancePositivePercent: number;
+    drumToleranceNegativePercent: number;
+  }> = [];
   for (const row of rows) {
     const cuttingLengthM = positiveLength(row.cuttingLengthM);
     const noOfDrums = positiveInt(row.numberOfDrums ?? row.noOfDrums);
     const drumCode = String(row.drumCode || '').trim();
     if (!cuttingLengthM || !noOfDrums) continue;
-    out.push({ drumCode, noOfDrums, cuttingLengthM });
+    const drumTolerancePositivePercent = nonNegativePercent(
+      row.drumTolerancePositivePercent ?? row.drumTolerancePercent
+    );
+    const drumToleranceNegativePercent = nonNegativePercent(
+      row.drumToleranceNegativePercent ?? row.drumTolerancePercent
+    );
+    out.push({
+      drumCode,
+      noOfDrums,
+      cuttingLengthM,
+      drumTolerancePercent: Math.max(drumTolerancePositivePercent, drumToleranceNegativePercent),
+      drumTolerancePositivePercent,
+      drumToleranceNegativePercent,
+    });
   }
   return out;
 }

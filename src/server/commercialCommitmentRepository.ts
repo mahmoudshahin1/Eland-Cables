@@ -10,6 +10,9 @@ import { getPrisma } from './db';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import type { RequestActor } from './auth';
 import { V2_QUOTATION_WORKFLOW_CHANNEL } from '../domain/v2QuotationService';
+import { commercialMetadataRecord } from '../domain/inquiryProcessResolver';
+import { vipSalesReleaseAcceptsCalculatedPrice } from '../domain/vipCommercialRelease';
+import { isV2InquiryMetadata } from '../domain/v2InquiryWorkflow';
 import { appendServerAudit } from './serverAudit';
 
 type Actor = { id?: string; name?: string; email?: string; userType?: string };
@@ -246,7 +249,15 @@ export async function approveCommercialQuotation(
   if (current.commercialApprovalStatus === 'APPROVED') {
     throw issue('CONFLICT', `Quotation ${current.quotationNumber} V${current.versionNo} is already commercially approved.`);
   }
-  if (!isPricingApproved(current.commercialPricingStatus)) {
+  const inquiry = await prisma.commercialInquiry.findUnique({
+    where: { id: current.inquiryId },
+    select: { id: true, inquiryNumber: true, customerMasterId: true, commercialMetadata: true },
+  });
+  const acceptCalculatedVipPrice = vipSalesReleaseAcceptsCalculatedPrice({
+    commercialPricingStatus: current.commercialPricingStatus,
+    inquiryMetadata: inquiry?.commercialMetadata,
+  });
+  if (!isPricingApproved(current.commercialPricingStatus) && !acceptCalculatedVipPrice) {
     throw issue(
       'BUSINESS_RULE_REQUIRED',
       `Commercial approval requires pricing approval first (current commercialPricingStatus=${current.commercialPricingStatus}).`
@@ -257,12 +268,35 @@ export async function approveCommercialQuotation(
   }
 
   const approvedAt = new Date();
+  const approver = actorLabel(actor);
+  if (acceptCalculatedVipPrice) {
+    await prisma.commercialPricingSnapshot.updateMany({
+      where: { quotationId: current.id, pricingStatus: 'PRICING_CALCULATED' },
+      data: {
+        pricingStatus: 'PRICING_APPROVED',
+        approvalRequired: false,
+        approvedBy: approver,
+        approvedAt,
+      },
+    });
+    await prisma.commercialQuotationLine.updateMany({
+      where: { quotationId: current.id, commercialStatus: 'PRICING_CALCULATED' },
+      data: { commercialStatus: 'PRICING_APPROVED' },
+    });
+  }
   const updated = await prisma.commercialQuotation.update({
     where: { id: current.id },
     data: {
       commercialApprovalStatus: 'APPROVED',
+      ...(acceptCalculatedVipPrice
+        ? {
+            commercialPricingStatus: 'PRICING_APPROVED',
+            quotationApprovedBy: approver,
+            quotationApprovedAt: approvedAt,
+          }
+        : {}),
       fulfillmentType: input.fulfillmentType,
-      commerciallyApprovedBy: actorLabel(actor),
+      commerciallyApprovedBy: approver,
       commerciallyApprovedAt: approvedAt,
       billTo: input.billTo ?? current.billTo,
       shipTo: input.shipTo ?? current.shipTo,
@@ -289,11 +323,31 @@ export async function approveCommercialQuotation(
     message: `Commercially approved ${current.quotationNumber} V${current.versionNo} as ${input.fulfillmentType}`,
   });
 
+  if (inquiry && isV2InquiryMetadata(inquiry.commercialMetadata)) {
+    const metadata = commercialMetadataRecord(inquiry.commercialMetadata);
+    await prisma.commercialInquiry.update({
+      where: { id: inquiry.id },
+      data: {
+        commercialMetadata: {
+          ...metadata,
+          commercialApprovalStatus: 'APPROVED',
+          requestedFulfillmentType: input.fulfillmentType,
+          productionStatus: 'RELEASED_TO_PRODUCTION',
+          releasedToProductionAt: approvedAt.toISOString(),
+        },
+      },
+    });
+  }
+
+  const fulfillmentLabel = input.fulfillmentType === 'DIRECT_ORDER' ? 'Direct Sales Order' : 'Sales Agreement';
   await notifyFulfillmentEvent({
     eventCode: 'QUOTATION_COMMERCIALLY_APPROVED',
-    title: `Quotation approved: ${current.quotationNumber}`,
-    message: `${current.quotationNumber} V${current.versionNo} commercially approved as ${input.fulfillmentType}.`,
+    title: 'Contract approved and released to the Production Floor',
+    message: `Sales approved quotation ${current.quotationNumber} V${current.versionNo} (${fulfillmentLabel}). Your order has been released to the Production Floor.`,
     inquiryId: current.inquiryId,
+    inquiryNumber: inquiry?.inquiryNumber,
+    customerMasterId: inquiry?.customerMasterId,
+    notifyCustomer: true,
   });
 
   return updated;
@@ -304,6 +358,9 @@ async function notifyFulfillmentEvent(input: {
   title: string;
   message: string;
   inquiryId?: string;
+  inquiryNumber?: string;
+  customerMasterId?: string | null;
+  notifyCustomer?: boolean;
 }) {
   try {
     const { notifyStandardWorkflowEvent } = await import('./standardWorkflowNotifications');
@@ -312,7 +369,10 @@ async function notifyFulfillmentEvent(input: {
       title: input.title,
       message: input.message,
       inquiryId: input.inquiryId,
-      notifyRole: 'SALES_MANAGER',
+      inquiryNumber: input.inquiryNumber,
+      customerMasterId: input.customerMasterId,
+      notifyCustomer: input.notifyCustomer,
+      notifyRole: input.notifyCustomer ? undefined : 'SALES_MANAGER',
     });
   } catch {
     /* notifications never roll back commercial fulfillment */

@@ -26,6 +26,8 @@ export interface CommercialInquiryLineDto {
       noOfDrums: number;
       cuttingLengthM: number;
       drumTolerancePercent: number;
+      drumTolerancePositivePercent?: number;
+      drumToleranceNegativePercent?: number;
     }>;
     lifecycleStatus?: 'DRAFT' | 'CONFIRMED' | 'SUPERSEDED';
     versionNo?: number;
@@ -300,6 +302,8 @@ export async function confirmCommercialDrumSchedule(
       noOfDrums?: number | string;
       cuttingLengthM: number | string;
       drumTolerancePercent?: number | string;
+      drumTolerancePositivePercent?: number | string;
+      drumToleranceNegativePercent?: number | string;
     }>;
     cableTolerancePercent?: number | string;
   }

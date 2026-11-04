@@ -648,16 +648,18 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
           .vip-document-panel-content { max-height: none !important; overflow: visible !important; }
           .vip-commercial-offer-panel,
           .vip-tds-panel { overflow: visible !important; border: 0 !important; box-shadow: none !important; }
-          .vip-print-commercial-offer,
-          .vip-print-tds {
-            position: absolute !important;
-            inset: 0 !important;
+          body[data-vip-print-document="commercial_offer"] .vip-print-commercial-offer,
+          body[data-vip-print-document="tds"] .vip-print-tds {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             max-width: none !important;
             margin: 0 !important;
             border: 0 !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            background: white !important;
           }
           .vip-print-commercial-offer *,
           .vip-print-tds * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

@@ -1163,6 +1163,8 @@ export async function confirmInquiryDrumSchedule(
       numberOfDrums?: number;
       cuttingLengthM: number;
       drumTolerancePercent?: number;
+      drumTolerancePositivePercent?: number;
+      drumToleranceNegativePercent?: number;
     }>;
     cableTolerancePercent?: number;
   },
@@ -1184,6 +1186,16 @@ export async function confirmInquiryDrumSchedule(
         noOfDrums: Math.floor(Number(row.numberOfDrums ?? row.noOfDrums)),
         cuttingLengthM: Number(row.cuttingLengthM),
         drumTolerancePercent: Number(row.drumTolerancePercent ?? 0) || 0,
+        ...(row.drumTolerancePositivePercent != null || row.drumToleranceNegativePercent != null
+          ? {
+              drumTolerancePositivePercent: Number(
+                row.drumTolerancePositivePercent ?? row.drumTolerancePercent ?? 0
+              ),
+              drumToleranceNegativePercent: Number(
+                row.drumToleranceNegativePercent ?? row.drumTolerancePercent ?? 0
+              ),
+            }
+          : {}),
       }))
     : stored?.rows || [];
   const cableTolerancePercent =

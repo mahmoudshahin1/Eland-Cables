@@ -10,6 +10,7 @@ import {
   floorToNearest10,
 } from '../../domain/drumCapacityCalculator';
 import { DrumMasterSelect } from './DrumMasterSelect';
+import { DrumDimensionTable } from './DrumDimensionTable';
 
 export interface DrumScheduleRow {
   id: string;
@@ -17,6 +18,8 @@ export interface DrumScheduleRow {
   noOfDrums: number | string;
   cuttingLengthM: number | string;
   drumTolerancePercent: number | string;
+  drumTolerancePositivePercent?: number | string;
+  drumToleranceNegativePercent?: number | string;
 }
 
 export interface DrumScheduleSelectOption {
@@ -30,6 +33,8 @@ interface DrumCuttingScheduleTableProps {
   approxWeightKgKm: number;
   cableTolerancePercent: number | string;
   onCableToleranceChange: (value: string) => void;
+  showCableTolerance?: boolean;
+  asymmetricDrumTolerance?: boolean;
   showCableDescription?: boolean;
   cableDescription?: string;
   /** Outside diameter (mm) — enables native length/load utilization metrics. */
@@ -55,6 +60,8 @@ export function DrumCuttingScheduleTable({
   approxWeightKgKm,
   cableTolerancePercent,
   onCableToleranceChange,
+  showCableTolerance = true,
+  asymmetricDrumTolerance = false,
   showCableDescription = false,
   cableDescription = '',
   cableDiameterMm,
@@ -158,7 +165,7 @@ export function DrumCuttingScheduleTable({
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+      {showCableTolerance && <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
         <label className="block space-y-1">
           <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
             Cable Tolerance <span className="text-red-500">*</span>
@@ -188,10 +195,10 @@ export function DrumCuttingScheduleTable({
             tolerance
           </div>
         )}
-      </div>
+      </div>}
 
       <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-        <table className="min-w-[1240px] w-full text-left text-xs border-collapse">
+        <table className={`${asymmetricDrumTolerance ? 'min-w-[1480px]' : 'min-w-[1240px]'} w-full text-left text-xs border-collapse`}>
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
               <th className="p-3 w-10 text-center">#</th>
@@ -199,9 +206,20 @@ export function DrumCuttingScheduleTable({
               <th className="p-3 min-w-[260px]">Drum Type &amp; Specs</th>
               <th className="p-3 w-32 min-w-[110px]">No. of Drums</th>
               <th className="p-3 w-72 min-w-[240px]">Cutting Length / Drum</th>
-              <th className="p-3 w-36 min-w-[130px]">
-                Drum Tolerance <span className="text-red-500">*</span>
-              </th>
+              {asymmetricDrumTolerance ? (
+                <>
+                  <th className="p-3 w-36 min-w-[130px]">
+                    Drum Tolerance + (%) <span className="text-red-500">*</span>
+                  </th>
+                  <th className="p-3 w-36 min-w-[130px]">
+                    Drum Tolerance − (%) <span className="text-red-500">*</span>
+                  </th>
+                </>
+              ) : (
+                <th className="p-3 w-36 min-w-[130px]">
+                  Drum Tolerance <span className="text-red-500">*</span>
+                </th>
+              )}
               <th className="p-3 w-28 min-w-[100px]">Max usable (m)</th>
               <th className="p-3 w-28 min-w-[95px]">Length util %</th>
               <th className="p-3 w-28 min-w-[95px]">Load util %</th>
@@ -215,19 +233,28 @@ export function DrumCuttingScheduleTable({
               const cuttingM = Number(row.cuttingLengthM);
               const drumCount = Number(row.noOfDrums);
               const drumTolerance = Number(row.drumTolerancePercent);
+              const drumTolerancePositive = Number(row.drumTolerancePositivePercent ?? row.drumTolerancePercent);
+              const drumToleranceNegative = Number(row.drumToleranceNegativePercent ?? row.drumTolerancePercent);
+              const drumTolerancesReady = asymmetricDrumTolerance
+                ? Number.isFinite(drumTolerancePositive) &&
+                  drumTolerancePositive >= 0 &&
+                  Number.isFinite(drumToleranceNegative) &&
+                  drumToleranceNegative >= 0
+                : Number.isFinite(drumTolerance) && drumTolerance >= 0;
               const master = drums.find((d) => d.drumCode === row.drumCode) || null;
               const metrics =
                 Number.isFinite(cuttingM) &&
                 cuttingM > 0 &&
                 Number.isFinite(drumCount) &&
                 drumCount > 0 &&
-                Number.isFinite(drumTolerance) &&
-                drumTolerance >= 0
+                drumTolerancesReady
                   ? computeDrumScheduleRowMetrics(
                       {
                         noOfDrums: drumCount,
                         cuttingLengthM: cuttingM,
-                        drumTolerancePercent: drumTolerance,
+                        drumTolerancePercent: asymmetricDrumTolerance ? drumTolerancePositive : drumTolerance,
+                        drumTolerancePositivePercent: drumTolerancePositive,
+                        drumToleranceNegativePercent: drumToleranceNegative,
                       },
                       approxWeightKgKm,
                       master?.capacity
@@ -307,6 +334,11 @@ export function DrumCuttingScheduleTable({
                           : suitableSelectEmptyLabel
                       }
                     />
+                    {master && (
+                      <div className="mt-2 overflow-x-auto">
+                        <DrumDimensionTable drum={master} />
+                      </div>
+                    )}
                   </td>
                   <td className="p-3">
                     <div className="relative min-w-[90px]">
@@ -379,23 +411,71 @@ export function DrumCuttingScheduleTable({
                       </div>
                     )}
                   </td>
-                  <td className="p-3">
-                    <div className="relative min-w-[100px]">
-                      <input
-                        type="number"
-                        min={0}
-                        max={20}
-                        step={0.5}
-                        required
-                        value={row.drumTolerancePercent}
-                        disabled={disabled}
-                        onChange={(e) => onUpdateRow(row.id, { drumTolerancePercent: e.target.value })}
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-3 pr-7 py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        placeholder="0"
-                      />
-                      <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
-                    </div>
-                  </td>
+                  {!asymmetricDrumTolerance && (
+                    <td className="p-3">
+                      <div className="relative min-w-[100px]">
+                        <input
+                          type="number"
+                          min={0}
+                          max={20}
+                          step={0.5}
+                          required
+                          aria-label={`Drum tolerance for row ${index + 1}`}
+                          value={row.drumTolerancePercent}
+                          disabled={disabled}
+                          onChange={(e) => onUpdateRow(row.id, { drumTolerancePercent: e.target.value })}
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-3 pr-7 py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="0"
+                        />
+                        <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                      </div>
+                    </td>
+                  )}
+                  {asymmetricDrumTolerance && (
+                    <>
+                      <td className="p-3">
+                        <div className="relative min-w-[100px]">
+                          <input
+                            type="number"
+                            min={0}
+                            max={20}
+                            step={0.5}
+                            required
+                            aria-label={`Positive drum tolerance for row ${index + 1}`}
+                            value={row.drumTolerancePositivePercent ?? row.drumTolerancePercent}
+                            disabled={disabled}
+                            onChange={(e) =>
+                              onUpdateRow(row.id, {
+                                drumTolerancePositivePercent: e.target.value,
+                                drumTolerancePercent: e.target.value,
+                              })
+                            }
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-3 pr-7 py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            placeholder="0"
+                          />
+                          <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="relative min-w-[100px]">
+                          <input
+                            type="number"
+                            min={0}
+                            max={20}
+                            step={0.5}
+                            required
+                            aria-label={`Negative drum tolerance for row ${index + 1}`}
+                            value={row.drumToleranceNegativePercent ?? row.drumTolerancePercent}
+                            disabled={disabled}
+                            onChange={(e) => onUpdateRow(row.id, { drumToleranceNegativePercent: e.target.value })}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-3 pr-7 py-2 text-sm font-mono font-bold text-orange-600 dark:text-orange-400 shadow-xs focus:ring-2 focus:ring-orange-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            placeholder="0"
+                          />
+                          <span className="absolute right-2.5 top-2.5 text-xs font-bold text-orange-500 pointer-events-none">%</span>
+                        </div>
+                      </td>
+                    </>
+                  )}
                   <td className="p-3 font-bold text-slate-900 dark:text-white">
                     {capacity?.maximumUsableLengthMeters != null
                       ? `${capacity.maximumUsableLengthMeters.toLocaleString()} m`
@@ -459,7 +539,9 @@ export function DrumCuttingScheduleTable({
         <p className="text-[10px] text-slate-400">
           Cable weight = cutting length (m) × approx weight ({approxWeightKgKm.toLocaleString()} kg/km) ÷ 1000.
           Length / load utilization use native drum capacity (geo + MaxLoad), not Excel Capacity UOM.
-          Drum tolerance applies to nominal line length; cable tolerance applies to the full order length.
+          {asymmetricDrumTolerance
+            ? 'Drum Tolerance + raises the maximum line length. Drum Tolerance − lowers the minimum line length.'
+            : 'Drum tolerance applies to nominal line length; cable tolerance applies to the full order length.'}
         </p>
       ) : (
         <p className="text-[10px] text-amber-600">

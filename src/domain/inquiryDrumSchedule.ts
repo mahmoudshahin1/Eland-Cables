@@ -8,6 +8,8 @@ export interface InquiryDrumScheduleRow {
   noOfDrums: number;
   cuttingLengthM: number;
   drumTolerancePercent: number;
+  drumTolerancePositivePercent?: number;
+  drumToleranceNegativePercent?: number;
 }
 
 export type InquiryDrumScheduleLifecycleStatus = 'DRAFT' | 'CONFIRMED' | 'SUPERSEDED';
@@ -30,14 +32,18 @@ export interface DrumScheduleRowMetrics {
 }
 
 export function computeDrumScheduleRowMetrics(
-  row: Pick<InquiryDrumScheduleRow, 'noOfDrums' | 'cuttingLengthM' | 'drumTolerancePercent'>,
+  row: Pick<
+    InquiryDrumScheduleRow,
+    'noOfDrums' | 'cuttingLengthM' | 'drumTolerancePercent' | 'drumTolerancePositivePercent' | 'drumToleranceNegativePercent'
+  >,
   approxWeightKgKm: number,
   drumCapacityKg?: number | null
 ): DrumScheduleRowMetrics {
   const nominalLineM = row.noOfDrums * row.cuttingLengthM;
-  const tolerance = Math.max(0, row.drumTolerancePercent) / 100;
-  const minLineM = Math.round(nominalLineM * (1 - tolerance));
-  const maxLineM = Math.round(nominalLineM * (1 + tolerance));
+  const positiveTolerance = Math.max(0, row.drumTolerancePositivePercent ?? row.drumTolerancePercent) / 100;
+  const negativeTolerance = Math.max(0, row.drumToleranceNegativePercent ?? row.drumTolerancePercent) / 100;
+  const minLineM = Math.round(nominalLineM * (1 - negativeTolerance));
+  const maxLineM = Math.round(nominalLineM * (1 + positiveTolerance));
   const cableWeightPerDrumKg = cableWeightKgFromCuttingLength(row.cuttingLengthM, approxWeightKgKm);
   const totalLineWeightKg = cableWeightPerDrumKg * row.noOfDrums;
   const fillPercent =
@@ -81,10 +87,29 @@ export function parseInquiryDrumSchedule(value: unknown): InquiryDrumSchedule | 
     const noOfDrums = Number(row.noOfDrums);
     const cuttingLengthM = Number(row.cuttingLengthM);
     const drumTolerancePercent = Number(row.drumTolerancePercent);
+    const drumTolerancePositivePercent = Number(row.drumTolerancePositivePercent ?? drumTolerancePercent);
+    const drumToleranceNegativePercent = Number(row.drumToleranceNegativePercent ?? drumTolerancePercent);
     if (!drumCode || !Number.isFinite(noOfDrums) || noOfDrums <= 0) continue;
     if (!Number.isFinite(cuttingLengthM) || cuttingLengthM <= 0) continue;
-    if (!Number.isFinite(drumTolerancePercent) || drumTolerancePercent < 0) continue;
-    rows.push({ drumCode, noOfDrums, cuttingLengthM, drumTolerancePercent });
+    if (
+      !Number.isFinite(drumTolerancePositivePercent) ||
+      drumTolerancePositivePercent < 0 ||
+      !Number.isFinite(drumToleranceNegativePercent) ||
+      drumToleranceNegativePercent < 0
+    ) {
+      continue;
+    }
+    const hasAsymmetricTolerance =
+      row.drumTolerancePositivePercent != null || row.drumToleranceNegativePercent != null;
+    rows.push({
+      drumCode,
+      noOfDrums,
+      cuttingLengthM,
+      drumTolerancePercent: hasAsymmetricTolerance
+        ? Math.max(drumTolerancePositivePercent, drumToleranceNegativePercent)
+        : drumTolerancePercent,
+      ...(hasAsymmetricTolerance ? { drumTolerancePositivePercent, drumToleranceNegativePercent } : {}),
+    });
   }
 
   if (!rows.length || !Number.isFinite(cableTolerancePercent) || cableTolerancePercent < 0) {

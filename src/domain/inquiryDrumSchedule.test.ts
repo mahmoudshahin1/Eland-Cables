@@ -23,6 +23,26 @@ describe('inquiryDrumSchedule', () => {
     assert.equal(metrics.totalLineWeightKg, metrics.cableWeightPerDrumKg * 3);
   });
 
+  it('uses separate positive and negative drum tolerances and preserves them on parse', () => {
+    const asymmetric = {
+      drumCode: 'EWD630-0',
+      noOfDrums: 1,
+      cuttingLengthM: 200,
+      drumTolerancePercent: 5,
+      drumTolerancePositivePercent: 7,
+      drumToleranceNegativePercent: 3,
+    };
+    const metrics = computeDrumScheduleRowMetrics(asymmetric, 477, 250);
+    assert.equal(metrics.minLineM, 194);
+    assert.equal(metrics.maxLineM, 214);
+
+    const schedule = buildInquiryDrumSchedule([asymmetric], 0);
+    const parsed = parseInquiryDrumSchedule(schedule)?.rows[0];
+    assert.equal(parsed?.drumTolerancePercent, 7);
+    assert.equal(parsed?.drumTolerancePositivePercent, 7);
+    assert.equal(parsed?.drumToleranceNegativePercent, 3);
+  });
+
   it('computes cable order length range from cable tolerance', () => {
     const range = computeCableOrderLengthRange(11000, 5);
     assert.equal(range.minM, 10450);
