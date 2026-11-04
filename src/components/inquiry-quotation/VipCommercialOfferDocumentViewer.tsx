@@ -303,12 +303,20 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   useEffect(() => {
     if (!printTarget) return;
 
+    document.body.dataset.vipPrintDocument = printTarget;
+
+    const handleAfterPrint = () => setPrintTarget(null);
+    window.addEventListener('afterprint', handleAfterPrint);
+
     const frame = window.requestAnimationFrame(() => {
       window.print();
-      setPrintTarget(null);
     });
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      delete document.body.dataset.vipPrintDocument;
+    };
   }, [printTarget]);
 
   const lines = inquiry.lines || [];
@@ -620,17 +628,23 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   };
 
   return (
-    <div className="space-y-4 vip-document-print-root" data-print-target={printTarget ?? undefined}>
+    <div className="space-y-4 vip-document-print-root">
       <style>{`
         .vip-document-panel-content.is-collapsed { max-height: 0; overflow: hidden; }
         .vip-document-panel-content.is-expanded { max-height: none; overflow: visible; }
         @media print {
           @page { margin: 12mm; }
-          body * { visibility: hidden !important; position: static !important; }
-          .vip-document-print-root[data-print-target="commercial_offer"] .vip-print-commercial-offer,
-          .vip-document-print-root[data-print-target="commercial_offer"] .vip-print-commercial-offer *,
-          .vip-document-print-root[data-print-target="tds"] .vip-print-tds,
-          .vip-document-print-root[data-print-target="tds"] .vip-print-tds * { visibility: visible !important; }
+          body[data-vip-print-document] * { visibility: hidden !important; position: static !important; }
+          body[data-vip-print-document="commercial_offer"] .vip-print-commercial-offer,
+          body[data-vip-print-document="commercial_offer"] .vip-print-commercial-offer *,
+          body[data-vip-print-document="tds"] .vip-print-tds,
+          body[data-vip-print-document="tds"] .vip-print-tds * { visibility: visible !important; }
+          body[data-vip-print-document="commercial_offer"] .vip-tds-panel,
+          body[data-vip-print-document="tds"] .vip-commercial-offer-panel { display: none !important; }
+          body[data-vip-print-document] .vip-print-commercial-offer .relative,
+          body[data-vip-print-document] .vip-print-tds .relative { position: relative !important; }
+          body[data-vip-print-document] .vip-print-commercial-offer .absolute,
+          body[data-vip-print-document] .vip-print-tds .absolute { position: absolute !important; }
           .vip-document-panel-content { max-height: none !important; overflow: visible !important; }
           .vip-commercial-offer-panel,
           .vip-tds-panel { overflow: visible !important; border: 0 !important; box-shadow: none !important; }
@@ -684,7 +698,7 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             </button>
           </div>
         </div>
-        <div className={`vip-document-panel-content ${expandedDocuments.commercialOffer ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.commercialOffer}>
+        <div className={`vip-document-panel-content ${expandedDocuments.commercialOffer ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.commercialOffer} inert={!expandedDocuments.commercialOffer}>
 
       {/* DOCUMENT VIEW 1: COMMERCIAL OFFER (REPLICA OF OFFICIAL ENERGYA DOCUMENT) */}
         <div className="vip-print-commercial-offer bg-white border-2 border-slate-200 p-6 sm:p-8 space-y-6 text-[#122033] font-sans">
@@ -1095,7 +1109,7 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             </button>
           </div>
         </div>
-        <div className={`vip-document-panel-content ${expandedDocuments.tds ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.tds}>
+        <div className={`vip-document-panel-content ${expandedDocuments.tds ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.tds} inert={!expandedDocuments.tds}>
       {/* DOCUMENT VIEW 2: TECHNICAL DATA SHEET (TDS) */}
         <div className="vip-print-tds bg-white border-2 border-slate-200 p-6 sm:p-8 space-y-6 text-[#122033]">
           {/* TDS Header */}
