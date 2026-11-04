@@ -57,6 +57,7 @@ export interface MaterialCostLineDetail {
   priceBasis: string;
   priceRevision: number;
   priceId?: string;
+  priceWorkflowStatus?: string;
   effectiveFrom?: Date | null;
   effectiveTo?: Date | null;
   pricingSource?: MaterialPricingSource;
@@ -136,6 +137,7 @@ export interface CostingContext {
   rawMaterialPricingCategories?: Map<string, RawMaterialPricingCategory>;
   inquiryMetalPricing?: InquiryMetalPricing | null;
   approvedPrices: StoredPriceRecord[];
+  allowDraftRawMaterialPrices?: boolean;
   fxContext?: FxConversionContext;
 }
 
@@ -248,6 +250,7 @@ export function evaluateCostingGates(
         costingDate,
         inquiryMetalPricing: context.inquiryMetalPricing,
         approvedPrices: context.approvedPrices,
+        allowDraftPriceFallback: context.allowDraftRawMaterialPrices,
       });
       if (!resolved.ok) {
         blockingReasons.push(`Gate 4 Failed: ${line.rawMaterialCode} — ${resolved.message} (${resolved.code}).`);
@@ -277,7 +280,8 @@ export function evaluateCostingGates(
       currency,
       priceBasisForConsumptionUom(line.uom),
       context.approvedPrices,
-      true
+      true,
+      context.allowDraftRawMaterialPrices
     );
 
     if (priceVal.code !== 'PRICE_VALID') {
@@ -461,6 +465,7 @@ export function calculateCableManufacturingCost(
       costingDate: val.costingDate,
       inquiryMetalPricing: context.inquiryMetalPricing,
       approvedPrices: context.approvedPrices,
+      allowDraftPriceFallback: context.allowDraftRawMaterialPrices,
     });
 
     if (!priceRes.ok || priceRes.appliedPrice == null) {
@@ -595,6 +600,8 @@ export function calculateCableManufacturingCost(
       priceBasis: priceRes.priceBasis || 'PER_KG',
       priceRevision: priceRes.masterPriceRevision || priceRec?.revision || 1,
       priceId: priceRes.masterPriceId || priceRec?.id,
+      priceWorkflowStatus:
+        priceRes.pricingSource === 'RAW_MATERIAL_MASTER' ? priceRec?.workflowStatus : undefined,
       effectiveFrom: priceRes.masterEffectiveFrom ?? priceRec?.effectiveFrom,
       effectiveTo: priceRes.masterEffectiveTo ?? priceRec?.effectiveTo,
       pricingSource: priceRes.pricingSource,

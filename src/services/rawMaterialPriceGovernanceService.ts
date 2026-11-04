@@ -224,7 +224,8 @@ export function getValidRawMaterialPrice(
   preferredCurrency?: string,
   priceBasis: PriceBasis = 'PER_KG',
   approvedPrices: StoredPriceRecord[] = [],
-  allowCrossCurrency = false
+  allowCrossCurrency = false,
+  allowDraftPriceFallback = false
 ): {
   code: PriceValidationResultCode;
   priceRecord?: StoredPriceRecord;
@@ -234,9 +235,13 @@ export function getValidRawMaterialPrice(
 } {
   void priceBasis;
   const code = rawMaterialCode.toUpperCase();
-  const matchingPrices = approvedPrices.filter(
+  const approvedMatches = approvedPrices.filter(
     (p) => p.workflowStatus === 'APPROVED' && p.rawMaterialCode.toUpperCase() === code
   );
+  const draftMatches = allowDraftPriceFallback
+    ? approvedPrices.filter((p) => p.workflowStatus === 'DRAFT' && p.rawMaterialCode.toUpperCase() === code)
+    : [];
+  const matchingPrices = approvedMatches.length ? approvedMatches : draftMatches;
 
   if (!matchingPrices.length) {
     const pending = approvedPrices.filter((p) => p.rawMaterialCode.toUpperCase() === code);

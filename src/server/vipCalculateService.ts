@@ -366,7 +366,7 @@ export async function calculateInquiry(
             incoterms: inquiry.incoterms,
             commercialMetadata: inquiry.commercialMetadata as Record<string, unknown> | null,
           },
-          { previewOnly: false }
+          { previewOnly: false, allowDraftRawMaterialPrices: true }
         );
         if ('error' in built) {
           anyCostingFailed = true;

@@ -69,6 +69,9 @@ export async function previewV2CostingRun(
         commercialMetadata: inquiry.commercialMetadata as Record<string, unknown> | null,
       },
       lineQuantity: Number(line.requestedQuantity),
+      allowDraftRawMaterialPrices:
+        isV2InquiryMetadata(inquiry.commercialMetadata) &&
+        (inquiry.commercialMetadata as Record<string, unknown>).inquiryProcessCode === 'VIP_FAST_TRACK',
     },
     actor
   );
@@ -115,6 +118,9 @@ export async function calculateV2CostingRun(
       },
       lineQuantity: Number(line.requestedQuantity),
       containerStudyResultId: options?.containerStudyResultId,
+      allowDraftRawMaterialPrices:
+        isV2InquiryMetadata(inquiry.commercialMetadata) &&
+        (inquiry.commercialMetadata as Record<string, unknown>).inquiryProcessCode === 'VIP_FAST_TRACK',
     },
     actor
   );

@@ -13,6 +13,8 @@ export interface StructuredCostingRequest {
   inquiryLineId?: string;
   /** Inquiry commercial metadata for FX and metal rates */
   commercialMetadata?: Record<string, unknown> | null;
+  /** Internal VIP-only policy set by server orchestration, never accepted from public request bodies. */
+  allowDraftRawMaterialPrices?: boolean;
   /** Optional explicit FX overrides */
   fxContext?: import('../domain/currencyConversion').FxConversionContext;
   /** Optional governed inputs for layer formulas */
@@ -88,7 +90,11 @@ export function normalizeCostingDate(value?: string | Date | null): string {
 export function buildCostingRequestFromInquiryLine(
   line: InquiryLineCostingContext,
   header: InquiryHeaderCostingContext,
-  options?: { configurationVersionId?: string; previewOnly?: boolean }
+  options?: {
+    configurationVersionId?: string;
+    previewOnly?: boolean;
+    allowDraftRawMaterialPrices?: boolean;
+  }
 ): StructuredCostingRequest | { error: string } {
   const materialNumber = line.materialNumber?.trim();
   if (!materialNumber) {
@@ -135,6 +141,7 @@ export function buildCostingRequestFromInquiryLine(
     configurationVersionId: options?.configurationVersionId,
     commercialMetadata: Object.keys(meta).length ? meta : undefined,
     layerInputs: buildLayerInputsFromCommercialMetadata(meta),
+    allowDraftRawMaterialPrices: options?.allowDraftRawMaterialPrices === true,
     previewOnly: options?.previewOnly ?? true,
   };
 }

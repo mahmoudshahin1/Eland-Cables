@@ -17,6 +17,7 @@ export interface InquiryCuttingDrumSelectionModalProps {
   line: CommercialInquiryLineDto;
   drums: DrumMasterRecord[];
   jwtToken?: string | null;
+  vipToleranceControls?: boolean;
   onConfirmed?: () => void;
 }
 
@@ -27,6 +28,7 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
   line,
   drums,
   jwtToken,
+  vipToleranceControls = false,
   onConfirmed,
 }) => {
   const [engineering, setEngineering] = useState(() => resolveLineCableEngineering(line));
@@ -87,6 +89,7 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
           line={line}
           drums={drums}
           jwtToken={jwtToken}
+          vipToleranceControls={vipToleranceControls}
           cableDiameterMm={engineering.cableDiameterMm}
           approxWeightKgKm={engineering.approxWeightKgKm}
           onConfirmed={() => {

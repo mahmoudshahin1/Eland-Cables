@@ -185,7 +185,8 @@ function resolveMasterPriceTrace(
   costingDate: Date,
   consumptionUom: string,
   currency: string,
-  approvedPrices: StoredPriceRecord[]
+  approvedPrices: StoredPriceRecord[],
+  allowDraftPriceFallback = false
 ) {
   const masterVal = getValidRawMaterialPrice(
     rawMaterialCode,
@@ -194,7 +195,8 @@ function resolveMasterPriceTrace(
     currency,
     priceBasisForConsumptionUom(consumptionUom),
     approvedPrices,
-    false
+    false,
+    allowDraftPriceFallback
   );
   if (masterVal.code !== 'PRICE_VALID' || !masterVal.priceRecord) {
     return {
@@ -224,6 +226,7 @@ export function resolveMaterialUnitPrice(params: {
   costingDate: Date;
   inquiryMetalPricing?: InquiryMetalPricing | null;
   approvedPrices: StoredPriceRecord[];
+  allowDraftPriceFallback?: boolean;
 }): MaterialPriceResolution {
   const {
     rawMaterialCode,
@@ -233,6 +236,7 @@ export function resolveMaterialUnitPrice(params: {
     costingDate,
     inquiryMetalPricing,
     approvedPrices,
+    allowDraftPriceFallback = false,
   } = params;
 
   const masterTrace = resolveMasterPriceTrace(
@@ -240,7 +244,8 @@ export function resolveMaterialUnitPrice(params: {
     costingDate,
     consumptionUom,
     costingCurrency,
-    approvedPrices
+    approvedPrices,
+    allowDraftPriceFallback
   );
 
   if (pricingCategory === 'MARKET_METAL_COPPER') {
@@ -380,7 +385,8 @@ export function resolveMaterialUnitPrice(params: {
     costingCurrency,
     priceBasisForConsumptionUom(consumptionUom),
     approvedPrices,
-    true
+    true,
+    allowDraftPriceFallback
   );
 
   if (masterVal.code !== 'PRICE_VALID' || masterVal.price == null || !masterVal.priceRecord) {

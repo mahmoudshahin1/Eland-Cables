@@ -1163,6 +1163,8 @@ export async function confirmInquiryDrumSchedule(
       numberOfDrums?: number;
       cuttingLengthM: number;
       drumTolerancePercent?: number;
+      drumTolerancePositivePercent?: number;
+      drumToleranceNegativePercent?: number;
     }>;
     cableTolerancePercent?: number;
   },
@@ -1179,12 +1181,31 @@ export async function confirmInquiryDrumSchedule(
 
   const stored = parseInquiryDrumSchedule(line.drumSchedule);
   const incomingRows = Array.isArray(input.rows)
-    ? input.rows.map((row) => ({
-        drumCode: String(row.drumCode || '').trim(),
-        noOfDrums: Math.floor(Number(row.numberOfDrums ?? row.noOfDrums)),
-        cuttingLengthM: Number(row.cuttingLengthM),
-        drumTolerancePercent: Number(row.drumTolerancePercent ?? 0) || 0,
-      }))
+    ? input.rows.map((row) => {
+        const legacyTolerance = Math.max(0, Number(row.drumTolerancePercent ?? 0) || 0);
+        const positiveTolerance = Math.max(
+          0,
+          Number(row.drumTolerancePositivePercent ?? legacyTolerance) || 0
+        );
+        const negativeTolerance = Math.max(
+          0,
+          Number(row.drumToleranceNegativePercent ?? legacyTolerance) || 0
+        );
+        const hasAsymmetricTolerance =
+          row.drumTolerancePositivePercent != null || row.drumToleranceNegativePercent != null;
+        return {
+          drumCode: String(row.drumCode || '').trim(),
+          noOfDrums: Math.floor(Number(row.numberOfDrums ?? row.noOfDrums)),
+          cuttingLengthM: Number(row.cuttingLengthM),
+          drumTolerancePercent: hasAsymmetricTolerance ? positiveTolerance : legacyTolerance,
+          ...(hasAsymmetricTolerance
+            ? {
+                drumTolerancePositivePercent: positiveTolerance,
+                drumToleranceNegativePercent: negativeTolerance,
+              }
+            : {}),
+        };
+      })
     : stored?.rows || [];
   const cableTolerancePercent =
     input.cableTolerancePercent != null && Number.isFinite(Number(input.cableTolerancePercent))

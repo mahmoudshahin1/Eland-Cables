@@ -386,6 +386,7 @@ export async function executeCostingPreview(request: StructuredCostingRequest): 
       revision: p.revision,
       temporalStatus: p.temporalStatus,
     })),
+    allowDraftRawMaterialPrices: request.allowDraftRawMaterialPrices === true,
     fxContext,
   };
 

@@ -237,7 +237,10 @@ export async function approveCommercialQuotation(
     where: {
       OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
     },
-    include: { lines: true },
+    include: {
+      lines: true,
+      inquiry: { select: { commercialMetadata: true } },
+    },
   });
   if (!current) throw issue('NOT_FOUND', `Quotation ${quotationId} not found.`);
 
@@ -246,7 +249,12 @@ export async function approveCommercialQuotation(
   if (current.commercialApprovalStatus === 'APPROVED') {
     throw issue('CONFLICT', `Quotation ${current.quotationNumber} V${current.versionNo} is already commercially approved.`);
   }
-  if (!isPricingApproved(current.commercialPricingStatus)) {
+  const inquiryMetadata =
+    current.inquiry?.commercialMetadata && typeof current.inquiry.commercialMetadata === 'object'
+      ? (current.inquiry.commercialMetadata as Record<string, unknown>)
+      : {};
+  const isVipFastTrack = inquiryMetadata.inquiryProcessCode === 'VIP_FAST_TRACK';
+  if (!isVipFastTrack && !isPricingApproved(current.commercialPricingStatus)) {
     throw issue(
       'BUSINESS_RULE_REQUIRED',
       `Commercial approval requires pricing approval first (current commercialPricingStatus=${current.commercialPricingStatus}).`

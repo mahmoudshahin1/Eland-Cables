@@ -503,6 +503,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const isVipV2Inquiry = Boolean(
     inquiry && canCalculateInquiry(inquiry) && isV2InquiryMetadata(inquiry.commercialMetadata)
   );
+  const isVipFastTrackInquiry = Boolean(
+    isVipV2Inquiry || inquiry?.commercialMetadata?.inquiryProcessCode === 'VIP_FAST_TRACK'
+  );
+  const isVipOrderSubmittedToSales = Boolean(
+    inquiry &&
+      (inquiry.status === 'SUBMITTED' || inquiry.commercialMetadata?.submittedToSales)
+  );
   const isStandardWorkflow = Boolean(
     !isVipV2Inquiry && inquiry?.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK'
   );
@@ -1811,7 +1818,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
       {/* VIP Fast-Track Journey Bar */}
-      {!(isCustomer && isVipV2Inquiry) && <VipFastTrackJourneyBar
+      {!(isVipFastTrackInquiry && (isCustomer || isVipOrderSubmittedToSales)) && <VipFastTrackJourneyBar
         currentTab={tab}
         onSelectTab={(selectedTab) => {
           const nextTab = isCustomer
@@ -3492,6 +3499,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           line={inquiry.lines.find((l) => l.id === scheduleLine.id) || scheduleLine}
           drums={drumMaster}
           jwtToken={jwtToken}
+          vipToleranceControls={isVipFastTrackInquiry}
           onConfirmed={() => {
             notify('Drum plan confirmed.');
             void load();

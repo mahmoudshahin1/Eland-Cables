@@ -30,7 +30,7 @@ export function resolveLineCableTolerancePercent(line: CommercialInquiryLineDto)
   return '';
 }
 
-export function scheduleToRows(line: CommercialInquiryLineDto): DrumScheduleRow[] {
+export function scheduleToRows(line: CommercialInquiryLineDto, vipToleranceControls = false): DrumScheduleRow[] {
   const schedule = parseInquiryDrumSchedule(line.drumSchedule);
   if (schedule?.rows.length) {
     return schedule.rows.map((row, index) => ({
@@ -39,6 +39,10 @@ export function scheduleToRows(line: CommercialInquiryLineDto): DrumScheduleRow[
       noOfDrums: row.noOfDrums,
       cuttingLengthM: row.cuttingLengthM,
       drumTolerancePercent: row.drumTolerancePercent,
+      ...(vipToleranceControls ? {
+        drumTolerancePositivePercent: row.drumTolerancePositivePercent ?? row.drumTolerancePercent,
+        drumToleranceNegativePercent: row.drumToleranceNegativePercent ?? row.drumTolerancePercent,
+      } : {}),
     }));
   }
   const qty = Number(line.requestedQuantity);
@@ -51,7 +55,8 @@ export function scheduleToRows(line: CommercialInquiryLineDto): DrumScheduleRow[
       drumCode: line.drumType || '',
       noOfDrums: Number.isFinite(qty) && qty > 0 ? qty : 1,
       cuttingLengthM: hasCut ? cut : '',
-      drumTolerancePercent: hasCut || hasDrum ? '0' : '',
+      drumTolerancePercent: vipToleranceControls ? '5' : hasCut || hasDrum ? '0' : '',
+      ...(vipToleranceControls ? { drumTolerancePositivePercent: '5', drumToleranceNegativePercent: '5' } : {}),
     },
   ];
 }
@@ -64,6 +69,7 @@ interface InquiryDrumPlanWorkflowProps {
   cableDiameterMm?: number;
   approxWeightKgKm?: number;
   onConfirmed?: () => void;
+  vipToleranceControls?: boolean;
 }
 
 export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = ({
@@ -74,10 +80,11 @@ export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = (
   cableDiameterMm = 0,
   approxWeightKgKm = 0,
   onConfirmed,
+  vipToleranceControls = false,
 }) => {
-  const [rows, setRows] = useState<DrumScheduleRow[]>(() => scheduleToRows(line));
+  const [rows, setRows] = useState<DrumScheduleRow[]>(() => scheduleToRows(line, vipToleranceControls));
   const [cableTolerancePercent, setCableTolerancePercent] = useState(() =>
-    resolveLineCableTolerancePercent(line)
+    vipToleranceControls ? '0' : resolveLineCableTolerancePercent(line)
   );
 
   const scheduleKey = useMemo(
@@ -86,9 +93,9 @@ export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = (
   );
 
   useEffect(() => {
-    setRows(scheduleToRows(line));
-    setCableTolerancePercent(resolveLineCableTolerancePercent(line));
-  }, [scheduleKey, line]);
+    setRows(scheduleToRows(line, vipToleranceControls));
+    setCableTolerancePercent(vipToleranceControls ? '0' : resolveLineCableTolerancePercent(line));
+  }, [scheduleKey, line, vipToleranceControls]);
 
   const storedSchedule = parseInquiryDrumSchedule(line.drumSchedule);
 
@@ -102,6 +109,7 @@ export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = (
       jwtToken={jwtToken}
       inquiryId={inquiryId}
       lineId={line.id}
+      vipToleranceControls={vipToleranceControls}
       initialLifecycleStatus={storedSchedule?.lifecycleStatus || null}
       rows={rows}
       cableTolerancePercent={cableTolerancePercent}

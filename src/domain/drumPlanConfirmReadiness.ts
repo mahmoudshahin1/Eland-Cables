@@ -14,6 +14,9 @@ export type DrumPlanConfirmRowInput = {
   noOfDrums?: number | string;
   numberOfDrums?: number | string;
   drumCode?: string | null;
+  drumTolerancePercent?: number | string;
+  drumTolerancePositivePercent?: number | string;
+  drumToleranceNegativePercent?: number | string;
 };
 
 export type DrumPlanConfirmIssue = {

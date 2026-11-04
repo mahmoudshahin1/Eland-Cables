@@ -11,12 +11,18 @@ const rows = [
   { cuttingLengthM: 2000, noOfDrums: 1, drumCode: 'EWD1100-0' },
 ];
 
-function memoryDeps(): ConfirmInquiryDrumPlanDeps & { writes: string[] } {
+function memoryDeps(): ConfirmInquiryDrumPlanDeps & {
+  writes: string[];
+  confirmedRows: Array<Record<string, unknown>>;
+} {
   const writes: string[] = [];
+  const confirmedRows: Array<Record<string, unknown>> = [];
   return {
     writes,
+    confirmedRows,
     confirmCommercialDrumSchedule: async (_token, inquiryId, lineId, input) => {
       writes.push(`confirm:${inquiryId}:${lineId}`);
+      confirmedRows.push(...((input.rows || []) as Array<Record<string, unknown>>));
       return {
         lifecycleStatus: 'CONFIRMED' as const,
         line: { id: lineId } as never,
@@ -55,6 +61,32 @@ describe('confirmInquiryDrumPlanFromSchedule Version A', () => {
       [1500, 1500, 1000, 2000]
     );
     assert.deepEqual(deps.writes, ['confirm:inq-1:line-1']);
+  });
+
+  it('persists separate VIP drum tolerance values through the existing confirmation API', async () => {
+    const deps = memoryDeps();
+    await confirmInquiryDrumPlanFromSchedule(
+      {
+        token: 't',
+        inquiryId: 'vip-inq-1',
+        lineId: 'line-1',
+        vipToleranceControls: true,
+        rows: [
+          {
+            cuttingLengthM: 200,
+            noOfDrums: 1,
+            drumCode: 'EWD630-0',
+            drumTolerancePercent: 5,
+            drumTolerancePositivePercent: 7,
+            drumToleranceNegativePercent: 3,
+          },
+        ],
+      },
+      deps
+    );
+    assert.equal(deps.confirmedRows[0]?.drumTolerancePositivePercent, 7);
+    assert.equal(deps.confirmedRows[0]?.drumToleranceNegativePercent, 3);
+    assert.equal(deps.confirmedRows[0]?.drumTolerancePercent, 7);
   });
 
   it('blocks confirm when coverage is incomplete', async () => {

@@ -300,6 +300,8 @@ export async function confirmCommercialDrumSchedule(
       noOfDrums?: number | string;
       cuttingLengthM: number | string;
       drumTolerancePercent?: number | string;
+      drumTolerancePositivePercent?: number | string;
+      drumToleranceNegativePercent?: number | string;
     }>;
     cableTolerancePercent?: number | string;
   }

@@ -160,6 +160,32 @@ describe('Inquiry metal pricing', () => {
     assert.equal(resolved.appliedUom, 'MT');
   });
 
+  it('uses a DRAFT standard RM price only when the VIP-only fallback is enabled', () => {
+    const draft: StoredPriceRecord = {
+      ...masterXl08Price,
+      id: 'PR-HF27-DRAFT',
+      rawMaterialCode: 'HF27',
+      price: 4200,
+      workflowStatus: 'DRAFT',
+    };
+    const input = {
+      rawMaterialCode: 'HF27',
+      pricingCategory: 'STANDARD_RAW_MATERIAL' as const,
+      consumptionUom: 'kg',
+      costingCurrency: 'USD',
+      costingDate: new Date('2026-08-20'),
+      approvedPrices: [draft],
+    };
+
+    const standardResult = resolveMaterialUnitPrice(input);
+    assert.equal(standardResult.ok, false);
+
+    const vipResult = resolveMaterialUnitPrice({ ...input, allowDraftPriceFallback: true });
+    assert.equal(vipResult.ok, true);
+    assert.equal(vipResult.appliedPrice, 4200);
+    assert.equal(vipResult.priceRecord?.workflowStatus, 'DRAFT');
+  });
+
   it('converts MT header price to kg consumption UOM', () => {
     const converted = convertInquiryMetalPriceForConsumption(10250, 'MT', 'kg');
     assert.ok(!('error' in converted));

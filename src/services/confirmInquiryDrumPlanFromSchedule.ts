@@ -29,18 +29,45 @@ function positiveLength(value: unknown): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-export function normalizeConfirmScheduleRows(rows: DrumPlanConfirmRowInput[]): Array<{
+export function normalizeConfirmScheduleRows(
+  rows: DrumPlanConfirmRowInput[],
+  vipToleranceControls = false
+): Array<{
   drumCode: string;
   noOfDrums: number;
   cuttingLengthM: number;
+  drumTolerancePercent?: number;
+  drumTolerancePositivePercent?: number;
+  drumToleranceNegativePercent?: number;
 }> {
-  const out: Array<{ drumCode: string; noOfDrums: number; cuttingLengthM: number }> = [];
+  const out: Array<{
+    drumCode: string;
+    noOfDrums: number;
+    cuttingLengthM: number;
+    drumTolerancePercent?: number;
+    drumTolerancePositivePercent?: number;
+    drumToleranceNegativePercent?: number;
+  }> = [];
   for (const row of rows) {
     const cuttingLengthM = positiveLength(row.cuttingLengthM);
     const noOfDrums = positiveInt(row.numberOfDrums ?? row.noOfDrums);
     const drumCode = String(row.drumCode || '').trim();
     if (!cuttingLengthM || !noOfDrums) continue;
-    out.push({ drumCode, noOfDrums, cuttingLengthM });
+    if (!vipToleranceControls) {
+      out.push({ drumCode, noOfDrums, cuttingLengthM });
+      continue;
+    }
+    const legacyTolerance = Math.max(0, Number(row.drumTolerancePercent) || 0);
+    const positive = Math.max(0, Number(row.drumTolerancePositivePercent ?? legacyTolerance) || 0);
+    const negative = Math.max(0, Number(row.drumToleranceNegativePercent ?? legacyTolerance) || 0);
+    out.push({
+      drumCode,
+      noOfDrums,
+      cuttingLengthM,
+      drumTolerancePercent: positive,
+      drumTolerancePositivePercent: positive,
+      drumToleranceNegativePercent: negative,
+    });
   }
   return out;
 }
@@ -53,6 +80,7 @@ export async function confirmInquiryDrumPlanFromSchedule(
     selectionMethod?: 'AUTOMATIC' | 'MANUAL';
     rows: DrumPlanConfirmRowInput[];
     cableTolerancePercent?: number | string;
+    vipToleranceControls?: boolean;
     unresolvedErrors?: string[];
   },
   deps: ConfirmInquiryDrumPlanDeps = defaultDeps
@@ -71,7 +99,7 @@ export async function confirmInquiryDrumPlanFromSchedule(
     throw new Error(readiness.issues[0]?.message || 'Drum plan is not ready to confirm.');
   }
 
-  const scheduleRows = normalizeConfirmScheduleRows(input.rows);
+  const scheduleRows = normalizeConfirmScheduleRows(input.rows, input.vipToleranceControls);
   const result = await deps.confirmCommercialDrumSchedule(input.token, input.inquiryId, input.lineId, {
     rows: scheduleRows,
     cableTolerancePercent: input.cableTolerancePercent,
@@ -102,6 +130,7 @@ export async function autoConfirmInquiryDrumPlanFromSchedule(
     selectionMethod?: 'AUTOMATIC' | 'MANUAL';
     rows: DrumPlanConfirmRowInput[];
     cableTolerancePercent?: number | string;
+    vipToleranceControls?: boolean;
     unresolvedErrors?: string[];
     technicalPlanValid: boolean | null;
     lifecycleStatus?: string | null;

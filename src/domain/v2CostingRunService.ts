@@ -25,6 +25,7 @@ export interface V2CostingRunOptions {
   header: InquiryHeaderCostingContext;
   lineQuantity: number;
   containerStudyResultId?: string | null;
+  allowDraftRawMaterialPrices?: boolean;
 }
 
 export interface V2CostingLineageAnswer {
@@ -121,6 +122,7 @@ export async function runV2CostingForLine(
   }
 
   const lineage = buildV2LineageStamp(options.handoff);
+  request.allowDraftRawMaterialPrices = options.allowDraftRawMaterialPrices === true;
   const result = await executeCostingForInquiryLine(request, actor, {
     persist: options.persist,
     inquiryId: options.inquiryId,

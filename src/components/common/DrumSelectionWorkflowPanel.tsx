@@ -72,6 +72,7 @@ interface DrumSelectionWorkflowPanelProps {
   rows: DrumScheduleRow[];
   cableTolerancePercent: string;
   onCableToleranceChange: (value: string) => void;
+  vipToleranceControls?: boolean;
   onRowsChange: (rows: DrumScheduleRow[]) => void;
   onPlanValidityChange: (valid: boolean, plan: AuthoritativeDrumPlanDto | null) => void;
   error: string | null;
@@ -103,6 +104,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   rows,
   cableTolerancePercent,
   onCableToleranceChange,
+  vipToleranceControls = false,
   onRowsChange,
   onPlanValidityChange,
   error,
@@ -167,9 +169,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   const unsuitable = focusPack?.unsuitable ?? [];
   const totalLengthM = useMemo(() => totalCableLengthFromDrumSchedule(rows), [rows]);
 
-  const cableTol = Number(cableTolerancePercent);
-  const cableToleranceReady =
-    cableTolerancePercent !== '' && Number.isFinite(cableTol) && cableTol >= 0;
+  const cableTol = vipToleranceControls ? 0 : Number(cableTolerancePercent);
+  const cableToleranceReady = vipToleranceControls ||
+    (cableTolerancePercent !== '' && Number.isFinite(cableTol) && cableTol >= 0);
   const band =
     focusCutting > 0 && cableToleranceReady
       ? computeCuttingLengthToleranceBand(focusCutting, cableTol)
@@ -230,6 +232,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         selectionMethod: mode,
         rows,
         cableTolerancePercent,
+        vipToleranceControls,
         technicalPlanValid,
         lifecycleStatus: planLifecycle,
       });
@@ -254,7 +257,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
     String(technicalPlanValid),
     String(autoConfirmDecision.shouldAutoConfirm),
     rows
-      .map((row) => `${row.drumCode || ''}:${row.cuttingLengthM}:${row.noOfDrums}`)
+      .map((row) => `${row.drumCode || ''}:${row.cuttingLengthM}:${row.noOfDrums}:${row.drumTolerancePositivePercent ?? row.drumTolerancePercent}:${row.drumToleranceNegativePercent ?? row.drumTolerancePercent}`)
       .join('|'),
   ].join('/');
 
@@ -397,7 +400,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         drumCode: String(r.drumCode || '').trim(),
         numberOfDrums: Number(r.noOfDrums),
         cuttingLengthM: Number(r.cuttingLengthM),
-        drumTolerancePercent: Number(r.drumTolerancePercent),
+        drumTolerancePercent: vipToleranceControls
+          ? Number(r.drumTolerancePositivePercent ?? r.drumTolerancePercent)
+          : Number(r.drumTolerancePercent),
       }))
       .filter(
         (r) =>
@@ -457,12 +462,14 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
       ignore = true;
       ac.abort();
     };
-  }, [mode, rows, cableToleranceReady, cableTol, cableInput]);
+  }, [mode, rows, cableToleranceReady, cableTol, cableInput, vipToleranceControls]);
 
   const runAutomatic = useCallback(async (signal?: AbortSignal) => {
     const requirements = cuttingLengthRequirementsFromSchedule(rows);
     if (!requirements.length || !cableToleranceReady) {
-      setLocalError('Enter cutting length and cable tolerance before automatic optimization.');
+      setLocalError(vipToleranceControls
+        ? 'Enter cutting length before automatic optimization.'
+        : 'Enter cutting length and cable tolerance before automatic optimization.');
       onPlanValidityChangeRef.current(false, null);
       setTechnicalPlanValid(null);
       setAutoPlan(null);
@@ -576,7 +583,8 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
           drumCode: code,
           noOfDrums: 1,
           cuttingLengthM: targetCutting,
-          drumTolerancePercent: '0',
+          drumTolerancePercent: vipToleranceControls ? '5' : '0',
+          ...(vipToleranceControls ? { drumTolerancePositivePercent: '5', drumToleranceNegativePercent: '5' } : {}),
         },
       ]);
       return;
@@ -586,7 +594,11 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         drumCode: code,
         cuttingLengthM: Number(target.cuttingLengthM) > 0 ? target.cuttingLengthM : targetCutting,
         noOfDrums: target.noOfDrums || 1,
-        drumTolerancePercent: target.drumTolerancePercent === '' ? '0' : target.drumTolerancePercent,
+        drumTolerancePercent: target.drumTolerancePercent === '' ? (vipToleranceControls ? '5' : '0') : target.drumTolerancePercent,
+        ...(vipToleranceControls ? {
+          drumTolerancePositivePercent: target.drumTolerancePositivePercent ?? (target.drumTolerancePercent || '5'),
+          drumToleranceNegativePercent: target.drumToleranceNegativePercent ?? (target.drumTolerancePercent || '5'),
+        } : {}),
       })
     );
   };
@@ -695,7 +707,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
         <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Cutting Length</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${vipToleranceControls ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-3 text-xs`}>
           <div>
             <div className="text-slate-500">Cutting length / drum</div>
             <div className="font-bold text-slate-900 dark:text-white">
@@ -709,20 +721,20 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
             </div>
             <div className="text-[10px] text-slate-500">cutting length × number of drums</div>
           </div>
-          <div>
+          {!vipToleranceControls && <div>
             <div className="text-slate-500">Cable tolerance</div>
             <div className="font-bold text-slate-900 dark:text-white">
               {cableToleranceReady ? `±${cableTol}%` : '—'}
             </div>
-          </div>
-          <div>
+          </div>}
+          {!vipToleranceControls && <div>
             <div className="text-slate-500">Allowed range</div>
             <div className="font-bold text-slate-900 dark:text-white">
               {band
                 ? `${band.minimumAllowedLengthM.toLocaleString()} m – ${band.maximumAllowedLengthM.toLocaleString()} m`
                 : '—'}
             </div>
-          </div>
+          </div>}
         </div>
         <p className="text-[11px] text-slate-500">
           {cableCode} · Ø {cableDiameterMm || '—'} mm · {approxWeightKgKm || '—'} kg/km · {cableDescription}
@@ -766,11 +778,13 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         rows={rows}
         drums={drums}
         approxWeightKgKm={approxWeightKgKm}
-        cableTolerancePercent={cableTolerancePercent}
+        cableTolerancePercent={vipToleranceControls ? 0 : cableTolerancePercent}
         onCableToleranceChange={(value) => {
-          if (planConfirmed) return;
+          if (planConfirmed || vipToleranceControls) return;
           onCableToleranceChange(value);
         }}
+        showCableTolerance={!vipToleranceControls}
+        asymmetricDrumTolerance={vipToleranceControls}
         cableDiameterMm={cableDiameterMm}
         suitableSelectOptionsForRow={mode === 'MANUAL' ? suitableSelectOptionsForRow : undefined}
         suitableSelectEmptyLabelForRow={mode === 'MANUAL' ? suitableSelectEmptyLabelForRow : undefined}
@@ -789,7 +803,8 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
               drumCode: '',
               noOfDrums: 1,
               cuttingLengthM: '',
-              drumTolerancePercent: '0',
+              drumTolerancePercent: vipToleranceControls ? '5' : '0',
+              ...(vipToleranceControls ? { drumTolerancePositivePercent: '5', drumToleranceNegativePercent: '5' } : {}),
             },
           ]);
         }}
@@ -873,38 +888,85 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                         </Button>
                       </div>
                     </div>
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pl-5">
-                      <div>
-                        <span className="text-slate-500">Max usable</span>
-                        <div className="font-bold">{fmt(c.capacity.maximumUsableLengthMeters, 0)} m</div>
+                    {vipToleranceControls ? (
+                      <div className="mt-2 overflow-x-auto pl-5">
+                        <table className="w-full min-w-[440px] border-collapse text-[11px]">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-left dark:border-slate-700">
+                              <th scope="col" className="py-1.5 pr-4 font-semibold text-slate-500">Property</th>
+                              <th scope="col" className="py-1.5 text-right font-semibold text-slate-500">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Usable Length</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.maximumUsableLengthMeters, 0)} m</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Requested Cutting Length</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(focusCutting, 0)} m</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Length Utilization</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.lengthUtilizationPercent)}%</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Cable Payload Utilization</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.loadUtilizationPercent)}%</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Drum Capacity (source unit not configured)</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.drum.capacity, 0)}</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Cable Payload</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.drum.maxWeight, 0)} kg</td>
+                            </tr>
+                            <tr>
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Empty Drum Net Weight</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">
+                                {c.capacity.emptyDrumNetWeightKg != null
+                                  ? `${fmt(c.capacity.emptyDrumNetWeightKg)} kg`
+                                  : 'Pending logistics'}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
-                      <div>
-                        <span className="text-slate-500">Requested</span>
-                        <div className="font-bold">{fmt(focusCutting, 0)} m</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Length utilization</span>
-                        <div className="font-bold">{fmt(c.lengthUtilizationPercent)}%</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Load utilization</span>
-                        <div className="font-bold">{fmt(c.loadUtilizationPercent)}%</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Capacity / MaxLoad</span>
-                        <div className="font-bold">
-                          {fmt(c.drum.capacity, 0)} / {fmt(c.drum.maxWeight, 0)}
+                    ) : (
+                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pl-5">
+                        <div>
+                          <span className="text-slate-500">Max usable</span>
+                          <div className="font-bold">{fmt(c.capacity.maximumUsableLengthMeters, 0)} m</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Requested</span>
+                          <div className="font-bold">{fmt(focusCutting, 0)} m</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Length utilization</span>
+                          <div className="font-bold">{fmt(c.lengthUtilizationPercent)}%</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Load utilization</span>
+                          <div className="font-bold">{fmt(c.loadUtilizationPercent)}%</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Capacity / MaxLoad</span>
+                          <div className="font-bold">
+                            {fmt(c.drum.capacity, 0)} / {fmt(c.drum.maxWeight, 0)}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Empty weight</span>
+                          <div className="font-bold">
+                            {c.capacity.emptyDrumNetWeightKg != null
+                              ? `${fmt(c.capacity.emptyDrumNetWeightKg)} kg`
+                              : 'Pending logistics'}
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <span className="text-slate-500">Empty weight</span>
-                        <div className="font-bold">
-                          {c.capacity.emptyDrumNetWeightKg != null
-                            ? `${fmt(c.capacity.emptyDrumNetWeightKg)} kg`
-                            : 'Pending logistics'}
-                        </div>
-                      </div>
-                    </div>
+                    )}
                     {c.warnings?.length ? (
                       <p className="mt-2 pl-5 text-[11px] text-amber-700 dark:text-amber-300">
                         {c.warnings
@@ -916,7 +978,46 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                           .join(' · ')}
                       </p>
                     ) : null}
-                    {open && (
+                    {open && vipToleranceControls && (
+                      <div className="mt-2 overflow-x-auto pl-5">
+                        <table className="w-full min-w-[440px] border-collapse text-[11px]">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-left dark:border-slate-700">
+                              <th scope="col" className="py-1.5 pr-4 font-semibold text-slate-500">Additional Property</th>
+                              <th scope="col" className="py-1.5 text-right font-semibold text-slate-500">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Cable Weight</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.cableWeightKg)} kg</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Gross Loaded Drum Weight</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.grossLoadedDrumWeightKg)} kg</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Windings per Layer</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{c.capacity.windingsPerLayer ?? '—'}</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Number of Layers</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{c.capacity.layers ?? '—'}</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Geometrical Capacity</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.geometricalCapacityMeters, 0)} m</td>
+                            </tr>
+                            <tr>
+                              <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Load-Limited Capacity</th>
+                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.loadLimitedCapacityMeters, 0)} m</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <div className="mt-1 text-slate-500">{c.decision}</div>
+                      </div>
+                    )}
+                    {open && !vipToleranceControls && (
                       <div className="mt-2 pl-5 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
                         <div>Cable weight: {fmt(c.cableWeightKg)} kg</div>
                         <div>
