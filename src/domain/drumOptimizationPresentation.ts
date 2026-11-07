@@ -391,3 +391,16 @@ export function patchDrumScheduleRow<T extends { id: string }>(
 ): T[] {
   return rows.map((row) => (row.id === id ? { ...row, ...patch } : row));
 }
+
+/**
+ * Remove a drum schedule line. When it is the only line, replace it with a blank row
+ * so the editor never locks the delete action on a single line.
+ */
+export function removeOrResetDrumScheduleRow<T extends { id: string }>(
+  rows: T[],
+  id: string,
+  blankRow: T
+): T[] {
+  const remaining = rows.filter((row) => row.id !== id);
+  return remaining.length > 0 ? remaining : [blankRow];
+}

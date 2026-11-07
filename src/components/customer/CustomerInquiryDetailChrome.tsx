@@ -325,7 +325,7 @@ export function CustomerInquiryFooterKpis({
     <div
       className={`grid gap-2.5 ${
         showFreightBreakdown
-          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6'
+          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-[minmax(80px,0.6fr)_minmax(80px,0.6fr)_minmax(110px,0.9fr)_minmax(180px,1.4fr)_minmax(150px,1.1fr)_minmax(200px,1.5fr)]'
           : 'grid-cols-2 xl:grid-cols-4'
       }`}
     >
@@ -342,17 +342,17 @@ export function CustomerInquiryFooterKpis({
               <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${card.wrap}`}>
                 <Icon className="h-4 w-4" />
               </span>
-              <span className={`text-[12px] font-medium truncate ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
+              <span className={`text-[12px] font-medium leading-tight ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
                 {card.label}
               </span>
             </div>
-            <p className={`mt-2 text-[20px] leading-tight font-bold tabular-nums truncate ${
+            <p className={`mt-2 text-[18px] leading-tight font-bold tabular-nums whitespace-nowrap ${
               card.isGrandTotal ? 'text-emerald-900 font-black' : 'text-brand-800'
             }`}>
               {card.value}
             </p>
             {card.helper ? (
-              <p className={`mt-1 text-[10px] truncate ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+              <p className={`mt-1 text-[10px] break-words ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
                 {card.helper}
               </p>
             ) : null}

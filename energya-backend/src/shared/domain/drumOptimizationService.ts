@@ -29,6 +29,7 @@ export {
   expandPhysicalDrumRequirements,
   formatSuitableDrumOptionLabel,
   patchDrumScheduleRow,
+  removeOrResetDrumScheduleRow,
   planCoversCuttingLengthRequirements,
   resolveAutomaticDrumRequirement,
   resolveAutomaticDrumRequirements,

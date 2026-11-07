@@ -58,6 +58,9 @@ src/domain/inquiryContainerStudyPhysicalIndependence.test.ts
 src/domain/inquiryContainerStudyEntireInquiryPopulation.test.ts
 src/domain/containerStudyPhysicalDrumCompatibility.test.ts
 src/domain/inquiryDrumSchedule.test.ts
+src/domain/drumScheduleRowEdit.test.ts
+src/domain/inquiryGrandTotal.test.ts
+src/components/inquiry-quotation/container3d/coordinates.test.ts
 src/domain/versionADrumScheduleConfirm.test.ts
 src/components/inquiry-quotation/inquiryHeaderForm.test.tsx
 src/services/cableScrapTemplateService.test.ts

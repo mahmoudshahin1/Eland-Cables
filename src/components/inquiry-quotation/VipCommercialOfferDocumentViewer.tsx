@@ -22,6 +22,7 @@ import {
 import type { V2QuotationDto } from '../../services/v2QuotationApiService';
 import { v2QuotationPdfUrl } from '../../services/v2QuotationApiService';
 import { DEFAULT_VIP_CABLES } from '../customer/vipCableCatalogData';
+import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 
 function extractConductorWeight(desc: string, conductorMaterial?: string): { cuWeightKgPerKm: number; alWeightKgPerKm: number } {
   const isAlu =
@@ -360,14 +361,16 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
     inquiry.commercialProductsTotal ||
     (primaryLine?.sellingPrice ? Number(primaryLine.sellingPrice) : 121212.23);
 
-  // Freight estimation from container study
-  const containerFreightMap: Record<string, number> = {
-    '20STD': 3100,
-    '40STD': 3300,
-    '40HQ': 3300,
-    '40OT': 3300,
-  };
-  const freightCost = containerFreightMap[preferredContainerType || '40HQ'] || 3300;
+  const offerDestination = inquiry.commercialMetadata?.deliveryDestination
+    ? String(inquiry.commercialMetadata.deliveryDestination)
+    : null;
+  const freightCost =
+    resolveInquiryCommercialTotals({
+      productsTotal: productsTotal,
+      containerType: preferredContainerType || '40HQ',
+      destination: offerDestination,
+      containerCount: 1,
+    }).freightTotal || 3300;
 
   // Resolve individual line calculations, MOQ km, weights, and realistic line selling prices
   const calculatedLines = useMemo(() => {

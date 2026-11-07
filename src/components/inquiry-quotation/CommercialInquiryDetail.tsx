@@ -154,6 +154,7 @@ import {
   visibleFieldsForUser,
 } from '../../services/inquiryFieldManifest';
 import { formatCommercialPriceAmount } from '../../domain/commercialLinePricingDisplay';
+import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 import { StatusBadge } from '../ui/Badge';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import {
@@ -1358,6 +1359,19 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   }
 
   const tabsListResolved = tabsList;
+  const commercialDestination =
+    headerForm?.deliveryDestination ||
+    (typeof inquiry.commercialMetadata?.deliveryDestination === 'string'
+      ? inquiry.commercialMetadata.deliveryDestination
+      : null);
+  const commercialTotals = resolveInquiryCommercialTotals({
+    productsTotal: inquiry.commercialProductsTotal,
+    containerType: preferredContainerType,
+    destination: commercialDestination,
+    containerCount: 1,
+  });
+  const formatCommercialMoney = (amount: number) =>
+    `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`;
 
   return (
     <div className="space-y-4">
@@ -1373,11 +1387,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             inquiry={inquiry}
             totalContractValueSlot={
               isCustomer && isVipV2Inquiry && (inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)) &&
-              (v2Quotation?.sellingPrice || inquiry.commercialProductsTotal) != null ? (
-                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[180px]">
+              commercialTotals.grandTotal != null ? (
+                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
-                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5">
-                    {Number(v2Quotation?.sellingPrice || inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {inquiry.currency || 'USD'}
+                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">
+                    {formatCommercialMoney(commercialTotals.grandTotal)}
                   </p>
                   <p className="text-[10px] text-slate-500 mt-1">
                     Fulfillment: <span className="font-bold text-slate-800">{(inquiry.commercialMetadata?.requestedFulfillmentType || v2Quotation?.fulfillmentType) === 'SALES_AGREEMENT' ? 'Sales Agreement' : 'Direct Sales Order'}</span>
@@ -2612,7 +2626,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               quotationId={v2Quotation?.id || inquiry.quotations?.[0]?.id}
               quotationNumber={v2Quotation?.quotationNumber || inquiry.quotations?.[0]?.quotationNumber || 'QUO26-00004'}
               versionNo={v2Quotation?.versionNo || inquiry.quotations?.[0]?.versionNo || 1}
-              totalAmount={v2Quotation?.sellingPrice || inquiry.commercialProductsTotal}
+              totalAmount={commercialTotals.grandTotal}
               currency={inquiry.currency}
               initialFulfillmentType={
                 (inquiry.commercialMetadata?.requestedFulfillmentType as FulfillmentType) ||
@@ -3307,17 +3321,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 : `${Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency}`
           }
           freightCostLabel={
-            inquiry.commercialProductsTotal == null
-              ? null
-              : `${(preferredContainerType === '20STD' ? 3100 : 3300).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`
+            commercialTotals.freightTotal == null ? null : formatCommercialMoney(commercialTotals.freightTotal)
           }
           grandTotalLabel={
-            inquiry.commercialProductsTotal == null
-              ? null
-              : `${(Number(inquiry.commercialProductsTotal) + (preferredContainerType === '20STD' ? 3100 : 3300)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`
+            commercialTotals.grandTotal == null ? null : formatCommercialMoney(commercialTotals.grandTotal)
           }
           incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
-          destination={headerForm?.deliveryDestination || (inquiry.commercialMetadata?.deliveryDestination as string) || 'Doncaster'}
+          destination={commercialDestination || 'Doncaster'}
           containerType={preferredContainerType || '20STD'}
         />
       )}
@@ -3330,8 +3340,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           summary={summary}
           commercialValue={inquiry.commercialProductsTotal ?? null}
           recalculationRequired={inquiry.commercialValueState === 'RECALCULATION_REQUIRED'}
-          freightValue={inquiry.commercialProductsTotal == null ? null : (preferredContainerType === '20STD' ? 3100 : 3300)}
-          grandTotalValue={inquiry.commercialProductsTotal == null ? null : (Number(inquiry.commercialProductsTotal) + (preferredContainerType === '20STD' ? 3100 : 3300))}
+          freightValue={commercialTotals.freightTotal}
+          grandTotalValue={commercialTotals.grandTotal}
           incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
           containerType={preferredContainerType || '20STD'}
         />

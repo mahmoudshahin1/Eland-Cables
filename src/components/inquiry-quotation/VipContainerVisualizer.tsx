@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useMemo, useState } from 'react';
 import {
   Ship,
   Package,
@@ -15,12 +15,18 @@ import {
   Scale,
   Ruler,
 } from 'lucide-react';
+import { CONTAINER_SPECS } from '../customer/vipCableCatalogData';
+import { CONTAINER_VIEW_PRESETS, type ContainerViewPreset } from './container3d/CameraPresets';
+import { canUseWebGL } from './container3d/ContainerPlan2D';
+import { containerHeightMeters } from './container3d/coordinates';
 import type {
   CertifiedContainerResult,
   CertifiedStudySummary,
   PlacedDrumPosition,
   StuffingMethod,
 } from '../../domain/energyaCertifiedContainerStudyEngine';
+
+const ContainerCanvas = lazy(() => import('./container3d/ContainerCanvas'));
 
 interface VipContainerVisualizerProps {
   studySummary: CertifiedStudySummary;
@@ -39,7 +45,9 @@ export const VipContainerVisualizer: React.FC<VipContainerVisualizerProps> = ({
 }) => {
   const [activeContainerIdx, setActiveContainerIdx] = useState(0);
   const [hoveredDrum, setHoveredDrum] = useState<PlacedDrumPosition | null>(null);
-  const [viewMode, setViewMode] = useState<'top_down' | 'cross_section'>('top_down');
+  const [preset, setPreset] = useState<ContainerViewPreset>('perspective');
+  const webgl = useMemo(() => canUseWebGL(), []);
+  const viewMode = preset === 'door' ? 'cross_section' : 'top_down';
 
   const containers = studySummary.containers;
   const currentContainer: CertifiedContainerResult | undefined =
@@ -244,28 +252,20 @@ export const VipContainerVisualizer: React.FC<VipContainerVisualizerProps> = ({
 
             {/* View Mode Toggle */}
             <div className="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200 text-xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('top_down')}
-                className={`px-2 py-1 rounded-lg font-bold text-xs ${
-                  viewMode === 'top_down'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Top-Down Plan
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('cross_section')}
-                className={`px-2 py-1 rounded-lg font-bold text-xs ${
-                  viewMode === 'cross_section'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Door Elevation
-              </button>
+              {CONTAINER_VIEW_PRESETS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setPreset(item.id)}
+                  className={`px-2 py-1 rounded-lg font-bold text-xs ${
+                    preset === item.id
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -332,7 +332,28 @@ export const VipContainerVisualizer: React.FC<VipContainerVisualizerProps> = ({
         </div>
 
         {/* 2D Container Loading Blueprint (SVG Interactive Floor Plan) */}
-        {viewMode === 'top_down' ? (
+        {webgl ? (
+          <div className="overflow-hidden rounded-2xl border-2 border-slate-800 bg-slate-950">
+            <Suspense
+              fallback={
+                <div className="flex h-[420px] items-center justify-center text-xs font-semibold text-slate-300">
+                  Loading 3D container…
+                </div>
+              }
+            >
+              <ContainerCanvas
+                container={currentContainer}
+                heightM={containerHeightMeters(
+                  CONTAINER_SPECS[currentContainer.typeCodeKey]?.dims
+                )}
+                stuffingMethod={stuffingMethod}
+                preset={preset}
+                activeDrumId={hoveredDrum?.drumId ?? null}
+                onHoverDrum={setHoveredDrum}
+              />
+            </Suspense>
+          </div>
+        ) : viewMode === 'top_down' ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
               <span className="flex items-center gap-1.5 font-medium">

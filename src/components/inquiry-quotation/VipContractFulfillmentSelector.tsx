@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
-  ShieldCheck,
   Building,
 } from 'lucide-react';
 import { FulfillmentType } from '../../services/commercialFulfillmentApiService';
@@ -90,7 +89,10 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   };
 
   return (
-    <div className="rounded-2xl border-2 border-brand-200 bg-white p-5 shadow-sm space-y-4">
+    <div
+      className="rounded-2xl border-2 border-brand-200 bg-white p-5 shadow-sm space-y-4"
+      aria-label={`Contract fulfillment for ${quotationNumber} V${versionNo}`}
+    >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -110,18 +112,12 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
                 </span>
               ) : null}
             </h3>
-            <p className="text-slate-500 text-xs mt-0.5">
-              Select the contract fulfillment structure for quotation{' '}
-              <span className="font-mono font-bold text-slate-700">
-                {quotationNumber} V{versionNo}
-              </span>
-            </p>
           </div>
         </div>
 
         {totalAmount != null && (
           <div className="text-right">
-            <p className="text-[11px] text-slate-400">Total Offer Amount</p>
+            <p className="text-[11px] text-slate-400">Grand Total</p>
             <p className="text-base font-black text-brand-800 font-mono">
               {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
             </p>
@@ -153,20 +149,11 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
               </div>
               <div>
                 <p className="font-bold text-xs text-slate-900">Direct Sales Order</p>
-                <p className="text-[11px] text-slate-500">Immediate Spot Supply Order</p>
               </div>
             </div>
             <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selectedType === 'DIRECT_ORDER' ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300'}`}>
               {selectedType === 'DIRECT_ORDER' && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
             </div>
-          </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Immediate supply order for the entire inquiry volume in a single delivery batch. Manufacturing and shipment execution commence immediately upon Sales sign-off.
-          </p>
-          <div className="pt-1 flex items-center gap-2 text-[10px] text-slate-400 font-medium">
-            <span>• Immediate Supply</span>
-            <span>• Single Delivery Batch</span>
-            <span>• Direct Invoicing</span>
           </div>
         </div>
 
@@ -186,31 +173,17 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
               </div>
               <div>
                 <p className="font-bold text-xs text-slate-900">Sales Agreement</p>
-                <p className="text-[11px] text-slate-500">Annual & Project Framework Contract</p>
               </div>
             </div>
             <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selectedType === 'SALES_AGREEMENT' ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300'}`}>
               {selectedType === 'SALES_AGREEMENT' && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
             </div>
           </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Annual or project framework contract with scheduled releases (call-offs) over the agreed contract period with locked-in raw metal rates (LME Cu/Al).
-          </p>
-          <div className="pt-1 flex items-center gap-2 text-[10px] text-slate-400 font-medium">
-            <span>• Scheduled Releases</span>
-            <span>• Multiple Batches</span>
-            <span>• Locked Metal Pricing</span>
-          </div>
         </div>
       </div>
 
       {/* Action Buttons: Customer Submit vs Sales Approve */}
-      <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          <span>Approval guarantees technical adherence and fixes commercial quotation prices.</span>
-        </div>
-
+      <div className="pt-2 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100">
         <div className="flex flex-wrap items-center gap-2">
           {/* Customer Submit Button */}
           {!submitted && (
