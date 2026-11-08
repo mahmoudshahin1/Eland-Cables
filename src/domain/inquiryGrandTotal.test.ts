@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveInquiryCommercialTotals, unitSeaFreightUsd } from './inquiryGrandTotal';
+import {
+  resolveInquiryCommercialTotals,
+  resolveSubmittedProductsTotal,
+  unitSeaFreightUsd,
+} from './inquiryGrandTotal';
 
 describe('resolveInquiryCommercialTotals', () => {
   it('adds Doncaster 40HQ sea freight to the products subtotal', () => {
@@ -32,6 +36,24 @@ describe('resolveInquiryCommercialTotals', () => {
     assert.equal(unitSeaFreightUsd('40HQ', 'Jeddah', 4200), 4200);
     assert.equal(unitSeaFreightUsd('20STD', null), 3100);
     assert.equal(unitSeaFreightUsd('40OT', null), 3300);
+  });
+
+  it('uses the stored products subtotal, otherwise the sum of submitted line prices', () => {
+    assert.equal(
+      resolveSubmittedProductsTotal({
+        commercialProductsTotal: 7732.18,
+        lines: [{ commercialLineTotal: 100 }],
+      }),
+      7732.18
+    );
+    assert.equal(
+      resolveSubmittedProductsTotal({
+        commercialProductsTotal: null,
+        lines: [{ commercialLineTotal: 5000 }, { sellingPrice: '2732.18' }],
+      }),
+      7732.18
+    );
+    assert.equal(resolveSubmittedProductsTotal({ commercialProductsTotal: null, lines: [] }), null);
   });
 
   it('returns null totals when the products subtotal is missing', () => {

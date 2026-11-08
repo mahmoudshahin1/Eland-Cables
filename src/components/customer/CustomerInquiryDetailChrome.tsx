@@ -5,13 +5,19 @@ import {
   Bot,
   Calculator,
   ClipboardList,
+  Download,
+  Eye,
+  FileText,
   Headphones,
   Layers,
+  LayoutDashboard,
+  Printer,
   Ruler,
   Save,
   UserRound,
   Ship,
   Sparkles,
+  XCircle,
 } from 'lucide-react';
 import { CUSTOMER_HOME_PATH, CUSTOMER_INQUIRIES_PATH, customerPathForTab } from '../../app/shellRoutes';
 import { Badge, Drawer } from '../ui';
@@ -128,6 +134,77 @@ export function CustomerInquiryPrimaryActions({
         </button>
       )}
       {extra}
+    </div>
+  );
+}
+
+const customerToolButtonClass =
+  'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50';
+
+export function CustomerInquiryActionToolbar({
+  showDiscard,
+  showCancel,
+  onOverview,
+  onQuotation,
+  onPrintSummary,
+  onPrintTechnical,
+  onExport,
+  onFieldVisibility,
+  onDiscard,
+  onCancel,
+}: {
+  showDiscard: boolean;
+  showCancel: boolean;
+  onOverview: () => void;
+  onQuotation: () => void;
+  onPrintSummary: () => void;
+  onPrintTechnical: () => void;
+  onExport: () => void;
+  onFieldVisibility: () => void;
+  onDiscard: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button type="button" onClick={onOverview} className={customerToolButtonClass}>
+        <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
+        Overview
+      </button>
+      <button type="button" onClick={onQuotation} className={customerToolButtonClass}>
+        <FileText className="h-3.5 w-3.5 text-slate-500" />
+        Quotation
+      </button>
+      <button type="button" onClick={onPrintSummary} className={customerToolButtonClass}>
+        <Printer className="h-3.5 w-3.5 text-slate-500" />
+        Print inquiry summary
+      </button>
+      <button type="button" onClick={onPrintTechnical} className={customerToolButtonClass}>
+        <Printer className="h-3.5 w-3.5 text-slate-500" />
+        Print technical offer
+      </button>
+      <button type="button" onClick={onExport} className={customerToolButtonClass}>
+        <Download className="h-3.5 w-3.5 text-slate-500" />
+        Export Data
+      </button>
+      <button type="button" onClick={onFieldVisibility} className={customerToolButtonClass}>
+        <Eye className="h-3.5 w-3.5 text-slate-500" />
+        Field Visibility
+      </button>
+      {showDiscard && (
+        <button type="button" onClick={onDiscard} className={customerToolButtonClass}>
+          Discard
+        </button>
+      )}
+      {showCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+        >
+          <XCircle className="h-3.5 w-3.5" />
+          Cancel Inquiry
+        </button>
+      )}
     </div>
   );
 }

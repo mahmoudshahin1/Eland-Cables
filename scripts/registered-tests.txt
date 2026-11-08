@@ -60,6 +60,8 @@ src/domain/containerStudyPhysicalDrumCompatibility.test.ts
 src/domain/inquiryDrumSchedule.test.ts
 src/domain/drumScheduleRowEdit.test.ts
 src/domain/inquiryGrandTotal.test.ts
+src/domain/inquiryDocuments.test.ts
+src/utils/isolatedPrint.test.ts
 src/components/inquiry-quotation/container3d/coordinates.test.ts
 src/domain/versionADrumScheduleConfirm.test.ts
 src/components/inquiry-quotation/inquiryHeaderForm.test.tsx

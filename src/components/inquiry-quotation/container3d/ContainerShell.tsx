@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { Edges, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { mmToMeters } from './coordinates';
 
@@ -13,12 +13,12 @@ function usePlankTexture(): THREE.CanvasTexture {
       ctx.fillStyle = '#6b4423';
       ctx.fillRect(0, 0, 512, 256);
       for (let plank = 0; plank < 8; plank += 1) {
-        ctx.fillStyle = plank % 2 === 0 ? '#8d5a32' : '#704422';
-        ctx.fillRect(0, plank * 32, 512, 30);
-        ctx.strokeStyle = 'rgba(40, 20, 8, 0.35)';
+        ctx.fillStyle = plank % 2 === 0 ? '#8d5a32' : '#5c3a22';
+        ctx.fillRect(0, plank * 32, 512, 28);
+        ctx.strokeStyle = 'rgba(40, 20, 8, 0.45)';
         ctx.beginPath();
-        ctx.moveTo(0, plank * 32);
-        ctx.lineTo(512, plank * 32);
+        ctx.moveTo(0, plank * 32 + 28);
+        ctx.lineTo(512, plank * 32 + 28);
         ctx.stroke();
       }
     }
@@ -31,6 +31,15 @@ function usePlankTexture(): THREE.CanvasTexture {
 
   useEffect(() => () => texture.dispose(), [texture]);
   return texture;
+}
+
+function Steel({ color = '#334155' }: { color?: string }) {
+  return (
+    <>
+      <meshStandardMaterial color={color} metalness={0.55} roughness={0.38} />
+      <Edges color="#38bdf8" threshold={15} />
+    </>
+  );
 }
 
 export function ContainerShell({
@@ -47,53 +56,104 @@ export function ContainerShell({
   const length = mmToMeters(lengthMm);
   const width = mmToMeters(widthMm);
   const floor = usePlankTexture();
-  floor.repeat.set(Math.max(2, length / 1.2), 2);
-  const near = React.useRef<THREE.MeshStandardMaterial>(null);
-  const far = React.useRef<THREE.MeshStandardMaterial>(null);
-  const { camera } = useThree();
-
-  useFrame(() => {
-    const facingNear = camera.position.z < width / 2;
-    if (near.current) near.current.opacity = facingNear ? 0.08 : 0.4;
-    if (far.current) far.current.opacity = facingNear ? 0.4 : 0.08;
-  });
+  floor.repeat.set(Math.max(2, Math.round(length)), 3);
+  const post = 0.09;
+  const rail = 0.07;
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[length / 2, 0, width / 2]} receiveShadow>
-        <planeGeometry args={[length, width]} />
-        <meshStandardMaterial map={floor} roughness={0.9} metalness={0.02} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[length / 2, 0.02, width / 2]} receiveShadow>
+        <planeGeometry args={[length - 0.08, width - 0.08]} />
+        <meshStandardMaterial map={floor} roughness={0.92} metalness={0.02} />
       </mesh>
-      <gridHelper
-        args={[Math.max(length, width), Math.max(4, Math.round(length)), '#64748b', '#1e293b']}
-        position={[length / 2, 0.012, width / 2]}
-      />
-      <mesh position={[0.04, heightM / 2, width / 2]}>
-        <boxGeometry args={[0.08, heightM, width]} />
-        <meshStandardMaterial color="#f59e0b" roughness={0.6} />
+
+      {[0, length].flatMap((x) =>
+        [0, width].map((z) => (
+          <mesh key={`post-${x}-${z}`} position={[x, heightM / 2, z]}>
+            <boxGeometry args={[post, heightM, post]} />
+            <Steel />
+          </mesh>
+        ))
+      )}
+      {[0, heightM].flatMap((y) =>
+        [0, width].map((z) => (
+          <mesh key={`rail-x-${y}-${z}`} position={[length / 2, y, z]}>
+            <boxGeometry args={[length, rail, rail]} />
+            <Steel color="#1e293b" />
+          </mesh>
+        ))
+      )}
+      {[0, heightM].flatMap((y) =>
+        [0, length].map((x) => (
+          <mesh key={`rail-z-${y}-${x}`} position={[x, y, width / 2]}>
+            <boxGeometry args={[rail, rail, width]} />
+            <Steel color="#1e293b" />
+          </mesh>
+        ))
+      )}
+      {[0, length].flatMap((x) =>
+        [0, width].flatMap((z) =>
+          [0, heightM].map((y) => (
+            <mesh key={`cast-${x}-${z}-${y}`} position={[x, y, z]}>
+              <boxGeometry args={[0.16, 0.12, 0.16]} />
+              <meshStandardMaterial color="#0f172a" metalness={0.7} roughness={0.3} />
+            </mesh>
+          ))
+        )
+      )}
+
+      <mesh position={[0.05, heightM / 2, width / 2]}>
+        <boxGeometry args={[0.06, heightM * 0.92, width * 0.92]} />
+        <meshStandardMaterial color="#b45309" roughness={0.62} metalness={0.2} />
+        <Edges color="#38bdf8" threshold={15} />
       </mesh>
-      <mesh position={[length - 0.03, heightM / 2, width * 0.26]}>
-        <boxGeometry args={[0.05, heightM * 0.92, width * 0.46]} />
-        <meshStandardMaterial color="#3b82f6" metalness={0.35} roughness={0.4} />
-      </mesh>
-      <mesh position={[length - 0.03, heightM / 2, width * 0.74]}>
-        <boxGeometry args={[0.05, heightM * 0.92, width * 0.46]} />
-        <meshStandardMaterial color="#2563eb" metalness={0.35} roughness={0.4} />
-      </mesh>
+      <Html position={[0.2, heightM * 0.72, width / 2]} center>
+        <span className="rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-slate-950">FRONT BULKHEAD</span>
+      </Html>
+
+      {Array.from({ length: 10 }, (_, index) => (
+        <mesh key={`corrugation-${index}`} position={[0.35 + index * ((length - 0.8) / 9), heightM / 2, width - 0.03]}>
+          <boxGeometry args={[0.08, heightM * 0.88, 0.04]} />
+          <meshStandardMaterial color={index % 2 === 0 ? '#475569' : '#334155'} metalness={0.45} roughness={0.45} />
+        </mesh>
+      ))}
+
       <mesh position={[length / 2, heightM / 2, 0.02]}>
-        <boxGeometry args={[length, heightM, 0.03]} />
-        <meshStandardMaterial ref={near} color="#94a3b8" transparent opacity={0.12} metalness={0.6} roughness={0.35} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[length / 2, heightM / 2, width - 0.02]}>
-        <boxGeometry args={[length, heightM, 0.03]} />
-        <meshStandardMaterial ref={far} color="#94a3b8" transparent opacity={0.4} metalness={0.6} roughness={0.35} side={THREE.DoubleSide} />
+        <boxGeometry args={[length, heightM, 0.02]} />
+        <meshStandardMaterial color="#7dd3fc" transparent opacity={0.12} metalness={0.15} roughness={0.05} side={THREE.DoubleSide} />
       </mesh>
       {!openTop && (
-        <mesh position={[length / 2, heightM, width / 2]}>
-          <boxGeometry args={[length, 0.04, width]} />
-          <meshStandardMaterial color="#0f172a" transparent opacity={0.16} metalness={0.5} roughness={0.4} />
+        <mesh position={[length / 2, heightM - 0.01, width / 2]}>
+          <boxGeometry args={[length, 0.02, width]} />
+          <meshStandardMaterial color="#7dd3fc" transparent opacity={0.12} metalness={0.15} roughness={0.05} side={THREE.DoubleSide} />
         </mesh>
       )}
+
+      {[0.28, 0.72].map((ratio) => (
+        <group key={`door-${ratio}`}>
+          <mesh position={[length - 0.03, heightM / 2, width * ratio]}>
+            <boxGeometry args={[0.05, heightM * 0.9, width * 0.42]} />
+            <meshStandardMaterial color="#1d4ed8" metalness={0.4} roughness={0.35} />
+            <Edges color="#38bdf8" threshold={15} />
+          </mesh>
+          <mesh position={[length - 0.06, heightM / 2, width * ratio]}>
+            <boxGeometry args={[0.02, heightM * 0.72, 0.03]} />
+            <meshStandardMaterial color="#e2e8f0" metalness={0.6} roughness={0.25} />
+          </mesh>
+        </group>
+      ))}
+      <Html position={[length + 0.15, heightM * 0.2, width / 2]} center>
+        <span className="rounded bg-blue-600/90 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">CONTAINER DOORS</span>
+      </Html>
+
+      <Html position={[length / 2, -0.35, width + 0.15]} center>
+        <span className="rounded bg-slate-950/80 px-2 py-1 text-[11px] font-bold text-sky-100">
+          {Math.round(widthMm).toLocaleString()} mm × {Math.round(lengthMm).toLocaleString()} mm
+        </span>
+      </Html>
+      <Html position={[length / 2, 0.15, -0.35]} center>
+        <span className="text-[10px] font-semibold text-slate-300">Grid: 1 m sections</span>
+      </Html>
     </group>
   );
 }

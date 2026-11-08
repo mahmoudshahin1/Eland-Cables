@@ -242,6 +242,28 @@ export async function listCustomerDeliveryCombinations(customerMasterId?: string
     }));
 }
 
+/**
+ * Inquiry rows sometimes store the customer code in customerId and leave customerMasterId empty.
+ * Delivery combinations are keyed by the Customer master id, so resolve that id before listing them.
+ */
+export async function resolveShipmentCustomerMasterId(input: {
+  customerMasterId?: string | null;
+  customerId?: string | null;
+}): Promise<string | null> {
+  const direct = String(input.customerMasterId || '').trim();
+  if (direct) return direct;
+  const key = String(input.customerId || '').trim();
+  if (!key) return null;
+  const prisma = requirePrisma();
+  const customer = await prisma.customer.findFirst({
+    where: {
+      OR: [{ id: key }, { code: { equals: key, mode: 'insensitive' } }],
+    },
+    select: { id: true },
+  });
+  return customer?.id ?? null;
+}
+
 export async function listApprovedShipmentMasters(customerMasterId?: string | null) {
   const incoterms = await listIncoterms();
   const combinations = await listCustomerDeliveryCombinations(customerMasterId);

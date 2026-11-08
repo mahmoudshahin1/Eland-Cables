@@ -59,6 +59,12 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
     setApproved(commercialApprovalStatus === 'APPROVED');
   }, [commercialApprovalStatus]);
 
+  React.useEffect(() => {
+    if (commercialApprovalStatus === 'APPROVED' && initialFulfillmentType) {
+      setSelectedType(initialFulfillmentType);
+    }
+  }, [commercialApprovalStatus, initialFulfillmentType]);
+
   const handleSubmit = async () => {
     setBusy(true);
     setFeedback(null);
@@ -135,8 +141,12 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         {/* Option 1: Direct Sales Order */}
         <div
-          onClick={() => (!submitted || !approved) && setSelectedType('DIRECT_ORDER')}
-          className={`cursor-pointer rounded-2xl border-2 p-4 transition-all space-y-2 relative ${
+          onClick={() => {
+            if (approved || busy) return;
+            setSelectedType('DIRECT_ORDER');
+          }}
+          aria-disabled={approved}
+          className={`rounded-2xl border-2 p-4 transition-all space-y-2 relative ${approved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${
             selectedType === 'DIRECT_ORDER'
               ? 'border-brand-600 bg-brand-50/40 shadow-md ring-2 ring-brand-500/15'
               : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60'
@@ -159,8 +169,12 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
 
         {/* Option 2: Sales Agreement */}
         <div
-          onClick={() => (!submitted || !approved) && setSelectedType('SALES_AGREEMENT')}
-          className={`cursor-pointer rounded-2xl border-2 p-4 transition-all space-y-2 relative ${
+          onClick={() => {
+            if (approved || busy) return;
+            setSelectedType('SALES_AGREEMENT');
+          }}
+          aria-disabled={approved}
+          className={`rounded-2xl border-2 p-4 transition-all space-y-2 relative ${approved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${
             selectedType === 'SALES_AGREEMENT'
               ? 'border-blue-600 bg-blue-50/40 shadow-md ring-2 ring-blue-500/15'
               : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60'

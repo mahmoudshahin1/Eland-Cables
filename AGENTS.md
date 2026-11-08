@@ -1,9 +1,15 @@
 # AGENTS.md — Energya Connect migration
 
+> ### ⚠️ STANDING RULE FOR feat/standard-workflow (ALL TASKS):
+> **STRICT 100% ENGLISH UI**: All UI elements (labels, headers, table columns, alerts, operational notices, empty states, placeholders, tooltips) must strictly be 100% English. Absolutely NO Arabic text and NO bilingual/parenthetical Arabic in any UI code across all tasks.
+
 Express 4 legacy backend -> NestJS (`energya-backend/`). React 19 UI, PostgreSQL and Prisma stay as they are.
 `energya-frontend/` (Vue) is frozen and unused.
 
 Reply to the user in Arabic (Egyptian is fine). Code, identifiers, commands and commit messages in English.
+
+## Conversation handoff
+When the thread gets long, the topic changes, or a chunk of work is committed or pushed, tell the user in Arabic before the context gets heavy. The agent cannot compact the chat. Give a short handoff they can paste into a new chat: current branch, last commit, what is done, and what is still open.
 
 ## Read before any work
 1. `docs/MIGRATION/MIGRATION_PLAN.md` — binding plan, phases, gates G1-G5.

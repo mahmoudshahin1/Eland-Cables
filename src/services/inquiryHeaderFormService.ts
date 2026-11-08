@@ -81,6 +81,13 @@ function toDateInput(value?: string | null): string {
   return d.toISOString().slice(0, 10);
 }
 
+function todayDateInput(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 function originalSystemRate(inquiry: CommercialInquiryDto, metal: 'copper' | 'aluminium'): string {
   const orig = inquiry.commercialMetadata?.originalSystemDefault;
   if (!orig || typeof orig !== 'object') return '';
@@ -131,7 +138,8 @@ export function buildHeaderFormFromInquiry(inquiry: CommercialInquiryDto): Inqui
       | '',
     metalPriceDate: toDateInput(meta(inquiry, 'metalPriceDate', '')),
     priceBasis: meta(inquiry, 'priceBasis', ''),
-    requiredQuotationDate: toDateInput(meta(inquiry, 'requiredQuotationDate', '')),
+    requiredQuotationDate:
+      toDateInput(meta(inquiry, 'requiredQuotationDate', '')) || todayDateInput(),
     deliveryAddress: meta(inquiry, 'deliveryAddress', ''),
   };
 }

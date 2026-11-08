@@ -1,9 +1,9 @@
 export type ContainerViewPreset = 'perspective' | 'top' | 'side' | 'door';
 
 export const CONTAINER_VIEW_PRESETS: Array<{ id: ContainerViewPreset; label: string }> = [
-  { id: 'perspective', label: '3D Perspective' },
+  { id: 'perspective', label: '3D Isometric' },
   { id: 'top', label: 'Top-Down Plan' },
-  { id: 'side', label: 'Side Elevation' },
+  { id: 'side', label: 'Side View' },
   { id: 'door', label: 'Door Elevation' },
 ];
 

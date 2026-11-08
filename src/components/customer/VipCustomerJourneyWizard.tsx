@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { escapeHtml, printIsolatedHtml } from '../../utils/isolatedPrint';
 import {
   LogIn,
   FilePlus,
@@ -271,7 +272,20 @@ export const VipCustomerJourneyWizard: React.FC<VipCustomerJourneyWizardProps> =
 
   // PDF Offer Download
   const handleDownloadPdf = () => {
-    window.print();
+    printIsolatedHtml(`<!doctype html><html><head><title>Quotation ${escapeHtml(crNumber)}</title>
+      <style>body{font-family:sans-serif;padding:24px;color:#0f172a}h1{font-size:18px}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #cbd5e1;padding:6px;text-align:left}</style>
+      </head><body>
+      <h1>Budgetary quotation ${escapeHtml(crNumber)}</h1>
+      <p>${escapeHtml(selectedCable.code)} — ${escapeHtml(selectedCable.name)}</p>
+      <table>
+        <tr><th>Quantity (m)</th><td>${escapeHtml(orderLengthNum)}</td></tr>
+        <tr><th>Unit price</th><td>${escapeHtml(unitPricePerMeter.toFixed(2))}</td></tr>
+        <tr><th>Drum</th><td>${escapeHtml(selectedDrumCode)}</td></tr>
+        <tr><th>Container</th><td>${escapeHtml(containerSpecs.name)}</td></tr>
+        <tr><th>Freight</th><td>${escapeHtml(freightCostUsd.toFixed(2))} USD</td></tr>
+        <tr><th>Total</th><td>${escapeHtml(totalOfferUsd.toFixed(2))} USD</td></tr>
+      </table>
+      </body></html>`);
   };
 
   // Technical TDS Download

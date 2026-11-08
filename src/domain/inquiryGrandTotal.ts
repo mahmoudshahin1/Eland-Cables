@@ -32,6 +32,35 @@ export function unitSeaFreightUsd(
   return is20 ? 3100 : 3300;
 }
 
+/** Customer-submitted line prices, used when the inquiry has no stored products subtotal yet. */
+export function resolveSubmittedProductsTotal(input: {
+  commercialProductsTotal?: number | string | null;
+  lines?: Array<{
+    commercialLineTotal?: number | string | null;
+    sellingPrice?: number | string | null;
+  }> | null;
+}): number | null {
+  const direct = Number(input.commercialProductsTotal);
+  if (
+    input.commercialProductsTotal != null &&
+    input.commercialProductsTotal !== '' &&
+    Number.isFinite(direct)
+  ) {
+    return direct;
+  }
+  let sum = 0;
+  let any = false;
+  for (const line of input.lines || []) {
+    const raw = line.commercialLineTotal ?? line.sellingPrice;
+    const amount = Number(raw);
+    if (raw != null && raw !== '' && Number.isFinite(amount)) {
+      sum += amount;
+      any = true;
+    }
+  }
+  return any ? sum : null;
+}
+
 export function resolveInquiryCommercialTotals(input: {
   productsTotal?: number | string | null;
   containerType?: string | null;

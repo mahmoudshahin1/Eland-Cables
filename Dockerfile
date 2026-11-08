@@ -1,29 +1,33 @@
-FROM node:22-slim
+FROM node:22-bookworm-slim AS build
 
-# Install OpenSSL for Prisma query engine
 RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
-# Copy dependency manifests and Prisma schema
-COPY package*.json ./
-COPY prisma ./prisma/
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN --mount=type=cache,target=/root/.npm npm ci --maxsockets=3 --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-timeout=600000
 
-# Install ONLY production dependencies (lightweight, minimal RAM)
-RUN npm ci --omit=dev
+COPY . .
+RUN npx prisma generate && npm run build
 
-# Generate Prisma Client
-RUN npx prisma generate
+FROM node:22-bookworm-slim
 
-# Copy prebuilt distribution bundle and deploy scripts
-COPY app_dist ./dist/
-COPY scripts ./scripts/
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Default environment
+WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --maxsockets=3 --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-timeout=600000 && npx prisma generate
+
+COPY --from=build /app/dist ./dist
+COPY scripts/deployStartup.mjs ./scripts/deployStartup.mjs
+
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "scripts/deployStartup.mjs"]

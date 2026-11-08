@@ -12,7 +12,6 @@ import {
   ClipboardList,
   Copy,
   Download,
-  Eye,
   FileCheck2,
   FileSpreadsheet,
   FileText,
@@ -128,7 +127,8 @@ import {
 import { CableSearchSelectModal } from '../common/CableSearchSelectModal';
 import { autoConfirmPersistedCommercialDrumSchedule } from '../../services/confirmInquiryDrumPlanFromSchedule';
 import { InquiryLineAttachmentsCell, inquiryLinesMissingTechnicalOffer } from './InquiryLineAttachmentsCell';
-import { CommercialFulfillmentPanel } from './CommercialFulfillmentPanel';
+import { countInquiryWorkspaceDocuments } from '../../domain/inquiryDocuments';
+import { escapeHtml, printIsolatedHtml } from '../../utils/isolatedPrint';
 import { VipFastTrackJourneyBar } from './VipFastTrackJourneyBar';
 import { VipContainerStudyPlanner } from './VipContainerStudyPlanner';
 import { VipContractFulfillmentSelector } from './VipContractFulfillmentSelector';
@@ -136,9 +136,7 @@ import { VipCommercialOfferDocumentViewer } from './VipCommercialOfferDocumentVi
 import { VipOrderSubmittedTrackingView } from './VipOrderSubmittedTrackingView';
 import { ContainerType } from '../customer/vipCableCatalogData';
 import {
-  approveCommercialQuotationApi,
-  createSalesOrderFromQuotationApi,
-  createSalesAgreementFromQuotationApi,
+  approveAndReleaseQuotationApi,
   FulfillmentType,
 } from '../../services/commercialFulfillmentApiService';
 import {
@@ -154,10 +152,11 @@ import {
   visibleFieldsForUser,
 } from '../../services/inquiryFieldManifest';
 import { formatCommercialPriceAmount } from '../../domain/commercialLinePricingDisplay';
-import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
+import { resolveInquiryCommercialTotals, resolveSubmittedProductsTotal } from '../../domain/inquiryGrandTotal';
 import { StatusBadge } from '../ui/Badge';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import {
+  CustomerInquiryActionToolbar,
   CustomerInquiryDetailHero,
   CustomerInquiryFooterKpis,
   CustomerInquiryPrimaryActions,
@@ -295,6 +294,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [showColumnModal, setShowColumnModal] = useState(false);
   const [scheduleLine, setScheduleLine] = useState<CommercialInquiryLineDto | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
   const [lineSearch, setLineSearch] = useState('');
   const [showTrackingDetails, setShowTrackingDetails] = useState(false);
   const prefUserId = currentUser?.id;
@@ -344,6 +346,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       incotermCode: string;
       destinationPortCode: string;
       destinationPortName: string;
+      isDefault?: boolean;
     }>;
   }>({ destinationPorts: [], incoterms: [], combinations: [] });
   const [containerStudyRefreshKey, setContainerStudyRefreshKey] = useState(0);
@@ -415,6 +418,22 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       setIsEditing(false);
     }
   }, [inquiry?.id, inquiry?.status]);
+
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (!moreMenuRef.current?.contains(event.target as Node)) setShowMoreMenu(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowMoreMenu(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showMoreMenu]);
 
   // VIP Auto-save effect: automatically persists header form changes without requiring manual 'Save Draft'
   useEffect(() => {
@@ -517,7 +536,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         isStandardWorkflow,
         counts: {
           lineCount: inquiry?.lines?.length || 0,
-          documentCount: inquiry?.attachments?.length || 0,
+          documentCount: inquiry ? countInquiryWorkspaceDocuments(inquiry) : 0,
           quotationCount: inquiry?.quotations?.length || 0,
           technicalOfferCount:
             inquiry?.lines?.filter((l) => (l.attachments || []).some((a) => a.kind === 'TECHNICAL_OFFER')).length || 0,
@@ -598,6 +617,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   // isVipV2Inquiry is defined above for tabsList
   const canNewVersion = inquiry?.status === 'SUBMITTED' && inquiry.isCurrent !== false;
   const canCancel = inquiry && inquiry.status !== 'CANCELLED' && inquiry.status !== 'CLOSED';
+  const headerIsDirty = useMemo(() => {
+    if (!inquiry || !headerForm) return false;
+    return JSON.stringify(headerForm) !== JSON.stringify(buildHeaderFormFromInquiry(inquiry));
+  }, [headerForm, inquiry]);
 
   const filteredLines = useMemo(() => {
     const lines = [...(inquiry?.lines || [])].sort((a, b) => a.lineNumber - b.lineNumber);
@@ -888,48 +911,22 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       const qId = v2Quotation?.id || inquiry.quotations?.[0]?.id;
       if (!qId) throw new Error('No commercial quotation available');
 
-      const approvedQuote = await approveCommercialQuotationApi(jwtToken, qId, fulfillmentType);
-
-      if (fulfillmentType === 'DIRECT_ORDER') {
-        await createSalesOrderFromQuotationApi(jwtToken, qId);
-      } else {
-        await createSalesAgreementFromQuotationApi(jwtToken, qId);
-      }
-
-      const updated = await updateCommercialInquiry(jwtToken, inquiry.id, {
-        commercialMetadata: {
-          ...(inquiry.commercialMetadata || {}),
-          commercialApprovalStatus: 'APPROVED',
-          productionStatus: 'RELEASED_TO_PRODUCTION',
-          releasedToProductionAt: new Date().toISOString(),
-        },
-      }).catch(() => null);
-
-      if (updated) {
-        setInquiry(updated);
-        notifyInquiryChanged(updated);
-      }
-
-      const fulfillmentLabel =
-        fulfillmentType === 'DIRECT_ORDER'
-          ? 'Direct Sales Order'
-          : 'Sales Agreement';
-
-      // Notification for Customer: Sales approved and released to production floor!
-      onAddNotification?.({
-        id: `vip-cust-appr-${Date.now()}`,
-        title: '🎉 Contract Approved & Released to Production Floor!',
-        message: `Sales approved quotation ${approvedQuote.quotationNumber} (${fulfillmentLabel})! Your order has officially been released to the Production Floor for cable manufacturing.`,
-        timestamp: new Date().toLocaleTimeString(),
-        read: false,
-        type: 'system',
-      });
-
-      notify('Contract approved & released to Production Floor');
+      await approveAndReleaseQuotationApi(jwtToken, qId, fulfillmentType);
+      notify('Contract approved and released to the Production Floor.');
       await load();
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Failed to approve contract');
       throw err;
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!jwtToken || !inquiry) return;
+    try {
+      await exportInquiryExcel(jwtToken, inquiry.id);
+      notify('Inquiry exported.');
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Export failed');
     }
   };
 
@@ -938,6 +935,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     const lines = inquiry.lines || [];
     const title =
       kind === 'summary' ? 'Inquiry Summary' : kind === 'costing' ? 'Costing Breakdown' : 'Technical Offer';
+    const cell = (value: unknown) => escapeHtml(value);
     const rows = lines
       .map((line) => {
         const cutting = line.cuttingLengthMeters != null ? `${line.cuttingLengthMeters} m` : '—';
@@ -947,27 +945,23 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             : isCustomer
               ? '—'
               : line.costingReadinessStatus || 'NOT_READY';
-        return `<tr><td>${line.lineNumber}</td><td>${line.materialNumber || ''}</td><td>${line.cableDescription}</td><td>${line.requestedQuantity}</td><td>${resolveInquiryLineTotalLengthMeters(line)}</td><td>${cutting}</td><td>${line.drumType || 'DRUM_CONFIGURATION_REQUIRED'}</td><td>${cost}</td><td>${line.costingCalculationId || '—'}</td></tr>`;
+        return `<tr><td>${cell(line.lineNumber)}</td><td>${cell(line.materialNumber || '')}</td><td>${cell(line.cableDescription)}</td><td>${cell(line.requestedQuantity)}</td><td>${cell(resolveInquiryLineTotalLengthMeters(line))}</td><td>${cell(cutting)}</td><td>${cell(line.drumType || 'DRUM_CONFIGURATION_REQUIRED')}</td><td>${cell(cost)}</td><td>${cell(line.costingCalculationId || '—')}</td></tr>`;
       })
       .join('');
-    const win = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
-    if (!win) {
-      notify('Pop-up blocked — allow pop-ups to print.');
-      return;
-    }
-    win.document.write(`<!doctype html><html><head><title>${title} ${inquiry.inquiryNumber}</title>
+    const costingBlock =
+      kind === 'costing' && costingBreakdown
+        ? `<pre>${escapeHtml(JSON.stringify({ status: costingBreakdown.status, errorCode: costingBreakdown.errorCode, blockingReasons: costingBreakdown.blockingReasons, totals: costingBreakdown.totals }, null, 2))}</pre>`
+        : '';
+    printIsolatedHtml(`<!doctype html><html><head><title>${escapeHtml(title)} ${escapeHtml(inquiry.inquiryNumber)}</title>
       <style>body{font-family:sans-serif;padding:24px;color:#0f172a}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #cbd5e1;padding:6px;text-align:left}h1{font-size:18px}</style>
       </head><body>
-      <h1>${title}</h1>
-      <p>${inquiry.inquiryNumber} v${inquiry.versionNo} · ${inquiry.customerName} · ${inquiry.status} · ${inquiry.incoterms || ''} · ${inquiry.currency}</p>
+      <h1>${escapeHtml(title)}</h1>
+      <p>${escapeHtml(inquiry.inquiryNumber)} v${escapeHtml(inquiry.versionNo)} · ${escapeHtml(inquiry.customerName)} · ${escapeHtml(inquiry.status)} · ${escapeHtml(inquiry.incoterms || '')} · ${escapeHtml(inquiry.currency)}</p>
       <p>Source: PostgreSQL inquiry + costing snapshot. Totals are shown only when Calculate returned READY. Missing configuration is never printed as zero.</p>
       <table><thead><tr><th>Line</th><th>Cable</th><th>Description</th><th>Drums</th><th>Length m</th><th>Cutting</th><th>Drum</th><th>Cost</th><th>costingCalculationId</th></tr></thead>
       <tbody>${rows}</tbody></table>
-      ${kind === 'costing' && costingBreakdown ? `<pre>${JSON.stringify({ status: costingBreakdown.status, errorCode: costingBreakdown.errorCode, blockingReasons: costingBreakdown.blockingReasons, totals: costingBreakdown.totals }, null, 2)}</pre>` : ''}
+      ${costingBlock}
       </body></html>`);
-    win.document.close();
-    win.focus();
-    win.print();
   };
 
   const addLine = async () => {
@@ -1364,12 +1358,24 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     (typeof inquiry.commercialMetadata?.deliveryDestination === 'string'
       ? inquiry.commercialMetadata.deliveryDestination
       : null);
+  const submittedProductsTotal = resolveSubmittedProductsTotal({
+    commercialProductsTotal: inquiry.commercialProductsTotal,
+    lines: inquiry.lines,
+  });
   const commercialTotals = resolveInquiryCommercialTotals({
-    productsTotal: inquiry.commercialProductsTotal,
+    productsTotal: submittedProductsTotal,
     containerType: preferredContainerType,
     destination: commercialDestination,
     containerCount: 1,
   });
+  const releasedSalesOrderId =
+    typeof inquiry.commercialMetadata?.releasedSalesOrderId === 'string'
+      ? inquiry.commercialMetadata.releasedSalesOrderId
+      : null;
+  const releasedAgreementId =
+    typeof inquiry.commercialMetadata?.releasedAgreementId === 'string'
+      ? inquiry.commercialMetadata.releasedAgreementId
+      : null;
   const formatCommercialMoney = (amount: number) =>
     `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`;
 
@@ -1378,6 +1384,47 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       {toast && (
         <div className="fixed top-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-xl animate-in fade-in slide-in-from-top-2">
           {toast}
+        </div>
+      )}
+      {(confirmCancelOpen || confirmDiscardOpen) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl" role="dialog" aria-modal="true">
+            <h2 className="text-sm font-bold text-slate-900">
+              {confirmCancelOpen ? 'Cancel this inquiry?' : 'Discard unsaved changes?'}
+            </h2>
+            <p className="mt-2 text-xs text-slate-600">
+              {confirmCancelOpen
+                ? 'The inquiry will be marked Canceled. Linked sales orders will be marked Canceled as well.'
+                : 'The header will return to the last saved values.'}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmCancelOpen(false);
+                  setConfirmDiscardOpen(false);
+                }}
+                className="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                Keep editing
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirmCancelOpen) {
+                    setConfirmCancelOpen(false);
+                    void handleCancel();
+                    return;
+                  }
+                  setConfirmDiscardOpen(false);
+                  handleDiscardHeader();
+                }}
+                className={`px-3 py-2 rounded-xl text-xs font-bold text-white ${confirmCancelOpen ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-800 hover:bg-slate-900'}`}
+              >
+                {confirmCancelOpen ? 'Cancel inquiry' : 'Discard changes'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1413,53 +1460,23 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 hideSaveAndCalculate={Boolean(inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales))}
                 showAutoSaveAction={!(isCustomer && isVipV2Inquiry)}
                 extra={
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setShowMoreMenu((v) => !v)}
-                      className="inline-flex items-center h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50"
-                      aria-label="More actions"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
-                    {showMoreMenu && (
-                      <div className="absolute right-0 mt-1.5 w-52 rounded-2xl border border-slate-200 bg-white shadow-xl z-30 py-1.5 text-xs">
-                        {isEditable && (
-                          <button type="button" onClick={() => { handleDiscardHeader(); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                            Discard
-                          </button>
-                        )}
-                        <button type="button" onClick={() => { setShowFieldPanel((v) => !v); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Field Visibility
-                        </button>
-                        {canNewVersion && (
-                          <button type="button" onClick={() => { void handleNewVersion(); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                            New Version
-                          </button>
-                        )}
-                        {canCancel && (
-                          <button type="button" onClick={() => { void handleCancel(); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left text-red-600 hover:bg-red-50">
-                            Cancel Inquiry
-                          </button>
-                        )}
-                        <button type="button" onClick={() => { setTab('overview'); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Overview
-                        </button>
-                        <button type="button" onClick={() => { setTab('quotation'); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Quotation
-                        </button>
-                        <button type="button" onClick={() => { printInquiryReport('summary'); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Print inquiry summary
-                        </button>
-                        <button type="button" onClick={() => { printInquiryReport('offer'); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Print technical offer
-                        </button>
-                        <button type="button" onClick={() => { notify('Export generated.'); setShowMoreMenu(false); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-50">
-                          Export Data
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <CustomerInquiryActionToolbar
+                    showDiscard={isEditable && headerIsDirty}
+                    showCancel={Boolean(canCancel)}
+                    onOverview={() => {
+                      setTab('overview');
+                      window.setTimeout(() => {
+                        document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 60);
+                    }}
+                    onQuotation={() => openQuotationTab()}
+                    onPrintSummary={() => printInquiryReport('summary')}
+                    onPrintTechnical={() => printInquiryReport('offer')}
+                    onExport={() => void handleExportData()}
+                    onFieldVisibility={() => setShowFieldPanel((v) => !v)}
+                    onDiscard={() => setConfirmDiscardOpen(true)}
+                    onCancel={() => setConfirmCancelOpen(true)}
+                  />
                 }
               />
             }
@@ -1517,14 +1534,16 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   <Save className="h-3.5 w-3.5 text-blue-600" />
                   <span>{savingHeader ? 'Saving…' : 'Save'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDiscardHeader}
-                  disabled={savingHeader}
-                  className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
-                >
-                  Discard
-                </button>
+                {headerIsDirty && (
+                  <button
+                    type="button"
+                    onClick={handleDiscardHeader}
+                    disabled={savingHeader}
+                    className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                  >
+                    Discard
+                  </button>
+                )}
               </>
             )}
 
@@ -1663,32 +1682,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
             )}
 
-            {canCancel && (
-              <button
-                type="button"
-                onClick={() => void handleCancel()}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border border-red-200 text-red-600 bg-red-50/30 hover:bg-red-50 transition-colors"
-              >
-                <XCircle className="h-3.5 w-3.5" />
-                <span>Cancel Inquiry</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setShowFieldPanel((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors ${
-                showFieldPanel
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <Eye className="h-3.5 w-3.5" />
-              <span>Field Visibility</span>
-            </button>
-
             {/* More Menu */}
-            <div className="relative">
+            <div className="relative" ref={moreMenuRef}>
               <button
                 type="button"
                 onClick={() => setShowMoreMenu((v) => !v)}
@@ -1737,7 +1732,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   <button
                     type="button"
                     onClick={() => {
-                      notify('Export generated.');
+                      void handleExportData();
                       setShowMoreMenu(false);
                     }}
                     className="w-full px-4 py-2.5 text-left flex items-center gap-2 hover:bg-slate-50 text-slate-700 font-medium border-t border-slate-100 mt-1"
@@ -1745,6 +1740,19 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     <Download className="h-3.5 w-3.5 text-slate-400" />
                     <span>Export Data</span>
                   </button>
+                  {canCancel && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        setConfirmCancelOpen(true);
+                      }}
+                      className="w-full px-4 py-2.5 text-left flex items-center gap-2 hover:bg-red-50 text-red-600 font-medium border-t border-slate-100"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      <span>Cancel Inquiry</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1995,7 +2003,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onClick={() => setTab('documents')}
                 className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-colors"
               >
-                <p className="font-bold text-slate-800">Documents ({inquiry.attachments?.length || 0})</p>
+                <p className="font-bold text-slate-800">Documents ({countInquiryWorkspaceDocuments(inquiry)})</p>
                 <p className="text-slate-500 text-[10px] mt-0.5">Commercial files</p>
               </button>
               <button
@@ -2645,6 +2653,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               canApprove={canQuote || !isCustomer}
               onSubmitToSales={handleSubmitToSales}
               onApproveCommercial={handleApproveCommercialBySales}
+              createdOrderId={releasedSalesOrderId}
+              createdAgreementId={releasedAgreementId}
               isCustomer={isCustomer}
             />
 
@@ -2673,16 +2683,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                       </div>
                       <StatusBadge status={q.status} />
                     </div>
-                    {!isCustomer && (
-                      <CommercialFulfillmentPanel
-                        token={jwtToken}
-                        quotationId={q.id}
-                        quotationNumber={q.quotationNumber}
-                        canManage={canQuote}
-                        canApprove={canQuote}
-                        onMessage={(msg) => notify(msg)}
-                      />
-                    )}
                   </div>
                 ))}
               </div>
@@ -2877,9 +2877,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-500/20 disabled:opacity-50"
                     >
                       <Zap className={`h-3.5 w-3.5 ${costingLoading ? 'animate-bounce' : ''}`} />
-                      <span>{costingLoading ? 'Calculating…' : '⚡ Calculate Costing Now'}</span>
+                      <span>{costingLoading ? 'Calculating…' : 'Calculate Costing Now'}</span>
                     </button>
-                    {inquiry.commercialProductsTotal != null && (
+                    {submittedProductsTotal != null && (
                       <button
                         type="button"
                         onClick={() => {
@@ -2890,31 +2890,33 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                         }}
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-md shadow-brand-500/20"
                       >
-                        <span>Proceed to Quotation Offer ➔</span>
+                        <span>Proceed to Quotation Offer</span>
                       </button>
                     )}
                   </div>
                 </div>
 
-                {inquiry.commercialProductsTotal != null && (
+                {commercialTotals.productsTotal != null && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-xs">
                     <div>
-                      <span className="text-slate-400 block text-[11px]">Cables Cost Subtotal:</span>
+                      <span className="text-slate-400 block text-[11px]">Products Subtotal:</span>
                       <span className="font-bold text-base text-brand-800 font-mono">
-                        {Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {inquiry.currency}
+                        {formatCommercialMoney(commercialTotals.productsTotal)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[11px]">Pricing Status:</span>
-                      <span className="font-bold text-emerald-700 inline-flex items-center gap-1 mt-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Calculated & Ready for Offer
+                      <span className="text-slate-400 block text-[11px]">Sea Freight:</span>
+                      <span className="font-bold text-base text-slate-800 font-mono">
+                        {commercialTotals.freightTotal == null ? '—' : formatCommercialMoney(commercialTotals.freightTotal)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[11px]">Confirmed Shipping Destination:</span>
-                      <span className="font-semibold text-slate-700 mt-1 block">
-                        {inquiry.commercialMetadata?.deliveryDestination ? String(inquiry.commercialMetadata.deliveryDestination) : 'Doncaster / UK'} ({inquiry.incoterms || 'DAP'})
+                      <span className="text-slate-400 block text-[11px]">Grand Total:</span>
+                      <span className="font-bold text-base text-emerald-800 font-mono">
+                        {commercialTotals.grandTotal == null ? '—' : formatCommercialMoney(commercialTotals.grandTotal)}
+                      </span>
+                      <span className="text-slate-500 mt-1 block">
+                        {commercialDestination || 'Destination not configured'} ({headerForm?.incoterms || inquiry.incoterms || 'DAP'})
                       </span>
                     </div>
                   </div>
@@ -2924,7 +2926,12 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 ) : (
                   <div className="space-y-2">
                     {(inquiry.lines || []).map((line) => {
-                      const label = line.customerCostingStatus || (line.costingCalculated ? 'READY' : 'NOT AVAILABLE');
+                      const linePrice = line.commercialLineTotal ?? line.commercialUnitPrice;
+                      const hasLinePrice = linePrice != null && Number.isFinite(Number(linePrice));
+                      const label =
+                        line.customerCostingStatus === 'READY' || line.costingCalculated || hasLinePrice || submittedProductsTotal != null
+                          ? 'READY'
+                          : 'NOT AVAILABLE';
                       return (
                         <div
                           key={line.id}
@@ -2935,6 +2942,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                               Line {line.lineNumber} · {line.materialNumber || 'Unmapped'}
                             </p>
                             <p className="text-slate-500">{line.cableDescription}</p>
+                            {hasLinePrice && (
+                              <p className="font-mono text-slate-700 mt-0.5">
+                                {Number(linePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {inquiry.currency}
+                              </p>
+                            )}
                           </div>
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${costingStatusBadgeClass(label === 'READY' ? 'READY' : 'NOT_READY')}`}
@@ -3256,7 +3268,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   inquiryId={inquiry.id}
                   totalDrums={summary?.totalQty || 0}
                   totalLengthMeters={summary?.totalLength || 0}
-                  destination={headerForm?.deliveryDestination || (inquiry.commercialMetadata?.deliveryDestination as string) || 'Doncaster / UK'}
+                  destination={commercialDestination || 'Not configured'}
                   incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
                   selectedContainerType={preferredContainerType}
                   onSelectContainerType={(t) => {

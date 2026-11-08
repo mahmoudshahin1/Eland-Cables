@@ -1,0 +1,23 @@
+---
+description: Warn the user and hand off to a new chat before conversation context gets heavy.
+alwaysApply: true
+---
+
+# Conversation handoff
+
+The agent cannot compact or reset the chat.
+
+Tell the user in Arabic when any of these is true:
+
+- The thread has covered several distinct tasks.
+- A chunk of work was just committed or pushed.
+- The topic is about to change.
+
+Give a handoff they can paste into a new chat:
+
+- current branch
+- last commit
+- what is done
+- what is still open
+
+Do this before the thread gets heavy. Do not wait until answers start to degrade.

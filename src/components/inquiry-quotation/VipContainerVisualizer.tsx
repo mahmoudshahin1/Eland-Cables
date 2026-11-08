@@ -336,7 +336,7 @@ export const VipContainerVisualizer: React.FC<VipContainerVisualizerProps> = ({
           <div className="overflow-hidden rounded-2xl border-2 border-slate-800 bg-slate-950">
             <Suspense
               fallback={
-                <div className="flex h-[420px] items-center justify-center text-xs font-semibold text-slate-300">
+                <div className="flex h-[600px] items-center justify-center text-xs font-semibold text-slate-300">
                   Loading 3D container…
                 </div>
               }
@@ -350,6 +350,7 @@ export const VipContainerVisualizer: React.FC<VipContainerVisualizerProps> = ({
                 preset={preset}
                 activeDrumId={hoveredDrum?.drumId ?? null}
                 onHoverDrum={setHoveredDrum}
+                onPresetChange={setPreset}
               />
             </Suspense>
           </div>

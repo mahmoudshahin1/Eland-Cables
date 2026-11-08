@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Building2,
@@ -58,6 +58,7 @@ interface InquiryHeaderFormProps {
     incotermCode: string;
     destinationPortCode: string;
     destinationPortName: string;
+    isDefault?: boolean;
   }>;
   showReturnToContainerStudy?: boolean;
   onReturnToContainerStudy?: () => void;
@@ -154,6 +155,27 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   const selectedDeliveryCombo = deliveryCombinations.find((row) => deliveryCombinationKey(row) === selectedDeliveryKey);
   const destinationCountryLabel = selectedDeliveryCombo?.countryLabel || '';
   const deliveryFocused = Boolean(showReturnToContainerStudy);
+  const defaultedDeliveryFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isEditable) return;
+    if (defaultedDeliveryFor.current === inquiry.id) return;
+    if (form.deliveryDestination || form.destinationPortCode) {
+      defaultedDeliveryFor.current = inquiry.id;
+      return;
+    }
+    if (deliveryCombinations.length === 0) return;
+    const preferred = deliveryCombinations.find((row) => row.isDefault) || deliveryCombinations[0];
+    defaultedDeliveryFor.current = inquiry.id;
+    onChange(applySelectedDeliveryCombination(preferred));
+  }, [
+    deliveryCombinations,
+    form.deliveryDestination,
+    form.destinationPortCode,
+    inquiry.id,
+    isEditable,
+    onChange,
+  ]);
 
   // Section 1: Commercial Details
   const renderCommercialDetails = () => {

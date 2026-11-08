@@ -188,6 +188,7 @@ export type InquiryShipmentMastersDto = {
     incotermCode: string;
     destinationPortCode: string;
     destinationPortName: string;
+    isDefault?: boolean;
   }>;
 };
 

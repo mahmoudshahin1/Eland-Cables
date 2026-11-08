@@ -881,10 +881,28 @@ export async function cancelInquiry(inquiryId: string, actor: RequestActor) {
     });
   }
 
-  const updated = await prisma.commercialInquiry.update({
-    where: { id: inquiry.id },
-    data: { status: 'CANCELLED', modifiedBy: actor.name || actor.email || inquiry.modifiedBy },
-    include: { lines: { orderBy: { lineNumber: 'asc' } }, quotations: { where: { isCurrent: true } } },
+  const quotations = await prisma.commercialQuotation.findMany({
+    where: { inquiryId: inquiry.id },
+    select: { id: true },
+  });
+  const quotationIds = quotations.map((row) => row.id);
+  const updated = await prisma.$transaction(async (tx) => {
+    const next = await tx.commercialInquiry.update({
+      where: { id: inquiry.id },
+      data: { status: 'CANCELLED', modifiedBy: actor.name || actor.email || inquiry.modifiedBy },
+      include: { lines: { orderBy: { lineNumber: 'asc' } }, quotations: { where: { isCurrent: true } } },
+    });
+    await tx.epcSalesOrder.updateMany({
+      where: {
+        status: { not: 'CANCELLED' },
+        OR: [
+          { inquiryId: inquiry.id },
+          ...(quotationIds.length > 0 ? [{ quotationId: { in: quotationIds } }] : []),
+        ],
+      },
+      data: { status: 'CANCELLED' },
+    });
+    return next;
   });
 
   appendAudit({

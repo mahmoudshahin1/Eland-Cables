@@ -12,6 +12,7 @@ import {
   inquiryLineTotalLengthMeters,
 } from '../domain/inquiryLineExcelExport';
 import { issue } from '../platform/errors/domainError';
+import { resolveInquiryCommercialTotals, resolveSubmittedProductsTotal } from '../domain/inquiryGrandTotal';
 import {
   appendFrozenSheet,
   createWorkbook,
@@ -97,7 +98,7 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
     if (includeInternal) {
       row.push(
         (line.costingReadinessStatus as string) || null,
-        (line.commercialPricingStatus as string) || null
+        ((line as { commercialPricingStatus?: string | null }).commercialPricingStatus as string) || null
       );
     }
     for (const hidden of CUSTOMER_HIDDEN_INQUIRY_EXPORT_FIELDS) {
@@ -155,6 +156,114 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
     'Drum_Schedule',
     ['Inquiry Number', 'Line Number', 'Drum Code', 'Number of Drums', 'Cutting Length M'],
     scheduleRows
+  );
+  const productsTotal = resolveSubmittedProductsTotal({
+    commercialProductsTotal: (projected as { commercialProductsTotal?: number | null }).commercialProductsTotal,
+    lines: lines.map((line) => {
+      const priced = line as {
+        commercialLineTotal?: number | string | null;
+        sellingPrice?: number | string | null;
+      };
+      return includeInternal
+        ? { commercialLineTotal: priced.commercialLineTotal, sellingPrice: priced.sellingPrice }
+        : { commercialLineTotal: priced.commercialLineTotal };
+    }),
+  });
+  const containerType = String(meta.preferredContainerType || '40HQ');
+  const totals = resolveInquiryCommercialTotals({
+    productsTotal,
+    containerType,
+    destination,
+    containerCount: 1,
+  });
+  const studies = await prisma.containerStudy.findMany({
+    where: { inquiryId: inquiry.id },
+    orderBy: [{ versionNo: 'desc' }],
+    select: {
+      studyNumber: true,
+      versionNo: true,
+      status: true,
+      stuffingMethod: true,
+      currentResult: {
+        select: {
+          containers: {
+            orderBy: { containerIndex: 'asc' },
+            select: {
+              containerIndex: true,
+              typeCode: true,
+              usableLengthMm: true,
+              loadedWeightKg: true,
+              remainingLengthMm: true,
+              utilizationLengthPct: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  const studyRows = studies.flatMap((study) => {
+    const containers = study.currentResult?.containers || [];
+    if (containers.length === 0) {
+      return [[
+        projected.inquiryNumber as string,
+        study.studyNumber,
+        excelNumber(study.versionNo),
+        study.status,
+        study.stuffingMethod,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]];
+    }
+    return containers.map((container) => [
+      projected.inquiryNumber as string,
+      study.studyNumber,
+      excelNumber(study.versionNo),
+      study.status,
+      study.stuffingMethod,
+      excelNumber(container.containerIndex),
+      container.typeCode,
+      excelNumber(container.usableLengthMm),
+      excelNumber(container.loadedWeightKg),
+      excelNumber(container.remainingLengthMm),
+      excelNumber(container.utilizationLengthPct),
+    ]);
+  });
+
+  appendFrozenSheet(
+    wb,
+    'Commercial_Totals',
+    ['Inquiry Number', 'Currency', 'Products Subtotal', 'Sea Freight', 'Grand Total', 'Container Type', 'Destination'],
+    [[
+      projected.inquiryNumber as string,
+      projected.currency as string,
+      excelNumber(totals.productsTotal),
+      excelNumber(totals.freightTotal),
+      excelNumber(totals.grandTotal),
+      containerType,
+      destination,
+    ]]
+  );
+  appendFrozenSheet(
+    wb,
+    'Container_Study',
+    [
+      'Inquiry Number',
+      'Study Number',
+      'Version',
+      'Status',
+      'Stuffing Method',
+      'Container Index',
+      'Container Type',
+      'Usable Length mm',
+      'Loaded Weight kg',
+      'Remaining Length mm',
+      'Length Utilization %',
+    ],
+    studyRows
   );
   appendFrozenSheet(
     wb,

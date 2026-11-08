@@ -4,6 +4,7 @@ import { resolveRequestActor } from './auth';
 import { assertCanApproveCommercialQuotation, assertCanCreateCustomerCommitment, assertCanManageQuotations, assertCanMutateCommercialFulfillment, assertCanViewCustomerCommitment, assertCanViewCustomerFulfillment } from './rbac';
 import { assertCustomerBusinessScope, resolveCustomerScope } from './customerScope';
 import {
+  approveAndReleaseQuotation,
   approveCommercialQuotation,
   createAgreementRelease,
   createCommitmentFromQuotation,
@@ -145,6 +146,27 @@ export const agreementReleasesRouter = Router();
 
 /** Attach commercial-approve to existing quotations router (pricing approve stays separate). */
 export function attachCommercialApprovalRoutes(quotationsRouter: Router) {
+  quotationsRouter.post('/:id/approve-and-release', async (req, res) => {
+    const actor = await requireCommercialApprover(req, res);
+    if (!actor) return;
+    try {
+      const fulfillmentType = req.body?.fulfillmentType;
+      if (fulfillmentType !== 'DIRECT_ORDER' && fulfillmentType !== 'SALES_AGREEMENT') {
+        res.status(422).json({ error: 'fulfillmentType must be DIRECT_ORDER or SALES_AGREEMENT.', code: 'VALIDATION_FAILED' });
+        return;
+      }
+      const released = await approveAndReleaseQuotation(req.params.id, { ...(req.body || {}), fulfillmentType }, actor);
+      res.json({
+        quotation: released.quotation,
+        salesOrder: released.salesOrder,
+        agreement: released.agreement,
+        message: `Quotation approved and released as ${fulfillmentType}.`,
+      });
+    } catch (err) {
+      sendDomainError(res, err);
+    }
+  });
+
   quotationsRouter.post('/:id/approve-commercial', async (req, res) => {
     const actor = await requireCommercialApprover(req, res);
     if (!actor) return;
