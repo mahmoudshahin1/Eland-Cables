@@ -38,25 +38,59 @@ function positive(value: number | null | undefined): number | null {
   return value;
 }
 
+function publishedCashQuote(row: CableMetalPriceCandidate | undefined): PublishedCableMetalQuote | null {
+  if (!row || row.cashAsk == null || positive(row.cashAsk) == null) return null;
+  return {
+    id: row.id,
+    quoteDate: row.quoteDate,
+    cashAsk: row.cashAsk,
+    threeMonthAsk: row.threeMonthAsk,
+  };
+}
+
 /** Keeps only current published copper and aluminium rows that have a cash ask. */
 export function selectPublishedCableQuotes(rows: CableMetalPriceCandidate[]): PublishedCableMetalQuotes {
-  const pick = (usage: 'CABLE_COPPER' | 'CABLE_ALUMINIUM'): PublishedCableMetalQuote | null => {
-    const row = rows.find(
-      (candidate) =>
-        candidate.costingUsage === usage &&
-        candidate.status === 'PUBLISHED' &&
-        candidate.isCurrent &&
-        positive(candidate.cashAsk) != null
+  const pick = (usage: 'CABLE_COPPER' | 'CABLE_ALUMINIUM'): PublishedCableMetalQuote | null =>
+    publishedCashQuote(
+      rows.find(
+        (candidate) =>
+          candidate.costingUsage === usage &&
+          candidate.status === 'PUBLISHED' &&
+          candidate.isCurrent &&
+          positive(candidate.cashAsk) != null
+      )
     );
-    if (!row || row.cashAsk == null) return null;
-    return {
-      id: row.id,
-      quoteDate: row.quoteDate,
-      cashAsk: row.cashAsk,
-      threeMonthAsk: row.threeMonthAsk,
-    };
-  };
   return { copper: pick('CABLE_COPPER'), aluminium: pick('CABLE_ALUMINIUM') };
+}
+
+/**
+ * Published cash ask for one quote date. Historical rows do not need isCurrent.
+ * A different date is never substituted. 3-month ask is not used as the rate.
+ */
+export function selectPublishedCableQuotesForDate(
+  rows: CableMetalPriceCandidate[],
+  quoteDate: string
+): PublishedCableMetalQuotes {
+  const day = quoteDate.trim().slice(0, 10);
+  const pick = (usage: 'CABLE_COPPER' | 'CABLE_ALUMINIUM'): PublishedCableMetalQuote | null =>
+    publishedCashQuote(
+      rows.find(
+        (candidate) =>
+          candidate.costingUsage === usage &&
+          candidate.status === 'PUBLISHED' &&
+          candidate.quoteDate === day &&
+          positive(candidate.cashAsk) != null
+      )
+    );
+  return { copper: pick('CABLE_COPPER'), aluminium: pick('CABLE_ALUMINIUM') };
+}
+
+/** Header metal date, or null when it is missing or not YYYY-MM-DD. */
+export function readMetalPriceDate(metadata: Record<string, unknown> | null | undefined): string | null {
+  const raw = metadata?.metalPriceDate;
+  if (typeof raw !== 'string') return null;
+  const day = raw.trim().slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
 }
 
 function applyPublished(

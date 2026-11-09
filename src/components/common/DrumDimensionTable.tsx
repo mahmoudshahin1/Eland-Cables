@@ -14,6 +14,14 @@ const COLUMNS: Array<{ key: keyof DrumDimensionValues; label: string }> = [
   { key: 'outerWidth', label: 'Outer Width (mm)' },
 ];
 
+export function drumMaterialLabel(drum: { drumType?: string | null; description?: string | null } | null | undefined): string {
+  const type = String(drum?.drumType || '').trim();
+  if (type) return type;
+  const description = String(drum?.description || '').trim();
+  if (description) return description;
+  return '—';
+}
+
 export function DrumDimensionTable({ drum }: { drum: DrumDimensionValues }) {
   return (
     <div

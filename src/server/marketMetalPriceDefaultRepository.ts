@@ -2,7 +2,9 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from './db';
 import {
   metalHeaderPatchFromPublished,
+  readMetalPriceDate,
   selectPublishedCableQuotes,
+  selectPublishedCableQuotesForDate,
   type PublishedCableMetalQuotes,
 } from '../domain/cableMetalPriceResolution';
 import {
@@ -126,9 +128,44 @@ export async function getPublishedCableMetalQuotes(): Promise<PublishedCableMeta
   );
 }
 
+function utcQuoteDate(isoDate: string): Date {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+/** Published cash ask for one quote date. Does not fall back to the current row. */
+export async function getPublishedCableMetalQuotesForDate(quoteDate: string): Promise<PublishedCableMetalQuotes> {
+  const day = quoteDate.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { copper: null, aluminium: null };
+  const prisma = requirePrisma();
+  const rows = await prisma.marketMetalPrice.findMany({
+    where: {
+      status: 'PUBLISHED',
+      quoteDate: utcQuoteDate(day),
+      instrument: { costingUsage: { in: ['CABLE_COPPER', 'CABLE_ALUMINIUM'] } },
+    },
+    include: { instrument: { select: { code: true, costingUsage: true } } },
+    orderBy: { publishedAt: 'desc' },
+  });
+  return selectPublishedCableQuotesForDate(
+    rows.map((row) => ({
+      id: row.id,
+      code: row.instrument.code,
+      costingUsage: row.instrument.costingUsage,
+      status: row.status,
+      isCurrent: row.isCurrent,
+      quoteDate: row.quoteDate.toISOString().slice(0, 10),
+      cashAsk: row.cashAsk == null ? null : Number(row.cashAsk),
+      threeMonthAsk: row.threeMonthAsk == null ? null : Number(row.threeMonthAsk),
+    })),
+    day
+  );
+}
+
 /**
- * Copies the current published cash ask onto an inquiry header only where that metal
- * rate is missing. Does not touch costing runs, pricing snapshots, or quotations.
+ * Copies a published cash ask onto an inquiry header only where that metal rate is missing.
+ * A metalPriceDate uses that date's published row. A blank date keeps the current published row.
+ * A positive manual rate is left untouched. Does not touch costing runs or quotations.
  */
 export async function snapshotMissingInquiryMetalPrices(inquiryId: string): Promise<Record<string, unknown>> {
   const prisma = requirePrisma();
@@ -141,7 +178,11 @@ export async function snapshotMissingInquiryMetalPrices(inquiryId: string): Prom
       ? { ...(inquiry.commercialMetadata as Record<string, unknown>) }
       : {};
   if (!inquiry) return meta;
-  const patch = metalHeaderPatchFromPublished(meta, await getPublishedCableMetalQuotes());
+  const metalDate = readMetalPriceDate(meta);
+  const quotes = metalDate
+    ? await getPublishedCableMetalQuotesForDate(metalDate)
+    : await getPublishedCableMetalQuotes();
+  const patch = metalHeaderPatchFromPublished(meta, quotes);
   if (Object.keys(patch).length === 0) return meta;
   const next = { ...meta, ...patch };
   await prisma.commercialInquiry.update({

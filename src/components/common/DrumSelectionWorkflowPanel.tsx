@@ -27,7 +27,7 @@ import {
 } from '../../domain/drumOptimizationPresentation';
 import type { DrumMasterRecord } from '../../types';
 import { DrumCuttingScheduleTable, type DrumScheduleRow } from './DrumCuttingScheduleTable';
-import { DrumDimensionTable } from './DrumDimensionTable';
+import { DrumDimensionTable, drumMaterialLabel } from './DrumDimensionTable';
 import { resolveDrumDescription } from '../../services/drumMasterService';
 import { evaluateAutoConfirmDrumPlan, evaluateDrumPlanConfirmReadiness, DRUM_PLAN_CONFIRMED_STATUS_LABEL, DRUM_PLAN_NOT_CONFIRMED_STATUS_LABEL } from '../../domain/drumPlanConfirmReadiness';
 import { autoConfirmInquiryDrumPlanFromSchedule } from '../../services/confirmInquiryDrumPlanFromSchedule';
@@ -862,6 +862,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                         <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
                           {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           {c.drum.drumCode}
+                        </div>
+                        <div className="mt-1 pl-5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                          Material: {drumMaterialLabel(c.drum)}
                         </div>
                         <div className="mt-2 overflow-x-auto pl-5">
                           <DrumDimensionTable drum={c.drum as DrumMasterRecord} />

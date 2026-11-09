@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { DomainError } from '../platform/errors/domainError';
 import { resolveRequestActor } from './auth';
 import { listApprovedShipmentMasters, resolveShipmentCustomerMasterId } from './shippingCostRepository';
+import { getPublishedCableMetalQuotesForDate } from './marketMetalPriceDefaultRepository';
 import { exportInquiryExcel } from './inquiryExportService';
 import { sendExcelResponse } from './excelWorkbook';
 import {
@@ -210,6 +211,23 @@ inquiriesRouter.get('/meta/field-definitions', async (req, res) => {
         ? 'PlatformFieldDefinition'
         : 'CODE_MANIFEST',
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+inquiriesRouter.get('/market-metal-quotes', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  const date = typeof req.query.date === 'string' ? req.query.date.trim() : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD.' });
+  }
+  try {
+    const quotes = await getPublishedCableMetalQuotesForDate(date);
+    const cash = (quote: { id: string; quoteDate: string; cashAsk: number } | null) =>
+      quote ? { id: quote.id, quoteDate: quote.quoteDate, cashAsk: quote.cashAsk } : null;
+    res.json({ copper: cash(quotes.copper), aluminium: cash(quotes.aluminium) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

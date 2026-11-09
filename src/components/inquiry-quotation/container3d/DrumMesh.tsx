@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
-import { Edges, Html } from '@react-three/drei';
+import { Edges } from '@react-three/drei';
 import type { PlacedDrumPosition, StuffingMethod } from '../../../domain/energyaCertifiedContainerStudyEngine';
 import { drumWorldPosition, mmToMeters } from './coordinates';
 
 export function DrumMesh({
   drum,
-  stuffingMethod,
+  stuffingMethod: _stuffingMethod,
   active,
   onHover,
+  onSelect,
 }: {
   drum: PlacedDrumPosition;
   stuffingMethod: StuffingMethod;
   active: boolean;
   onHover: (drum: PlacedDrumPosition | null) => void;
+  onSelect: (drum: PlacedDrumPosition) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const position = drumWorldPosition(drum);
   const radius = mmToMeters(drum.flangeMm) / 2;
   const halfWidth = mmToMeters(drum.widthMm) / 2;
-  const highlighted = active || hovered || open;
+  const highlighted = active || hovered;
   const flangeColor = highlighted ? '#fbbf24' : '#b45309';
 
   return (
@@ -36,8 +37,7 @@ export function DrumMesh({
       }}
       onClick={(event) => {
         event.stopPropagation();
-        setOpen((value) => !value);
-        onHover(drum);
+        onSelect(drum);
       }}
     >
       <group rotation={[Math.PI / 2, 0, 0]}>
@@ -84,31 +84,6 @@ export function DrumMesh({
         <boxGeometry args={[radius * 0.34, 0.06, 0.1]} />
         <meshStandardMaterial color="#facc15" />
       </mesh>
-      <Html position={[0, radius + 0.18, 0]} center distanceFactor={8} zIndexRange={[20, 0]}>
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          className="rounded-full border border-amber-200 bg-white/95 px-2 py-0.5 text-[10px] font-bold text-slate-800 shadow-sm"
-        >
-          Row #{drum.rowIdx} · Ø{drum.flangeMm} mm · {Math.round(drum.grossWeightKg).toLocaleString()} kg
-        </button>
-        {open && (
-          <div className="mt-1 w-52 rounded-xl border border-white/30 bg-slate-950/75 p-2 text-left text-[10px] text-slate-100 shadow-xl backdrop-blur-md">
-            <p className="font-bold text-white">Row {drum.rowIdx}</p>
-            <p>Drum code: {drum.drumCode}</p>
-            <p>
-              Flange × barrel × width: {drum.flangeMm} × {Math.round(drum.flangeMm * 0.7)} × {drum.widthMm} mm
-            </p>
-            <p>Cable length: {drum.cuttingLengthM != null ? `${drum.cuttingLengthM} m` : '—'}</p>
-            <p>Net weight: —</p>
-            <p>Gross weight: {drum.grossWeightKg.toLocaleString()} kg</p>
-            <p>
-              X / Z: {Math.round(drum.xMm)} mm / {Math.round(drum.yMm)} mm
-            </p>
-            <p className="text-slate-300">Stuffing: {stuffingMethod}</p>
-          </div>
-        )}
-      </Html>
     </group>
   );
 }

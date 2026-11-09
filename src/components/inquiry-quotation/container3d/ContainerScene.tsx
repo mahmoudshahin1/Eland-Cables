@@ -17,7 +17,9 @@ export function ContainerScene({
   stuffingMethod,
   preset,
   activeDrumId,
+  selectedDrumId,
   onHoverDrum,
+  onSelectDrum,
   zoom,
 }: {
   container: CertifiedContainerResult;
@@ -25,7 +27,9 @@ export function ContainerScene({
   stuffingMethod: StuffingMethod;
   preset: ContainerViewPreset;
   activeDrumId: string | null;
+  selectedDrumId: string | null;
   onHoverDrum: (drum: PlacedDrumPosition | null) => void;
+  onSelectDrum: (drum: PlacedDrumPosition) => void;
   zoom: ContainerZoomRequest;
 }) {
   const length = mmToMeters(container.usableLengthMm);
@@ -100,8 +104,9 @@ export function ContainerScene({
               key={drum.drumId}
               drum={drum}
               stuffingMethod={stuffingMethod}
-              active={activeDrumId === drum.drumId}
+              active={activeDrumId === drum.drumId || selectedDrumId === drum.drumId}
               onHover={onHoverDrum}
+              onSelect={onSelectDrum}
             />
           ))}
           <FreeBufferZone

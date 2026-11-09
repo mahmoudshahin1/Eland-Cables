@@ -1,6 +1,10 @@
 import { CommercialInquiryDto, formatInquiryStatus } from './commercialInquiryApiService';
 import { UpdateInquiryInput } from '../domain/commercialDomain';
 import {
+  metalHeaderPatchFromPublished,
+  type PublishedCableMetalQuotes,
+} from '../domain/cableMetalPriceResolution';
+import {
   formatDeliveryCombinationLabel,
   type CustomerDeliveryCombinationView,
 } from '../domain/customerDeliveryCombination';
@@ -21,9 +25,13 @@ export interface InquiryHeaderFormState {
   copperPriceRate: string;
   copperPriceUom: string;
   copperPriceSource: string;
+  copperMarketPriceId: string;
+  copperMarketQuoteDate: string;
   aluminiumPriceRate: string;
   aluminiumPriceUom: string;
   aluminiumPriceSource: string;
+  aluminiumMarketPriceId: string;
+  aluminiumMarketQuoteDate: string;
   originalSystemDefaultCopperRate: string;
   originalSystemDefaultAluminiumRate: string;
   requestedDeliveryDate: string;
@@ -115,9 +123,13 @@ export function buildHeaderFormFromInquiry(inquiry: CommercialInquiryDto): Inqui
     copperPriceRate: metaNumber(inquiry, 'copperPriceRate', ''),
     copperPriceUom: meta(inquiry, 'copperPriceUom', 'USD/MT'),
     copperPriceSource: meta(inquiry, 'copperPriceSource', ''),
+    copperMarketPriceId: meta(inquiry, 'copperMarketPriceId', ''),
+    copperMarketQuoteDate: meta(inquiry, 'copperMarketQuoteDate', ''),
     aluminiumPriceRate: metaNumber(inquiry, 'aluminiumPriceRate', ''),
     aluminiumPriceUom: meta(inquiry, 'aluminiumPriceUom', 'USD/MT'),
     aluminiumPriceSource: meta(inquiry, 'aluminiumPriceSource', ''),
+    aluminiumMarketPriceId: meta(inquiry, 'aluminiumMarketPriceId', ''),
+    aluminiumMarketQuoteDate: meta(inquiry, 'aluminiumMarketQuoteDate', ''),
     originalSystemDefaultCopperRate: originalSystemRate(inquiry, 'copper'),
     originalSystemDefaultAluminiumRate: originalSystemRate(inquiry, 'aluminium'),
     requestedDeliveryDate: toDateInput(inquiry.requestedDeliveryDate),
@@ -275,9 +287,13 @@ export function buildUpdatePayloadFromForm(form: InquiryHeaderFormState): Update
     copperPriceRate: parseFiniteNumber(form.copperPriceRate),
     copperPriceUom: 'USD/MT',
     copperPriceSource: form.copperPriceSource || undefined,
+    copperMarketPriceId: form.copperMarketPriceId.trim() || null,
+    copperMarketQuoteDate: form.copperMarketQuoteDate.trim() || null,
     aluminiumPriceRate: parseFiniteNumber(form.aluminiumPriceRate),
     aluminiumPriceUom: 'USD/MT',
     aluminiumPriceSource: form.aluminiumPriceSource || undefined,
+    aluminiumMarketPriceId: form.aluminiumMarketPriceId.trim() || null,
+    aluminiumMarketQuoteDate: form.aluminiumMarketQuoteDate.trim() || null,
     endUser: form.endUser || undefined,
     customerPoTenderNo: form.customerPoTenderNo || undefined,
     inquiryKind: form.inquiryKind || undefined,
@@ -321,8 +337,66 @@ export function applyInquiryCurrencyChange(
     aluminiumPriceUom: 'USD/MT',
     copperPriceSource: '',
     aluminiumPriceSource: '',
+    copperMarketPriceId: '',
+    copperMarketQuoteDate: '',
+    aluminiumMarketPriceId: '',
+    aluminiumMarketQuoteDate: '',
     originalSystemDefaultCopperRate: '',
     originalSystemDefaultAluminiumRate: '',
+  };
+}
+
+/** Fills only empty metal rates from a published cash ask. A typed positive rate stays. */
+export function applyPublishedMetalQuotesToForm(
+  form: Pick<InquiryHeaderFormState, 'copperPriceRate' | 'aluminiumPriceRate'>,
+  quotes: PublishedCableMetalQuotes
+): Partial<InquiryHeaderFormState> {
+  const patch = metalHeaderPatchFromPublished(
+    {
+      copperPriceRate: parseFiniteNumber(form.copperPriceRate),
+      aluminiumPriceRate: parseFiniteNumber(form.aluminiumPriceRate),
+    },
+    quotes
+  );
+  const next: Partial<InquiryHeaderFormState> = {};
+  if (patch.copperPriceRate != null) {
+    next.copperPriceRate = String(patch.copperPriceRate);
+    next.copperPriceUom = 'USD/MT';
+    next.copperPriceSource = '';
+    next.copperMarketPriceId = patch.copperMarketPriceId == null ? '' : String(patch.copperMarketPriceId);
+    next.copperMarketQuoteDate = patch.copperMarketQuoteDate == null ? '' : String(patch.copperMarketQuoteDate);
+  }
+  if (patch.aluminiumPriceRate != null) {
+    next.aluminiumPriceRate = String(patch.aluminiumPriceRate);
+    next.aluminiumPriceUom = 'USD/MT';
+    next.aluminiumPriceSource = '';
+    next.aluminiumMarketPriceId = patch.aluminiumMarketPriceId == null ? '' : String(patch.aluminiumMarketPriceId);
+    next.aluminiumMarketQuoteDate = patch.aluminiumMarketQuoteDate == null ? '' : String(patch.aluminiumMarketQuoteDate);
+  }
+  return next;
+}
+
+export function metalRateEditPatch(
+  metal: 'copper' | 'aluminium',
+  rate: string,
+  originalRate: string
+): Partial<InquiryHeaderFormState> {
+  const source = resolveMetalPriceSourceForEdit(rate, originalRate);
+  if (metal === 'copper') {
+    return {
+      copperPriceRate: rate,
+      copperPriceUom: 'USD/MT',
+      copperPriceSource: source,
+      copperMarketPriceId: '',
+      copperMarketQuoteDate: '',
+    };
+  }
+  return {
+    aluminiumPriceRate: rate,
+    aluminiumPriceUom: 'USD/MT',
+    aluminiumPriceSource: source,
+    aluminiumMarketPriceId: '',
+    aluminiumMarketQuoteDate: '',
   };
 }
 
