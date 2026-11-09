@@ -156,11 +156,20 @@ export const DrumOptimizer: React.FC<DrumOptimizerProps> = ({ onNavigateTab }) =
 
   // Delete line item
   const handleDeleteLine = (id: string) => {
-    if (drumLines.length <= 1) {
-      alert('At least one drum line item is required.');
-      return;
-    }
-    setDrumLines(drumLines.filter((l) => l.id !== id));
+    setDrumLines((prev) => {
+      if (prev.length <= 1) {
+        return [
+          {
+            id: `dl-${Date.now()}`,
+            drumCode: '',
+            noOfDrums: 1,
+            cuttingLengthM: 0,
+            tolerancePercent: 0,
+          },
+        ];
+      }
+      return prev.filter((line) => line.id !== id);
+    });
   };
 
   // Calculations
@@ -413,7 +422,10 @@ export const DrumOptimizer: React.FC<DrumOptimizerProps> = ({ onNavigateTab }) =
                   {/* Action delete */}
                   <td className="p-3 text-right">
                     <button
+                      type="button"
                       onClick={() => handleDeleteLine(line.id)}
+                      aria-label="Delete drum line"
+                      title="Delete drum line"
                       className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />

@@ -156,6 +156,17 @@ describe('inquiry header form — incoterms, destination, metal rates', () => {
     assert.equal(form.incoterms, '');
   });
 
+  it('defaults an empty required quotation date to today', () => {
+    const now = new Date();
+    const expected = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const form = buildHeaderFormFromInquiry(inquiry({ commercialMetadata: {} }));
+    assert.equal(form.requiredQuotationDate, expected);
+    const kept = buildHeaderFormFromInquiry(
+      inquiry({ commercialMetadata: { requiredQuotationDate: '2026-10-15' } })
+    );
+    assert.equal(kept.requiredQuotationDate, '2026-10-15');
+  });
+
   it('submit header codes block missing or non-positive metal rates', () => {
     assert.deepEqual(collectInquirySubmitHeaderCodes({}), [
       COPPER_PRICE_REQUIRED,

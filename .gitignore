@@ -5,6 +5,8 @@ coverage/
 *.log
 .env*
 !.env.example
+deploy/onprem/db-init/*.sql
+deploy/bundle/
 logs/
 *.tsbuildinfo
 .cursor/mcp.json

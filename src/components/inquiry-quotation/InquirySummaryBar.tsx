@@ -64,7 +64,13 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div
+      className={`grid gap-3 ${
+        hasFreight
+          ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-[minmax(80px,0.6fr)_minmax(80px,0.6fr)_minmax(110px,0.9fr)_minmax(180px,1.4fr)_minmax(220px,1.6fr)]'
+          : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
+      }`}
+    >
       {cards.map((card) => (
         <div
           key={card.label}
@@ -75,14 +81,14 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
           }`}
         >
           <p
-            className={`text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap truncate ${
+            className={`text-[11px] font-semibold uppercase tracking-wider leading-tight ${
               card.isHighlight ? 'text-emerald-800 font-bold' : 'text-slate-500'
             }`}
           >
             {card.label}
           </p>
           <p
-            className={`text-xl font-bold mt-1 truncate ${
+            className={`text-xl font-bold mt-1 whitespace-nowrap ${
               card.isHighlight ? 'text-emerald-950 font-black' : 'text-brand-800'
             }`}
           >
@@ -90,7 +96,7 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
           </p>
           {card.helper && (
             <p
-              className={`text-[10px] mt-1 truncate ${
+              className={`text-[10px] mt-1 break-words ${
                 card.isHighlight ? 'text-emerald-700 font-medium' : 'text-slate-400'
               }`}
             >

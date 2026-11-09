@@ -1,0 +1,44 @@
+# Company server. Load images first: docker load -i images.tar
+# Copy .env.example to .env and set the two secrets before the first start.
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: energya-connect-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-energya}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-energya_connect}
+    volumes:
+      - energya_pgdata:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    shm_size: 256mb
+
+  app:
+    image: energya-connect:onprem
+    container_name: energya-connect-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-energya}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-energya_connect}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      ALLOW_DEMO_USERS: "false"
+      DEMO_MODE: "false"
+    ports:
+      - "${APP_PORT:-3000}:3000"
+
+volumes:
+  energya_pgdata:

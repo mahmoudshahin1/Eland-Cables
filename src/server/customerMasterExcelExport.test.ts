@@ -337,7 +337,14 @@ describe('Customer Master + Excel export', () => {
     });
     assert.equal(internal.status, 200);
     const wb = XLSX.read(internal.buffer, { type: 'buffer' });
-    assert.deepEqual(wb.SheetNames, ['Inquiry_Header', 'Inquiry_Lines', 'Drum_Schedule', 'Delivery']);
+    assert.deepEqual(wb.SheetNames, [
+      'Inquiry_Header',
+      'Inquiry_Lines',
+      'Drum_Schedule',
+      'Commercial_Totals',
+      'Container_Study',
+      'Delivery',
+    ]);
     const lines = XLSX.utils.sheet_to_json(wb.Sheets.Inquiry_Lines, { header: 1 }) as unknown[][];
     assert.equal(lines.length - 1, 1);
     const dumped = JSON.stringify(lines);

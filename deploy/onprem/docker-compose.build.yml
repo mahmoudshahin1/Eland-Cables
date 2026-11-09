@@ -1,0 +1,8 @@
+# Used on the machine that has the source code. Builds the app image.
+
+services:
+  app:
+    image: energya-connect:onprem
+    build:
+      context: ../..
+      dockerfile: Dockerfile

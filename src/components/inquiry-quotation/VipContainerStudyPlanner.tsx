@@ -22,6 +22,7 @@ import {
 } from '../../domain/energyaCertifiedContainerStudyEngine';
 import { VipContainerVisualizer } from './VipContainerVisualizer';
 import { parseInquiryDrumSchedule } from '../../domain/inquiryDrumSchedule';
+import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 
 interface VipContainerStudyPlannerProps {
   inquiryId: string;
@@ -147,16 +148,15 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
       containersRequired = Math.max(1, Math.ceil((totalDrums || 1) / maxDrums));
     }
 
-    // Freight estimate factoring destination
-    let unitFreight = spec?.freightEst || 4200;
-    const dest = (destination || '').toUpperCase();
-    if (dest.includes('DONCASTER')) {
-      unitFreight = type === '20STD' ? 3100 : 3300;
-    } else if (dest.includes('ROTTERDAM')) {
-      unitFreight = type === '20STD' ? 1800 : 2000;
-    }
-
-    const totalFreight = containersRequired * unitFreight;
+    const freightTotals = resolveInquiryCommercialTotals({
+      productsTotal: 0,
+      containerType: type,
+      destination,
+      containerCount: containersRequired,
+      defaultUnitFreightUsd: spec?.freightEst || 4200,
+    });
+    const unitFreight = containersRequired > 0 ? (freightTotals.freightTotal || 0) / containersRequired : 0;
+    const totalFreight = freightTotals.freightTotal || 0;
     const capacityUsedPct = Math.min(
       100,
       Math.round(((totalDrums || 1) / (containersRequired * (spec?.maxDrums || 12))) * 100)

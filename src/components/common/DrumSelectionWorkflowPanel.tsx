@@ -17,6 +17,7 @@ import {
   distinctPositiveCuttingLengths,
   formatSuitableDrumOptionLabel,
   patchDrumScheduleRow,
+  removeOrResetDrumScheduleRow,
   planCoversCuttingLengthRequirements,
   resolveManualCandidateListUiState,
   resolveManualFocusRow,
@@ -792,7 +793,18 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         }}
         onRemoveRow={(id) => {
           if (planConfirmed) return;
-          onRowsChange(rows.length <= 1 ? rows : rows.filter((r) => r.id !== id));
+          if (rows.length <= 1) setExpandedCode(null);
+          onRowsChange(
+            removeOrResetDrumScheduleRow(rows, id, {
+              id: `pkg-${Date.now()}`,
+              drumCode: '',
+              noOfDrums: 1,
+              cuttingLengthM: '',
+              drumTolerancePercent: '0',
+              drumTolerancePositivePercent: '0',
+              drumToleranceNegativePercent: '0',
+            })
+          );
         }}
       />
 
@@ -870,42 +882,42 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                         </Button>
                       </div>
                     </div>
-                    <div className="mt-2 overflow-x-auto pl-5">
-                      <table className="w-full min-w-[520px] border-collapse text-[11px]">
+                    <div className={`mt-2 pl-5 ${open ? 'grid grid-cols-1 gap-4 lg:grid-cols-2' : ''}`}>
+                      <table className="w-full border-collapse text-[11px]">
                         <thead>
                           <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                            <th scope="col" className="py-1.5 pr-4 font-semibold text-slate-500">Measurement</th>
-                            <th scope="col" className="py-1.5 text-right font-semibold text-slate-500">Value</th>
+                            <th scope="col" className="py-1 pr-4 font-semibold text-slate-500">Measurement</th>
+                            <th scope="col" className="py-1 text-right font-semibold text-slate-500">Value</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Usable Length</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.maximumUsableLengthMeters, 0)} m</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Usable Length</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(c.capacity.maximumUsableLengthMeters, 0)} m</td>
                           </tr>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Requested Cutting Length</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(focusCutting, 0)} m</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Requested Cutting Length</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(focusCutting, 0)} m</td>
                           </tr>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Length Utilization</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.lengthUtilizationPercent)}%</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Length Utilization</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(c.lengthUtilizationPercent)}%</td>
                           </tr>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Load Utilization</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.loadUtilizationPercent)}%</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Load Utilization</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(c.loadUtilizationPercent)}%</td>
                           </tr>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Drum Capacity</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.drum.capacity, 0)} kg</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Drum Capacity</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(c.drum.capacity, 0)} kg</td>
                           </tr>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Load</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.drum.maxWeight, 0)} kg</td>
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Maximum Load</th>
+                            <td className="py-1 text-right font-bold tabular-nums">{fmt(c.drum.maxWeight, 0)} kg</td>
                           </tr>
                           <tr>
-                            <th scope="row" className="py-1.5 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Empty Drum Weight</th>
-                            <td className="py-1.5 text-right font-bold tabular-nums">
+                            <th scope="row" className="py-1 pr-4 text-left font-medium text-slate-600 dark:text-slate-300">Empty Drum Weight</th>
+                            <td className="py-1 text-right font-bold tabular-nums">
                               {c.capacity.emptyDrumNetWeightKg != null
                                 ? `${fmt(c.capacity.emptyDrumNetWeightKg)} kg`
                                 : 'Pending logistics'}
@@ -913,7 +925,44 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                           </tr>
                         </tbody>
                       </table>
+                      {open && (
+                        <table className="w-full border-collapse text-[11px] text-slate-600 dark:text-slate-300">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-left dark:border-slate-700">
+                              <th scope="col" className="py-1 pr-4 font-semibold text-slate-500">Additional Measurement</th>
+                              <th scope="col" className="py-1 text-right font-semibold text-slate-500">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Cable Weight</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{fmt(c.cableWeightKg)} kg</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Gross Loaded Drum Weight</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{fmt(c.grossLoadedDrumWeightKg)} kg</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Windings per Layer</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{c.capacity.windingsPerLayer ?? '—'}</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Number of Layers</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{c.capacity.layers ?? '—'}</td>
+                            </tr>
+                            <tr className="border-b border-slate-100 dark:border-slate-800">
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Geometrical Capacity</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{fmt(c.capacity.geometricalCapacityMeters, 0)} m</td>
+                            </tr>
+                            <tr>
+                              <th scope="row" className="py-1 pr-4 text-left font-medium">Load-Limited Capacity</th>
+                              <td className="py-1 text-right font-bold tabular-nums">{fmt(c.capacity.loadLimitedCapacityMeters, 0)} m</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      )}
                     </div>
+                    {open ? <div className="mt-1 pl-5 text-[11px] text-slate-500">{c.decision}</div> : null}
                     {c.warnings?.length ? (
                       <p className="mt-2 pl-5 text-[11px] text-amber-700 dark:text-amber-300">
                         {c.warnings
@@ -925,45 +974,6 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                           .join(' · ')}
                       </p>
                     ) : null}
-                    {open && (
-                      <div className="mt-2 overflow-x-auto pl-5 text-[11px] text-slate-600 dark:text-slate-300">
-                        <table className="w-full min-w-[440px] border-collapse">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                              <th scope="col" className="py-1.5 pr-4 font-semibold text-slate-500">Additional Measurement</th>
-                              <th scope="col" className="py-1.5 text-right font-semibold text-slate-500">Value</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr className="border-b border-slate-100 dark:border-slate-800">
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Cable Weight</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.cableWeightKg)} kg</td>
-                            </tr>
-                            <tr className="border-b border-slate-100 dark:border-slate-800">
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Gross Loaded Drum Weight</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.grossLoadedDrumWeightKg)} kg</td>
-                            </tr>
-                            <tr className="border-b border-slate-100 dark:border-slate-800">
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Windings per Layer</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{c.capacity.windingsPerLayer ?? '—'}</td>
-                            </tr>
-                            <tr className="border-b border-slate-100 dark:border-slate-800">
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Number of Layers</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{c.capacity.layers ?? '—'}</td>
-                            </tr>
-                            <tr className="border-b border-slate-100 dark:border-slate-800">
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Geometrical Capacity</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.geometricalCapacityMeters, 0)} m</td>
-                            </tr>
-                            <tr>
-                              <th scope="row" className="py-1.5 pr-4 text-left font-medium">Load-Limited Capacity</th>
-                              <td className="py-1.5 text-right font-bold tabular-nums">{fmt(c.capacity.loadLimitedCapacityMeters, 0)} m</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        <div className="mt-1 text-slate-500">{c.decision}</div>
-                      </div>
-                    )}
                   </li>
                 );
               })}

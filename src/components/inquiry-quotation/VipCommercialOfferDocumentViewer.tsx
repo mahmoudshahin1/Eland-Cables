@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { printIsolatedElement } from '../../utils/isolatedPrint';
 import * as XLSX from 'xlsx';
 import {
   FileText,
@@ -22,6 +23,7 @@ import {
 import type { V2QuotationDto } from '../../services/v2QuotationApiService';
 import { v2QuotationPdfUrl } from '../../services/v2QuotationApiService';
 import { DEFAULT_VIP_CABLES } from '../customer/vipCableCatalogData';
+import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 
 function extractConductorWeight(desc: string, conductorMaterial?: string): { cuWeightKgPerKm: number; alWeightKgPerKm: number } {
   const isAlu =
@@ -296,28 +298,8 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   preferredContainerType = '40HQ',
 }) => {
   const [expandedDocuments, setExpandedDocuments] = useState({ commercialOffer: false, tds: false });
-  const [printTarget, setPrintTarget] = useState<'commercial_offer' | 'tds' | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedLineIndex, setSelectedLineIndex] = useState(0);
-
-  useEffect(() => {
-    if (!printTarget) return;
-
-    document.body.dataset.vipPrintDocument = printTarget;
-
-    const handleAfterPrint = () => setPrintTarget(null);
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    const frame = window.requestAnimationFrame(() => {
-      window.print();
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('afterprint', handleAfterPrint);
-      delete document.body.dataset.vipPrintDocument;
-    };
-  }, [printTarget]);
 
   const lines = inquiry.lines || [];
   const primaryLine: (CommercialInquiryLineDto & { cableMaterialNumber?: string }) | undefined =
@@ -360,14 +342,16 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
     inquiry.commercialProductsTotal ||
     (primaryLine?.sellingPrice ? Number(primaryLine.sellingPrice) : 121212.23);
 
-  // Freight estimation from container study
-  const containerFreightMap: Record<string, number> = {
-    '20STD': 3100,
-    '40STD': 3300,
-    '40HQ': 3300,
-    '40OT': 3300,
-  };
-  const freightCost = containerFreightMap[preferredContainerType || '40HQ'] || 3300;
+  const offerDestination = inquiry.commercialMetadata?.deliveryDestination
+    ? String(inquiry.commercialMetadata.deliveryDestination)
+    : null;
+  const freightCost =
+    resolveInquiryCommercialTotals({
+      productsTotal: productsTotal,
+      containerType: preferredContainerType || '40HQ',
+      destination: offerDestination,
+      containerCount: 1,
+    }).freightTotal || 3300;
 
   // Resolve individual line calculations, MOQ km, weights, and realistic line selling prices
   const calculatedLines = useMemo(() => {
@@ -496,14 +480,21 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
     } catch (err: any) {
       console.error('Failed to download offer PDF:', err);
-      alert(`Could not download PDF quotation: ${err.message || 'Unknown error'}. Please click "⚡ Instant Costing & Commercial Offer" above or refresh the page.`);
+      alert(`Could not download PDF quotation: ${err.message || 'Unknown error'}. Calculate costing first, or refresh the page.`);
     } finally {
       setDownloading(false);
     }
   };
 
   const handlePrintDocument = (target: 'commercial_offer' | 'tds') => {
-    setPrintTarget(target);
+    const selector = target === 'commercial_offer' ? '.vip-print-commercial-offer' : '.vip-print-tds';
+    const node = document.querySelector(selector);
+    if (!(node instanceof HTMLElement)) {
+      alert('The document is not ready to print yet.');
+      return;
+    }
+    printIsolatedElement(node, target === 'commercial_offer' ? 'Commercial Offer' : 'Technical Data Sheet');
+    return;
   };
 
   // Download Technical Data Sheet (TDS) as Excel (.xlsx) workbook

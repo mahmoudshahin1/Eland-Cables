@@ -56,6 +56,10 @@ interface ApiSalesOrder {
   shipTo?: string | null;
   currency?: string | null;
   createdAt?: string;
+  requestedDeliveryDate?: string | null;
+  projectName?: string | null;
+  salesAgent?: string | null;
+  grandTotal?: number | string | null;
   lines?: ApiSalesOrderLine[];
 }
 
@@ -127,12 +131,15 @@ const mapApiOrderToRow = (order: ApiSalesOrder): SalesOrderRow => {
     soNumber: order.salesOrderNumber,
     customerPoRef: order.customerReference || '—',
     customerName: order.customerName || '—',
-    projectName: '',
-    salesAgent: '',
+    projectName: order.projectName || '',
+    salesAgent: order.salesAgent || '',
     orderDate: order.createdAt ? String(order.createdAt).slice(0, 10) : '—',
-    deliveryDate: '',
+    deliveryDate: order.requestedDeliveryDate ? String(order.requestedDeliveryDate).slice(0, 10) : '',
     currency: order.currency || 'USD',
-    totalAmountUsd: items.reduce((sum, item) => sum + item.totalPriceUsd, 0),
+    totalAmountUsd:
+      order.grandTotal == null
+        ? items.reduce((sum, item) => sum + item.totalPriceUsd, 0)
+        : toNumber(order.grandTotal),
     status: mapApiStatusToUi(order.status),
     items,
     remarks: undefined,
@@ -239,13 +246,14 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
 
   // Financial Summary
   const financialSummary = useMemo(() => {
+    const openOrders = filteredOrders.filter((o) => o.status === 'Open');
+    const canceledOrders = filteredOrders.filter((o) => o.status === 'Canceled');
     const totalVal = filteredOrders.reduce((sum, o) => sum + o.totalAmountUsd, 0);
-    const openVal = orders
-      .filter((o) => o.status === 'Open')
-      .reduce((sum, o) => sum + o.totalAmountUsd, 0);
+    const openVal = openOrders.reduce((sum, o) => sum + o.totalAmountUsd, 0);
+    const canceledVal = canceledOrders.reduce((sum, o) => sum + o.totalAmountUsd, 0);
 
-    return { totalVal, openVal };
-  }, [filteredOrders, orders]);
+    return { totalVal, openVal, canceledVal, openOrders, canceledOrders };
+  }, [filteredOrders]);
 
   // Currency per card: the card's own orders decide it — one currency shows it,
   // several coexisting show MIXED, none hides the prefix (empty state).
@@ -323,7 +331,7 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
         <CustomerPageHero
           breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Orders' }]}
           title="Sales Orders Management & Lifecycle"
-          subtitle="Track your sales orders by status: Open and Canceled. Totals are calculated from the order line items."
+          subtitle="Track your sales orders by status: Open and Canceled. Amounts are the Grand Total, including sea freight."
           actions={headerActions}
         />
       ) : (
@@ -340,7 +348,7 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
               <span>Sales Orders Management & Lifecycle</span>
             </h1>
             <p className="text-xs text-slate-300 mt-1">
-              Track your sales orders by status: Open and Canceled. Totals are calculated from the order line items.
+              Track your sales orders by status: Open and Canceled. Amounts are the Grand Total, including sea freight.
             </p>
           </div>
           {headerActions}
@@ -395,7 +403,7 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
           {
             label: 'Open Orders Value',
             amount: financialSummary.openVal,
-            currency: currencyFor(orders.filter((o) => o.status === 'Open')),
+            currency: currencyFor(financialSummary.openOrders),
             icon: Clock,
             labelClass: 'text-blue-600 dark:text-blue-400',
             valueClass: 'text-blue-700 dark:text-blue-300',
@@ -405,8 +413,8 @@ export const SalesOrders: React.FC<SalesOrdersProps> = ({
           },
           {
             label: 'Canceled Orders Value',
-            amount: orders.filter((o) => o.status === 'Canceled').reduce((sum, o) => sum + o.totalAmountUsd, 0),
-            currency: currencyFor(orders.filter((o) => o.status === 'Canceled')),
+            amount: financialSummary.canceledVal,
+            currency: currencyFor(financialSummary.canceledOrders),
             icon: XCircle,
             labelClass: 'text-red-600 dark:text-red-400',
             valueClass: 'text-red-700 dark:text-red-300',

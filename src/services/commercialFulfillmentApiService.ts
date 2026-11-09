@@ -201,6 +201,23 @@ export async function fetchQuotation(token: string, idOrNumber: string): Promise
   return data.quotation;
 }
 
+export async function approveAndReleaseQuotationApi(
+  token: string,
+  quotationId: string,
+  fulfillmentType: FulfillmentType
+): Promise<{
+  quotation: QuotationFulfillmentDto;
+  salesOrder: { id: string; salesOrderNumber?: string } | null;
+  agreement: { id: string; agreementNumber?: string } | null;
+}> {
+  const res = await fetch(`/api/quotations/${encodeURIComponent(quotationId)}/approve-and-release`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ fulfillmentType }),
+  });
+  return parseJson(res);
+}
+
 export async function approveCommercialQuotationApi(
   token: string,
   quotationId: string,

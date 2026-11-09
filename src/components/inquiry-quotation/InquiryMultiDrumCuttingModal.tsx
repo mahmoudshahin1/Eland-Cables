@@ -126,12 +126,20 @@ export const InquiryMultiDrumCuttingModal: React.FC<InquiryMultiDrumCuttingModal
   };
 
   const handleDeleteRow = (index: number) => {
-    if (rows.length <= 1) {
-      setError('Schedule must contain at least one cutting row.');
-      return;
-    }
     setError(null);
-    setRows((prev) => prev.filter((_, i) => i !== index));
+    setRows((prev) => {
+      if (prev.length <= 1) {
+        return [
+          {
+            drumCode: '',
+            noOfDrums: 1,
+            cuttingLengthM: 0,
+            drumTolerancePercent: 0,
+          },
+        ];
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleSave = async () => {
@@ -376,10 +384,10 @@ export const InquiryMultiDrumCuttingModal: React.FC<InquiryMultiDrumCuttingModal
                         <td className="p-2.5 text-center">
                           <button
                             type="button"
-                            disabled={rows.length <= 1}
                             onClick={() => handleDeleteRow(index)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                            title="Delete Schedule Row"
+                            className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            aria-label={`Delete drum line ${index + 1}`}
+                            title="Delete drum line"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>

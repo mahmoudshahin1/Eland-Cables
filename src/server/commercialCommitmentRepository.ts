@@ -13,6 +13,7 @@ import { V2_QUOTATION_WORKFLOW_CHANNEL } from '../domain/v2QuotationService';
 import { commercialMetadataRecord } from '../domain/inquiryProcessResolver';
 import { vipSalesReleaseAcceptsCalculatedPrice } from '../domain/vipCommercialRelease';
 import { isV2InquiryMetadata } from '../domain/v2InquiryWorkflow';
+import { resolveInquiryCommercialTotals } from '../domain/inquiryGrandTotal';
 import { appendServerAudit } from './serverAudit';
 
 type Actor = { id?: string; name?: string; email?: string; userType?: string };
@@ -702,10 +703,85 @@ export async function listSalesOrders(
     if (filter.customerMasterIds?.length) or.push({ customerMasterId: { in: filter.customerMasterIds } });
     where.AND = [...((where.AND as object[]) || []), { OR: or }];
   }
-  return prisma.epcSalesOrder.findMany({
+  const orders = await prisma.epcSalesOrder.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     include: { lines: true },
+  });
+  return decorateSalesOrdersForDisplay(orders);
+}
+
+/**
+ * Project, sales rep, delivery date and Grand Total are not columns on EpcSalesOrder.
+ * They are derived from the linked inquiry (and its quotation) for the list response only.
+ */
+async function decorateSalesOrdersForDisplay<
+  T extends {
+    inquiryId: string | null;
+    quotationId: string | null;
+    customerReference: string | null;
+    requestedDeliveryDate: Date | null;
+    lines: Array<{ lineAmount: unknown }>;
+  },
+>(orders: T[]) {
+  if (orders.length === 0) return orders;
+  const prisma = requirePrisma();
+  const quotationIds = [...new Set(orders.map((order) => order.quotationId).filter((id): id is string => Boolean(id)))];
+  const quotations = quotationIds.length
+    ? await prisma.commercialQuotation.findMany({
+        where: { id: { in: quotationIds } },
+        select: { id: true, inquiryId: true },
+      })
+    : [];
+  const inquiryIdByQuotation = new Map(quotations.map((row) => [row.id, row.inquiryId]));
+  const inquiryIds = [
+    ...new Set(
+      orders
+        .map((order) => order.inquiryId || (order.quotationId ? inquiryIdByQuotation.get(order.quotationId) : null))
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const inquiries = inquiryIds.length
+    ? await prisma.commercialInquiry.findMany({
+        where: { id: { in: inquiryIds } },
+        select: {
+          id: true,
+          projectName: true,
+          salesAgent: true,
+          quotationOwner: true,
+          requestedDeliveryDate: true,
+          customerReference: true,
+          commercialMetadata: true,
+        },
+      })
+    : [];
+  const inquiryById = new Map(inquiries.map((row) => [row.id, row]));
+  return orders.map((order) => {
+    const inquiryId = order.inquiryId || (order.quotationId ? inquiryIdByQuotation.get(order.quotationId) || null : null);
+    const inquiry = inquiryId ? inquiryById.get(inquiryId) : undefined;
+    const meta = commercialMetadataRecord(inquiry?.commercialMetadata);
+    const products = order.lines.reduce((sum, line) => sum + toNum(line.lineAmount), 0);
+    const destination = typeof meta.deliveryDestination === 'string' ? meta.deliveryDestination : null;
+    const containerType = typeof meta.preferredContainerType === 'string' ? meta.preferredContainerType : null;
+    const totals =
+      products > 0
+        ? resolveInquiryCommercialTotals({
+            productsTotal: products,
+            containerType,
+            destination,
+            containerCount: 1,
+          })
+        : { productsTotal: products, freightTotal: 0, grandTotal: products };
+    return {
+      ...order,
+      projectName: inquiry?.projectName || '',
+      salesAgent: inquiry?.salesAgent || inquiry?.quotationOwner || '',
+      productsTotal: totals.productsTotal,
+      freightTotal: totals.freightTotal,
+      grandTotal: totals.grandTotal,
+      customerReference: order.customerReference || inquiry?.customerReference || null,
+      requestedDeliveryDate: order.requestedDeliveryDate || inquiry?.requestedDeliveryDate || null,
+    };
   });
 }
 
@@ -1212,6 +1288,105 @@ export async function createSalesAgreementFromApprovedQuotation(
   if (existingAgreement) return existingAgreement;
 
   return createSalesAgreementFromCommitment(commitment.id, input, actor);
+}
+
+/**
+ * Approve a quotation and release the chosen fulfillment path together.
+ * If the release fails, the approval row and inquiry metadata are restored.
+ * A quotation that is already approved is released without approving it again.
+ */
+export async function approveAndReleaseQuotation(
+  quotationId: string,
+  input: {
+    fulfillmentType: 'DIRECT_ORDER' | 'SALES_AGREEMENT';
+    billTo?: string;
+    shipTo?: string;
+    requestedDeliveryDate?: string;
+    comment?: string;
+  },
+  actor: RequestActor
+) {
+  const prisma = requirePrisma();
+  const current = await prisma.commercialQuotation.findFirst({
+    where: {
+      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
+    },
+  });
+  if (!current) throw issue('NOT_FOUND', `Quotation ${quotationId} not found.`);
+  assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
+  if (current.commercialApprovalStatus === 'APPROVED' && current.fulfillmentType && current.fulfillmentType !== input.fulfillmentType) {
+    throw issue('CONFLICT', `Quotation ${current.quotationNumber} is already approved as ${current.fulfillmentType}. The fulfillment path is locked.`);
+  }
+
+  const inquiryBefore = await prisma.commercialInquiry.findUnique({
+    where: { id: current.inquiryId },
+    select: { commercialMetadata: true },
+  });
+  const quotationBefore = {
+    commercialApprovalStatus: current.commercialApprovalStatus,
+    commercialPricingStatus: current.commercialPricingStatus,
+    fulfillmentType: current.fulfillmentType,
+    commerciallyApprovedBy: current.commerciallyApprovedBy,
+    commerciallyApprovedAt: current.commerciallyApprovedAt,
+    quotationApprovedBy: current.quotationApprovedBy,
+    quotationApprovedAt: current.quotationApprovedAt,
+  };
+
+  const quotation =
+    current.commercialApprovalStatus === 'APPROVED'
+      ? current
+      : await approveCommercialQuotation(current.id, input, actor);
+
+  try {
+    const released =
+      input.fulfillmentType === 'DIRECT_ORDER'
+        ? {
+            salesOrder: await createSalesOrderFromApprovedQuotation(
+              current.id,
+              {
+                billTo: input.billTo,
+                shipTo: input.shipTo,
+                requestedDeliveryDate: input.requestedDeliveryDate,
+              },
+              actor
+            ),
+            agreement: null,
+          }
+        : {
+            salesOrder: null,
+            agreement: await createSalesAgreementFromApprovedQuotation(current.id, {}, actor),
+          };
+    const metadata = commercialMetadataRecord(inquiryBefore?.commercialMetadata);
+    await prisma.commercialInquiry.update({
+      where: { id: current.inquiryId },
+      data: {
+        commercialMetadata: {
+          ...metadata,
+          commercialApprovalStatus: 'APPROVED',
+          requestedFulfillmentType: input.fulfillmentType,
+          productionStatus: 'RELEASED_TO_PRODUCTION',
+          releasedToProductionAt: new Date().toISOString(),
+          releasedSalesOrderId: released.salesOrder && 'id' in released.salesOrder ? released.salesOrder.id : null,
+          releasedAgreementId: released.agreement && 'id' in released.agreement ? released.agreement.id : null,
+        },
+      },
+    });
+    return { quotation, ...released };
+  } catch (err) {
+    if (current.commercialApprovalStatus !== 'APPROVED') {
+      await prisma.commercialQuotation.update({
+        where: { id: current.id },
+        data: quotationBefore,
+      }).catch(() => null);
+      if (inquiryBefore) {
+        await prisma.commercialInquiry.update({
+          where: { id: current.inquiryId },
+          data: { commercialMetadata: inquiryBefore.commercialMetadata ?? {} },
+        }).catch(() => null);
+      }
+    }
+    throw err;
+  }
 }
 
 function isMtsEligiblePolicy(policy: string | null | undefined): boolean {

@@ -82,6 +82,11 @@ Source of Truth Schema: `/prisma/schema.prisma`
 
 | الملف المعدل | طبيعة التعديل | السبب والضرورة |
 |---|---|---|
+| `src/server/commercialCommitmentRoutes.ts` | مسار `POST /api/quotations/:id/approve-and-release` | اعتماد العرض وإطلاق Sales Order أو Sales Agreement في طلب واحد. لو الإطلاق فشل تُرجَع حالة الاعتماد. فرق مقصود عن legacy الذي كان يفصل الاعتماد عن إنشاء المستند. |
+| `src/server/commercialCommitmentRepository.ts` | `approveAndReleaseQuotation` و`decorateSalesOrdersForDisplay` | نفس مسار الاعتماد، وإرجاع projectName وsalesAgent وgrandTotal محسوبًا من الـ inquiry بدون أعمدة جديدة. |
+| `src/server/commercialRepository.ts` `cancelInquiry` | إلغاء أوامر البيع المرتبطة عند إلغاء الـ inquiry | شاشة Sales Orders لازم تعرض Canceled بعد Cancel Inquiry. |
+| `src/server/commercialRoutes.ts` `GET /api/inquiries/:id` | ربط customerId بكود العميل عندما يكون customerMasterId فارغًا قبل تحميل موانئ التسليم | قائمة Destination Port كانت فاضية عندما الـ inquiry لا يحمل customerMasterId. |
+| `src/server/inquiryExportService.ts` | شيتان `Commercial_Totals` و`Container_Study` | تصدير الـ inquiry لازم يشمل Grand Total ودراسة الحاوية مع الهيدر والخطوط والبراميل. |
 | `src/components/internal/AdministrationHub.tsx` | حارس `token` ودوال `useEffect` وتمرير `readAccessToken()` ديناميكياً | منع حدوث استدعاءات غير مصرح بها (`401`) عند التحميل الأولي للواجهة قبل اكتمال استعادة الجلسة في `AuthContext`، وضمان تمرير التوكن الحي مع كافة طلبات إدارة المستخدمين والأدوار. |
 | `vite.config.ts` | تصحيح الـ Regex لمسار البروكسي: `^/api/(auth\|admin/(users\|roles\|...))(\\?\|/\|$)` | إضافة دعم للـ Query Parameters (`?`). في السابق كان النمط `($\|/)` يسقط أي استدعاء يحوي معاملات استعلام (مثل `/api/admin/users?sort=createdAt`) ليتجه إلى خادم Express القديم بدلاً من NestJS. |
 | `src/server/masterDataRoutes.ts:350` | تغليف `row.content` بـ `Buffer.from(row.content)` عند إرسال المرفقات الثنائية | تصحيح خلل في Express 4؛ حيث أن كائن `row.content` المسترجع من Prisma هو `Uint8Array` وليس Node.js `Buffer`. عدم التغليف جعل Express يعامله ككائن عادي ويسلسله بصيغة JSON (`{"0":197,"1":170,...}`) بحجم 70MB بدلاً من إرسال البايتات الثنائية الخام بحجم 5MB. |

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { DomainError } from '../platform/errors/domainError';
 import { resolveRequestActor } from './auth';
-import { listApprovedShipmentMasters } from './shippingCostRepository';
+import { listApprovedShipmentMasters, resolveShipmentCustomerMasterId } from './shippingCostRepository';
 import { exportInquiryExcel } from './inquiryExportService';
 import { sendExcelResponse } from './excelWorkbook';
 import {
@@ -254,7 +254,11 @@ inquiriesRouter.get('/:id', async (req, res) => {
       }>,
     };
     try {
-      shipmentMasters = await listApprovedShipmentMasters(inquiry.customerMasterId);
+      const shipmentCustomerId = await resolveShipmentCustomerMasterId({
+        customerMasterId: inquiry.customerMasterId,
+        customerId: inquiry.customerId,
+      });
+      shipmentMasters = await listApprovedShipmentMasters(shipmentCustomerId);
     } catch {
       shipmentMasters = { destinationPorts: [], incoterms: [], combinations: [] };
     }

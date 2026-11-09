@@ -141,11 +141,20 @@ export const CustomerQuotationView: React.FC<CustomerQuotationViewProps> = ({
               <p>{new Date(view.validUntil).toLocaleDateString()}</p>
             </div>
           )}
-          {view.sellingPrice != null && (
+          {(offer?.inquiryTotal != null || view.sellingPrice != null) && (
             <div>
-              <p className="text-xs text-slate-500">Total offer value</p>
-              <p className="font-mono font-bold text-brand-800">
-                {Number(view.sellingPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              <p className="text-xs text-slate-500">Grand Total</p>
+              <p className="font-mono font-bold text-brand-800 whitespace-nowrap">
+                {(() => {
+                  const fromOffer = Number(String(offer?.inquiryTotal ?? '').replace(/,/g, ''));
+                  const amount = Number.isFinite(fromOffer) && offer?.inquiryTotal
+                    ? fromOffer
+                    : Number(view.sellingPrice);
+                  return `${amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} ${offer?.currency || ''}`.trim();
+                })()}
               </p>
             </div>
           )}

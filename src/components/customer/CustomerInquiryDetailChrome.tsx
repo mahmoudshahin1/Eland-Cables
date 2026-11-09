@@ -5,13 +5,19 @@ import {
   Bot,
   Calculator,
   ClipboardList,
+  Download,
+  Eye,
+  FileText,
   Headphones,
   Layers,
+  LayoutDashboard,
+  Printer,
   Ruler,
   Save,
   UserRound,
   Ship,
   Sparkles,
+  XCircle,
 } from 'lucide-react';
 import { CUSTOMER_HOME_PATH, CUSTOMER_INQUIRIES_PATH, customerPathForTab } from '../../app/shellRoutes';
 import { Badge, Drawer } from '../ui';
@@ -128,6 +134,77 @@ export function CustomerInquiryPrimaryActions({
         </button>
       )}
       {extra}
+    </div>
+  );
+}
+
+const customerToolButtonClass =
+  'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50';
+
+export function CustomerInquiryActionToolbar({
+  showDiscard,
+  showCancel,
+  onOverview,
+  onQuotation,
+  onPrintSummary,
+  onPrintTechnical,
+  onExport,
+  onFieldVisibility,
+  onDiscard,
+  onCancel,
+}: {
+  showDiscard: boolean;
+  showCancel: boolean;
+  onOverview: () => void;
+  onQuotation: () => void;
+  onPrintSummary: () => void;
+  onPrintTechnical: () => void;
+  onExport: () => void;
+  onFieldVisibility: () => void;
+  onDiscard: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button type="button" onClick={onOverview} className={customerToolButtonClass}>
+        <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
+        Overview
+      </button>
+      <button type="button" onClick={onQuotation} className={customerToolButtonClass}>
+        <FileText className="h-3.5 w-3.5 text-slate-500" />
+        Quotation
+      </button>
+      <button type="button" onClick={onPrintSummary} className={customerToolButtonClass}>
+        <Printer className="h-3.5 w-3.5 text-slate-500" />
+        Print inquiry summary
+      </button>
+      <button type="button" onClick={onPrintTechnical} className={customerToolButtonClass}>
+        <Printer className="h-3.5 w-3.5 text-slate-500" />
+        Print technical offer
+      </button>
+      <button type="button" onClick={onExport} className={customerToolButtonClass}>
+        <Download className="h-3.5 w-3.5 text-slate-500" />
+        Export Data
+      </button>
+      <button type="button" onClick={onFieldVisibility} className={customerToolButtonClass}>
+        <Eye className="h-3.5 w-3.5 text-slate-500" />
+        Field Visibility
+      </button>
+      {showDiscard && (
+        <button type="button" onClick={onDiscard} className={customerToolButtonClass}>
+          Discard
+        </button>
+      )}
+      {showCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+        >
+          <XCircle className="h-3.5 w-3.5" />
+          Cancel Inquiry
+        </button>
+      )}
     </div>
   );
 }
@@ -325,7 +402,7 @@ export function CustomerInquiryFooterKpis({
     <div
       className={`grid gap-2.5 ${
         showFreightBreakdown
-          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6'
+          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-[minmax(80px,0.6fr)_minmax(80px,0.6fr)_minmax(110px,0.9fr)_minmax(180px,1.4fr)_minmax(150px,1.1fr)_minmax(200px,1.5fr)]'
           : 'grid-cols-2 xl:grid-cols-4'
       }`}
     >
@@ -342,17 +419,17 @@ export function CustomerInquiryFooterKpis({
               <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${card.wrap}`}>
                 <Icon className="h-4 w-4" />
               </span>
-              <span className={`text-[12px] font-medium truncate ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
+              <span className={`text-[12px] font-medium leading-tight ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
                 {card.label}
               </span>
             </div>
-            <p className={`mt-2 text-[20px] leading-tight font-bold tabular-nums truncate ${
+            <p className={`mt-2 text-[18px] leading-tight font-bold tabular-nums whitespace-nowrap ${
               card.isGrandTotal ? 'text-emerald-900 font-black' : 'text-brand-800'
             }`}>
               {card.value}
             </p>
             {card.helper ? (
-              <p className={`mt-1 text-[10px] truncate ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+              <p className={`mt-1 text-[10px] break-words ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
                 {card.helper}
               </p>
             ) : null}
