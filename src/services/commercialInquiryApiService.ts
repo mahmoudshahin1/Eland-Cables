@@ -129,6 +129,21 @@ export async function fetchCommercialInquiries(
   return httpClient.get<InquiryListResponse>(`/api/inquiries?${params.toString()}`, { token });
 }
 
+export interface MarketMetalCashQuote {
+  id: string;
+  quoteDate: string;
+  cashAsk: number;
+}
+
+/** Published cash ask for one metal price date. Missing metals are null. */
+export async function fetchMarketMetalQuotesForDate(token: string, date: string) {
+  const params = new URLSearchParams({ date });
+  return httpClient.get<{ copper: MarketMetalCashQuote | null; aluminium: MarketMetalCashQuote | null }>(
+    `/api/inquiries/market-metal-quotes?${params.toString()}`,
+    { token }
+  );
+}
+
 /** Customer-scoped commercial quotation list from GET /api/quotations. */
 export interface CommercialQuotationListDto {
   id: string;

@@ -13,18 +13,20 @@ import {
   Truck,
   User,
 } from 'lucide-react';
-import { CommercialInquiryDto, formatInquiryStatus } from '../../services/commercialInquiryApiService';
+import { CommercialInquiryDto, fetchMarketMetalQuotesForDate, formatInquiryStatus } from '../../services/commercialInquiryApiService';
 import {
   applyInquiryCurrencyChange,
+  applyPublishedMetalQuotesToForm,
   applySelectedDeliveryCombination,
   CURRENCY_OPTIONS,
   InquiryHeaderFormState,
   metalPriceSourceLabel,
+  metalRateEditPatch,
   ORGANIZATION_OPTIONS,
   PAYMENT_TERM_OPTIONS,
-  resolveMetalPriceSourceForEdit,
   TRANSACTION_TYPE_OPTIONS,
 } from '../../services/inquiryHeaderFormService';
+import { useAuth } from '../../context/AuthContext';
 import { CUSTOMER_PROFILE_PATH } from '../../app/shellRoutes';
 import { CUSTOMER_PRICE_BASIS_OPTIONS } from '../customer/customerInquiryDetailPresentation';
 import { InquiryFieldDefinition } from '../../services/inquiryFieldManifest';
@@ -75,7 +77,7 @@ const inputClass =
 const readOnlyClass =
   'w-full rounded-lg border border-slate-200 px-3 py-2 bg-slate-50 text-xs font-medium text-slate-700 select-all';
 const metalInputClass =
-  'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 font-semibold outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
+  'w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 font-semibold outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
 const uomFixedClass =
   'shrink-0 rounded-lg border border-slate-200 px-2.5 py-2 text-center text-xs font-semibold bg-slate-100 text-slate-600';
 
@@ -113,6 +115,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   onReturnToContainerStudy,
   customerProfile,
 }) => {
+  const { jwtToken } = useAuth();
+  const formRef = useRef(form);
+  formRef.current = form;
+  const requestedMetalDate = useRef('');
   const [headerExpanded, setHeaderExpanded] = useState(true);
   const [remarksExpanded, setRemarksExpanded] = useState(false);
   const show = (id: string) => isVisible(visibleFields, id);
@@ -156,6 +162,22 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   const destinationCountryLabel = selectedDeliveryCombo?.countryLabel || '';
   const deliveryFocused = Boolean(showReturnToContainerStudy);
   const defaultedDeliveryFor = useRef<string | null>(null);
+
+  const onMetalPriceDateChange = (value: string) => {
+    requestedMetalDate.current = value;
+    onChange({ metalPriceDate: value });
+    if (!isEditable || !jwtToken || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+    void fetchMarketMetalQuotesForDate(jwtToken, value)
+      .then((quotes) => {
+        if (requestedMetalDate.current !== value) return;
+        const patch = applyPublishedMetalQuotesToForm(formRef.current, {
+          copper: quotes.copper ? { ...quotes.copper, threeMonthAsk: null } : null,
+          aluminium: quotes.aluminium ? { ...quotes.aluminium, threeMonthAsk: null } : null,
+        });
+        if (Object.keys(patch).length > 0) onChange(patch);
+      })
+      .catch(() => undefined);
+  };
 
   useEffect(() => {
     if (!isEditable) return;
@@ -492,14 +514,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         required
                         value={form.copperPriceRate}
                         onChange={(e) =>
-                          onChange({
-                            copperPriceRate: e.target.value,
-                            copperPriceUom: 'USD/MT',
-                            copperPriceSource: resolveMetalPriceSourceForEdit(
-                              e.target.value,
-                              form.originalSystemDefaultCopperRate
-                            ),
-                          })
+                          onChange(metalRateEditPatch('copper', e.target.value, form.originalSystemDefaultCopperRate))
                         }
                         className={metalInputClass}
                       />
@@ -545,14 +560,9 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         required
                         value={form.aluminiumPriceRate}
                         onChange={(e) =>
-                          onChange({
-                            aluminiumPriceRate: e.target.value,
-                            aluminiumPriceUom: 'USD/MT',
-                            aluminiumPriceSource: resolveMetalPriceSourceForEdit(
-                              e.target.value,
-                              form.originalSystemDefaultAluminiumRate
-                            ),
-                          })
+                          onChange(
+                            metalRateEditPatch('aluminium', e.target.value, form.originalSystemDefaultAluminiumRate)
+                          )
                         }
                         className={metalInputClass}
                       />
@@ -1174,14 +1184,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           min="0"
                           value={form.copperPriceRate}
                           onChange={(e) =>
-                            onChange({
-                              copperPriceRate: e.target.value,
-                              copperPriceUom: 'USD/MT',
-                              copperPriceSource: resolveMetalPriceSourceForEdit(
-                                e.target.value,
-                                form.originalSystemDefaultCopperRate
-                              ),
-                            })
+                            onChange(metalRateEditPatch('copper', e.target.value, form.originalSystemDefaultCopperRate))
                           }
                           className={metalInputClass}
                         />
@@ -1199,14 +1202,9 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           min="0"
                           value={form.aluminiumPriceRate}
                           onChange={(e) =>
-                            onChange({
-                              aluminiumPriceRate: e.target.value,
-                              aluminiumPriceUom: 'USD/MT',
-                              aluminiumPriceSource: resolveMetalPriceSourceForEdit(
-                                e.target.value,
-                                form.originalSystemDefaultAluminiumRate
-                              ),
-                            })
+                            onChange(
+                              metalRateEditPatch('aluminium', e.target.value, form.originalSystemDefaultAluminiumRate)
+                            )
                           }
                           className={metalInputClass}
                         />
@@ -1220,7 +1218,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       <input
                         type="date"
                         value={form.metalPriceDate}
-                        onChange={(e) => onChange({ metalPriceDate: e.target.value })}
+                        onChange={(e) => onMetalPriceDateChange(e.target.value)}
                         className={inputClass}
                       />
                     ) : (

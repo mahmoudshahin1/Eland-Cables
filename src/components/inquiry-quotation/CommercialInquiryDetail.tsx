@@ -1511,6 +1511,14 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <h1 className="text-xl sm:text-2xl font-black text-brand-800 tracking-tight font-display">
                 Commercial Inquiry / {inquiryDisplayRef(inquiry)} - V{inquiry.versionNo || 1}
               </h1>
+              {commercialTotals.grandTotal != null && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Grand Total</p>
+                  <p className="text-sm font-black tabular-nums text-emerald-900">
+                    {formatCommercialMoney(commercialTotals.grandTotal)}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
               <span className="font-mono">{inquiry.inquiryNumber}</span>

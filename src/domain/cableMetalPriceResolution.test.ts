@@ -6,6 +6,7 @@ import {
   metalHeaderPatchFromPublished,
   resolveInquiryMetalPricingForCosting,
   selectPublishedCableQuotes,
+  selectPublishedCableQuotesForDate,
   type CableMetalPriceCandidate,
   type PublishedCableMetalQuote,
 } from './cableMetalPriceResolution';
@@ -142,5 +143,34 @@ describe('cable metal price resolution', () => {
     assert.equal(resolved.aluminium, 'BLOCKED');
     assert.notEqual(resolved.pricing.copperPrice, 9000);
     assert.notEqual(resolved.pricing.copperPrice, 16675);
+  });
+
+  it('uses the published cash ask for the requested date and does not substitute another date', () => {
+    const rows: CableMetalPriceCandidate[] = [
+      { id: 'cu-current', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: true, quoteDate: '2026-09-10', cashAsk: 15000, threeMonthAsk: 14900 },
+      { id: 'cu-day', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-09-09', cashAsk: 14672, threeMonthAsk: 14632 },
+      { id: 'al-day', code: 'ALUMINIUM', costingUsage: 'CABLE_ALUMINIUM', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-09-09', cashAsk: 3352, threeMonthAsk: 3338 },
+      { id: 'cu-draft', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'IN_REVIEW', isCurrent: false, quoteDate: '2026-09-09', cashAsk: 1, threeMonthAsk: 1 },
+    ];
+    const matched = selectPublishedCableQuotesForDate(rows, '2026-09-09');
+    assert.equal(matched.copper?.id, 'cu-day');
+    assert.equal(matched.copper?.cashAsk, 14672);
+    assert.notEqual(matched.copper?.cashAsk, 14632);
+    assert.equal(matched.aluminium?.id, 'al-day');
+    const missing = selectPublishedCableQuotesForDate(rows, '2026-01-01');
+    assert.equal(missing.copper, null);
+    assert.equal(missing.aluminium, null);
+    const oneMetal = metalHeaderPatchFromPublished(
+      { aluminiumPriceRate: 3000 },
+      selectPublishedCableQuotesForDate(rows, '2026-09-09')
+    );
+    assert.equal(oneMetal.copperPriceRate, 14672);
+    assert.equal('aluminiumPriceRate' in oneMetal, false);
+    const manual = metalHeaderPatchFromPublished(
+      { copperPriceRate: 11111, aluminiumPriceRate: 2222 },
+      matched
+    );
+    assert.equal('copperPriceRate' in manual, false);
+    assert.equal('aluminiumPriceRate' in manual, false);
   });
 });

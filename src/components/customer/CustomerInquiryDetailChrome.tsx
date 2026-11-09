@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Banknote,
@@ -10,6 +10,7 @@ import {
   FileText,
   Headphones,
   Layers,
+  ChevronDown,
   LayoutDashboard,
   Printer,
   Ruler,
@@ -164,47 +165,90 @@ export function CustomerInquiryActionToolbar({
   onDiscard: () => void;
   onCancel: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const choose = (action: () => void) => {
+    setOpen(false);
+    action();
+  };
+
+  const itemClass = 'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] font-semibold text-slate-700 hover:bg-slate-50';
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button type="button" onClick={onOverview} className={customerToolButtonClass}>
         <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
         Overview
       </button>
-      <button type="button" onClick={onQuotation} className={customerToolButtonClass}>
-        <FileText className="h-3.5 w-3.5 text-slate-500" />
-        Quotation
-      </button>
-      <button type="button" onClick={onPrintSummary} className={customerToolButtonClass}>
-        <Printer className="h-3.5 w-3.5 text-slate-500" />
-        Print inquiry summary
-      </button>
-      <button type="button" onClick={onPrintTechnical} className={customerToolButtonClass}>
-        <Printer className="h-3.5 w-3.5 text-slate-500" />
-        Print technical offer
-      </button>
-      <button type="button" onClick={onExport} className={customerToolButtonClass}>
-        <Download className="h-3.5 w-3.5 text-slate-500" />
-        Export Data
-      </button>
-      <button type="button" onClick={onFieldVisibility} className={customerToolButtonClass}>
-        <Eye className="h-3.5 w-3.5 text-slate-500" />
-        Field Visibility
-      </button>
-      {showDiscard && (
-        <button type="button" onClick={onDiscard} className={customerToolButtonClass}>
-          Discard
-        </button>
-      )}
-      {showCancel && (
+      <div className="relative" ref={menuRef}>
         <button
           type="button"
-          onClick={onCancel}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+          onClick={() => setOpen((value) => !value)}
+          className={customerToolButtonClass}
+          aria-expanded={open}
+          aria-haspopup="menu"
         >
-          <XCircle className="h-3.5 w-3.5" />
-          Cancel Inquiry
+          Actions
+          <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
         </button>
-      )}
+        {open && (
+          <div role="menu" className="absolute right-0 z-30 mt-1 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onQuotation)}>
+              <FileText className="h-3.5 w-3.5 text-slate-500" />
+              Quotation
+            </button>
+            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onPrintSummary)}>
+              <Printer className="h-3.5 w-3.5 text-slate-500" />
+              Print inquiry summary
+            </button>
+            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onPrintTechnical)}>
+              <Printer className="h-3.5 w-3.5 text-slate-500" />
+              Print technical offer
+            </button>
+            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onExport)}>
+              <Download className="h-3.5 w-3.5 text-slate-500" />
+              Export Data
+            </button>
+            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onFieldVisibility)}>
+              <Eye className="h-3.5 w-3.5 text-slate-500" />
+              Field Visibility
+            </button>
+            {showDiscard && (
+              <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onDiscard)}>
+                Discard
+              </button>
+            )}
+            {showCancel && (
+              <button
+                type="button"
+                role="menuitem"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] font-semibold text-red-700 hover:bg-red-50"
+                onClick={() => choose(onCancel)}
+              >
+                <XCircle className="h-3.5 w-3.5" />
+                Cancel Inquiry
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

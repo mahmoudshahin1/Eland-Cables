@@ -10,7 +10,7 @@ import {
   floorToNearest10,
 } from '../../domain/drumCapacityCalculator';
 import { DrumMasterSelect } from './DrumMasterSelect';
-import { DrumDimensionTable } from './DrumDimensionTable';
+import { DrumDimensionTable, drumMaterialLabel } from './DrumDimensionTable';
 
 export interface DrumScheduleRow {
   id: string;
@@ -338,7 +338,10 @@ export function DrumCuttingScheduleTable({
                       }
                     />
                     {master && (
-                      <div className="mt-2 overflow-x-auto">
+                      <div className="mt-2 overflow-x-auto space-y-1">
+                        <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                          Material: {drumMaterialLabel(master)}
+                        </p>
                         <DrumDimensionTable drum={master} />
                       </div>
                     )}

@@ -8,6 +8,7 @@ import {
   INCOTERMS_REQUIRED,
   LINES_REQUIRED,
   applyInquiryCurrencyChange,
+  applyPublishedMetalQuotesToForm,
   applySelectedDeliveryCombination,
   buildHeaderFormFromInquiry,
   buildUpdatePayloadFromForm,
@@ -269,5 +270,21 @@ describe('inquiry header form — incoterms, destination, metal rates', () => {
     assert.equal(patch.aluminiumPriceRate, '');
     assert.equal(patch.rawMaterialCurrency, 'EUR');
     assert.equal(patch.copperPriceUom, 'USD/MT');
+    assert.equal(patch.copperMarketPriceId, '');
+    assert.equal(patch.aluminiumMarketPriceId, '');
+  });
+
+  it('fills only an empty metal rate from the published cash ask for that date', () => {
+    const form = buildHeaderFormFromInquiry(inquiry({ currency: 'USD', commercialMetadata: { copperPriceRate: 11111 } }));
+    const patch = applyPublishedMetalQuotesToForm(form, {
+      copper: { id: 'cu-1', quoteDate: '2026-09-09', cashAsk: 14672, threeMonthAsk: 14632 },
+      aluminium: { id: 'al-1', quoteDate: '2026-09-09', cashAsk: 3352, threeMonthAsk: 3338 },
+    });
+    assert.equal(patch.copperPriceRate, undefined);
+    assert.equal(patch.aluminiumPriceRate, '3352');
+    assert.equal(patch.aluminiumPriceUom, 'USD/MT');
+    assert.equal(patch.aluminiumPriceSource, '');
+    assert.equal(patch.aluminiumMarketPriceId, 'al-1');
+    assert.equal(patch.aluminiumMarketQuoteDate, '2026-09-09');
   });
 });
