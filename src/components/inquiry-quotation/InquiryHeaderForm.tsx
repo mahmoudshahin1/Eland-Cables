@@ -18,9 +18,9 @@ import {
   applyInquiryCurrencyChange,
   applyPublishedMetalQuotesToForm,
   applySelectedDeliveryCombination,
+  metalPriceFieldNote,
   CURRENCY_OPTIONS,
   InquiryHeaderFormState,
-  metalPriceSourceLabel,
   metalRateEditPatch,
   ORGANIZATION_OPTIONS,
   PAYMENT_TERM_OPTIONS,
@@ -177,6 +177,48 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
         if (Object.keys(patch).length > 0) onChange(patch);
       })
       .catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (!isEditable || !jwtToken) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.metalPriceDate)) return;
+    if (form.copperPriceRate && form.aluminiumPriceRate) return;
+    const key = `${inquiry.id}|${form.metalPriceDate}|${form.copperPriceRate}|${form.aluminiumPriceRate}`;
+    if (requestedMetalDate.current === `loaded:${key}`) return;
+    requestedMetalDate.current = `loaded:${key}`;
+    void fetchMarketMetalQuotesForDate(jwtToken, form.metalPriceDate)
+      .then((quotes) => {
+        if (requestedMetalDate.current !== `loaded:${key}`) return;
+        const patch = applyPublishedMetalQuotesToForm(formRef.current, {
+          copper: quotes.copper ? { ...quotes.copper, threeMonthAsk: null } : null,
+          aluminium: quotes.aluminium ? { ...quotes.aluminium, threeMonthAsk: null } : null,
+        });
+        if (Object.keys(patch).length > 0) onChange(patch);
+      })
+      .catch(() => undefined);
+  }, [
+    form.aluminiumPriceRate,
+    form.copperPriceRate,
+    form.metalPriceDate,
+    inquiry.id,
+    isEditable,
+    jwtToken,
+    onChange,
+  ]);
+
+  const metalNote = (metal: 'copper' | 'aluminium') => {
+    const note = metalPriceFieldNote(form, metal);
+    return (
+      <div
+        className={
+          note.tone === 'warn'
+            ? 'text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200'
+            : 'text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200'
+        }
+      >
+        {note.text}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -418,8 +460,6 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
     if (!hasAny) return null;
 
-    const copperSource = metalPriceSourceLabel(form.copperPriceSource);
-    const aluminiumSource = metalPriceSourceLabel(form.aluminiumPriceSource);
 
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04)] flex flex-col justify-between">
@@ -498,11 +538,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
             {show('copperPriceRate') && (
               <HeaderField
-                label={
-                  <>
-                    Copper Price <span className="text-red-500">*</span>
-                  </>
-                }
+                label="Copper Price"
               >
                 {isEditable ? (
                   <div className="space-y-1">
@@ -511,7 +547,6 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="number"
                         step="any"
                         min="0"
-                        required
                         value={form.copperPriceRate}
                         onChange={(e) =>
                           onChange(metalRateEditPatch('copper', e.target.value, form.originalSystemDefaultCopperRate))
@@ -520,23 +555,14 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       />
                       <span className={uomFixedClass}>USD/MT</span>
                     </div>
-                    {copperSource && (
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>Source: {copperSource}</span>
-                      </div>
-                    )}
+                    {metalNote('copper')}
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <div className={readOnlyClass}>
                       {form.copperPriceRate ? `${form.copperPriceRate} USD/MT` : '—'}
                     </div>
-                    {copperSource && (
-                      <div className="text-[10px] text-slate-500 font-medium">
-                        Source: {copperSource}
-                      </div>
-                    )}
+                    {metalNote('copper')}
                   </div>
                 )}
               </HeaderField>
@@ -544,11 +570,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
             {show('aluminiumPriceRate') && (
               <HeaderField
-                label={
-                  <>
-                    Aluminium Price <span className="text-red-500">*</span>
-                  </>
-                }
+                label="Aluminium Price"
               >
                 {isEditable ? (
                   <div className="space-y-1">
@@ -557,7 +579,6 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="number"
                         step="any"
                         min="0"
-                        required
                         value={form.aluminiumPriceRate}
                         onChange={(e) =>
                           onChange(
@@ -568,23 +589,14 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       />
                       <span className={uomFixedClass}>USD/MT</span>
                     </div>
-                    {aluminiumSource && (
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>Source: {aluminiumSource}</span>
-                      </div>
-                    )}
+                    {metalNote('aluminium')}
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <div className={readOnlyClass}>
                       {form.aluminiumPriceRate ? `${form.aluminiumPriceRate} USD/MT` : '—'}
                     </div>
-                    {aluminiumSource && (
-                      <div className="text-[10px] text-slate-500 font-medium">
-                        Source: {aluminiumSource}
-                      </div>
-                    )}
+                    {metalNote('aluminium')}
                   </div>
                 )}
               </HeaderField>
@@ -1191,6 +1203,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       ) : (
                         <div className={readOnlyClass}>{form.copperPriceRate || '—'}</div>
                       )}
+                      <div className="mt-1">{metalNote('copper')}</div>
                     </HeaderField>
                   )}
                   {show('aluminiumPriceRate') && (
@@ -1211,6 +1224,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       ) : (
                         <div className={readOnlyClass}>{form.aluminiumPriceRate || '—'}</div>
                       )}
+                      <div className="mt-1">{metalNote('aluminium')}</div>
                     </HeaderField>
                   )}
                   <HeaderField label="Metal Price Date" className="sm:col-span-2">

@@ -86,6 +86,36 @@ describe('InquiryAutomaticProcessingPanel', () => {
     assert.doesNotMatch(html, /QT-26-00001/);
   });
 
+  it('keeps engineering moving and marks pricing incomplete when a metal price is missing', () => {
+    const pending: VipCalculateResultDto = {
+      ...blocked,
+      status: 'PARTIAL',
+      blockingReasons: [],
+      gates: [
+        {
+          gate: 'HEADER_COMMERCIAL_CONFIG',
+          status: 'WARN',
+          message: 'Copper Price is missing for 2026-11-08. Pricing stays incomplete until a published cash ask is available.',
+          code: 'COPPER_PRICE_REQUIRED',
+        },
+        {
+          gate: 'CONFIGURATION_SNAPSHOT',
+          status: 'PASS',
+          message: 'Line 1: approved catalog cable.',
+        },
+      ],
+    };
+    const html = renderToStaticMarkup(
+      React.createElement(InquiryAutomaticProcessingPanel, { result: pending, customerSafe: true })
+    );
+    assert.match(html, /Cable configuration, cutting plan, and drum plan were validated/);
+    assert.match(html, /Copper Price is missing for 2026-11-08/);
+    assert.match(html, /Pricing is incomplete/);
+    assert.match(html, /Waiting for the missing metal price/);
+    assert.doesNotMatch(html, /Header commercial config incomplete/);
+    assert.doesNotMatch(html, /125000/);
+  });
+
   it('does not present quotation success when the financial offer snapshot is missing', () => {
     const html = renderToStaticMarkup(
       React.createElement(InquiryAutomaticProcessingPanel, {

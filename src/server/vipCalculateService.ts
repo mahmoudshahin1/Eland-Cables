@@ -21,6 +21,7 @@ import { isV2InquiryMetadata } from '../domain/v2InquiryWorkflow';
 import {
   appendCostingGateResults,
   evaluateVipInquiryReadiness,
+  isMetalPriceGapCode,
   type VipCalculateGateResult,
   type VipLineReadinessInput,
 } from '../domain/vipCalculateReadiness';
@@ -235,6 +236,34 @@ export async function calculateInquiry(
     currency: inquiry.currency,
   });
   let optionalWarnings = optionalComponents.filter((c) => c.hasWarning).map((c) => c.warningMessage || c.reasonCode);
+
+  const metalPriceWarnings = readiness.gates.filter((gate) => gate.status === 'WARN' && isMetalPriceGapCode(gate.code));
+  if (readiness.ready && metalPriceWarnings.length > 0) {
+    await appendServerAudit({
+      actorId: actor.id,
+      actorName: actor.name || actor.email,
+      entity: 'CommercialInquiry',
+      entityId: inquiry.inquiryNumber,
+      action: 'VIP_CALCULATE_PRICE_PENDING',
+      newValue: { gates: readiness.gates, warnings: metalPriceWarnings.map((gate) => gate.message) },
+      message: `VIP calculate left pricing incomplete for ${inquiry.inquiryNumber}`,
+    });
+
+    return {
+      status: 'PARTIAL',
+      inquiryId: inquiry.id,
+      inquiryNumber: inquiry.inquiryNumber,
+      gates: readiness.gates,
+      blockingReasons: [],
+      optionalComponents,
+      optionalWarnings: [...optionalWarnings, ...metalPriceWarnings.map((gate) => gate.message)],
+      lines: [],
+      quotation: null,
+      financialOffer: null,
+      decision5Status: DECISION5_STATUS,
+      idempotent: false,
+    };
+  }
 
   if (!readiness.ready) {
     await appendServerAudit({

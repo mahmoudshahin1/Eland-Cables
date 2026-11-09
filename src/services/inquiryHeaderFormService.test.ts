@@ -10,6 +10,8 @@ import {
   applyInquiryCurrencyChange,
   applyPublishedMetalQuotesToForm,
   applySelectedDeliveryCombination,
+  inquiryFinancialTotalReady,
+  metalPriceFieldNote,
   buildHeaderFormFromInquiry,
   buildUpdatePayloadFromForm,
   canShowInquiryCalculate,
@@ -286,5 +288,25 @@ describe('inquiry header form — incoterms, destination, metal rates', () => {
     assert.equal(patch.aluminiumPriceSource, '');
     assert.equal(patch.aluminiumMarketPriceId, 'al-1');
     assert.equal(patch.aluminiumMarketQuoteDate, '2026-09-09');
+    assert.equal(inquiryFinancialTotalReady(11111, undefined), false);
+    assert.equal(inquiryFinancialTotalReady(11111, 3352), true);
+  });
+
+  it('shows a published date when the rate came from the database and a warning when it is missing', () => {
+    const priced = buildHeaderFormFromInquiry(
+      inquiry({
+        commercialMetadata: {
+          copperPriceRate: 14672,
+          copperMarketPriceId: 'cu-1',
+          copperMarketQuoteDate: '2026-11-08',
+          metalPriceDate: '2026-11-08',
+        },
+      })
+    );
+    assert.equal(metalPriceFieldNote(priced, 'copper').text, 'Published LME cash ask · 2026-11-08');
+    assert.equal(metalPriceFieldNote(priced, 'aluminium').tone, 'warn');
+    assert.match(metalPriceFieldNote(priced, 'aluminium').text, /2026-11-08/);
+    const typed = { ...priced, copperPriceSource: 'INQUIRY_OVERRIDE', copperMarketPriceId: '', copperMarketQuoteDate: '' };
+    assert.equal(metalPriceFieldNote(typed, 'copper').text, 'Source: Inquiry Override');
   });
 });

@@ -400,6 +400,45 @@ export function metalRateEditPatch(
   };
 }
 
+export function metalPriceFieldNote(
+  form: Pick<
+    InquiryHeaderFormState,
+    | 'copperPriceRate'
+    | 'aluminiumPriceRate'
+    | 'copperPriceSource'
+    | 'aluminiumPriceSource'
+    | 'copperMarketPriceId'
+    | 'aluminiumMarketPriceId'
+    | 'copperMarketQuoteDate'
+    | 'aluminiumMarketQuoteDate'
+    | 'metalPriceDate'
+  >,
+  metal: 'copper' | 'aluminium'
+): { tone: 'ok' | 'warn'; text: string } {
+  const rate = metal === 'copper' ? form.copperPriceRate : form.aluminiumPriceRate;
+  const source = metal === 'copper' ? form.copperPriceSource : form.aluminiumPriceSource;
+  const marketId = metal === 'copper' ? form.copperMarketPriceId : form.aluminiumMarketPriceId;
+  const quoteDate = metal === 'copper' ? form.copperMarketQuoteDate : form.aluminiumMarketQuoteDate;
+  if (parsePositiveMetalRate(rate) != null) {
+    const labeled = metalPriceSourceLabel(source);
+    if (labeled) return { tone: 'ok', text: `Source: ${labeled}` };
+    if (marketId || quoteDate) {
+      return { tone: 'ok', text: `Published LME cash ask${quoteDate ? ` · ${quoteDate}` : ''}` };
+    }
+    return { tone: 'ok', text: 'USD/MT' };
+  }
+  const when = /^\d{4}-\d{2}-\d{2}$/.test(form.metalPriceDate) ? ` for ${form.metalPriceDate}` : '';
+  const label = metal === 'copper' ? 'Copper price' : 'Aluminium price';
+  return {
+    tone: 'warn',
+    text: `${label} is missing${when}. Pricing stays incomplete until a published cash ask is available.`,
+  };
+}
+
+export function inquiryFinancialTotalReady(copperPriceRate: unknown, aluminiumPriceRate: unknown): boolean {
+  return parsePositiveMetalRate(copperPriceRate) != null && parsePositiveMetalRate(aluminiumPriceRate) != null;
+}
+
 export function metalPriceSourceLabel(source: string): 'System Default' | 'Inquiry Override' | null {
   const token = String(source || '').trim().toUpperCase();
   if (token === 'SYSTEM_DEFAULT') return 'System Default';
