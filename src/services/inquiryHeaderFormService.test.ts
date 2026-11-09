@@ -11,6 +11,7 @@ import {
   applyPublishedMetalQuotesToForm,
   applySelectedDeliveryCombination,
   inquiryFinancialTotalReady,
+  internationalMetalPriceNotice,
   metalPriceFieldNote,
   buildHeaderFormFromInquiry,
   buildUpdatePayloadFromForm,
@@ -290,6 +291,18 @@ describe('inquiry header form — incoterms, destination, metal rates', () => {
     assert.equal(patch.aluminiumMarketQuoteDate, '2026-09-09');
     assert.equal(inquiryFinancialTotalReady(11111, undefined), false);
     assert.equal(inquiryFinancialTotalReady(11111, 3352), true);
+    assert.equal(inquiryFinancialTotalReady(11111, undefined, { copper: true, aluminium: false }), true);
+    assert.equal(inquiryFinancialTotalReady(undefined, 3352, { copper: false, aluminium: true }), true);
+    const copperOnly = applyPublishedMetalQuotesToForm(
+      form,
+      {
+        copper: { id: 'cu-1', quoteDate: '2026-09-09', cashAsk: 14672, threeMonthAsk: 14632 },
+        aluminium: { id: 'al-1', quoteDate: '2026-09-09', cashAsk: 3352, threeMonthAsk: 3338 },
+      },
+      { copper: true, aluminium: false }
+    );
+    assert.equal(copperOnly.copperPriceRate, undefined);
+    assert.equal(copperOnly.aluminiumPriceRate, undefined);
   });
 
   it('shows a published date when the rate came from the database and a warning when it is missing', () => {
@@ -303,10 +316,41 @@ describe('inquiry header form — incoterms, destination, metal rates', () => {
         },
       })
     );
-    assert.equal(metalPriceFieldNote(priced, 'copper').text, 'Published LME cash ask · 2026-11-08');
+    assert.equal(metalPriceFieldNote(priced, 'copper').text, 'LME cash ask (international market price) - 2026-11-08');
     assert.equal(metalPriceFieldNote(priced, 'aluminium').tone, 'warn');
     assert.match(metalPriceFieldNote(priced, 'aluminium').text, /2026-11-08/);
+    assert.equal(metalPriceFieldNote(priced, 'aluminium', { required: false }).text, 'Not required for the selected cables.');
     const typed = { ...priced, copperPriceSource: 'INQUIRY_OVERRIDE', copperMarketPriceId: '', copperMarketQuoteDate: '' };
     assert.equal(metalPriceFieldNote(typed, 'copper').text, 'Source: Inquiry Override');
+    const latest = {
+      ...priced,
+      metalPriceDate: '2026-11-08',
+      copperMarketQuoteDate: '2026-11-05',
+    };
+    assert.match(metalPriceFieldNote(latest, 'copper').text, /latest available/);
+    assert.equal(
+      internationalMetalPriceNotice(priced, { copper: true, aluminium: false }),
+      'Metal prices are based on the LME international market price of 2026-11-08.'
+    );
+    assert.equal(internationalMetalPriceNotice(typed, { copper: true, aluminium: false }), null);
+    assert.match(internationalMetalPriceNotice(latest, { copper: true, aluminium: true }) || '', /latest available/);
+    assert.deepEqual(
+      collectInquirySubmitHeaderCodes({
+        copperPriceRate: 9500,
+        requiredMetals: { copper: true, aluminium: false },
+      }),
+      []
+    );
+    assert.deepEqual(
+      collectInquirySubmitMissingItems({
+        copperPriceRate: '',
+        aluminiumPriceRate: '',
+        deliveryDestination: 'Rotterdam',
+        incoterms: 'CIF',
+        lineCount: 1,
+        requiredMetals: { copper: false, aluminium: true },
+      }).map((item) => item.code),
+      [ALUMINIUM_PRICE_REQUIRED]
+    );
   });
 });

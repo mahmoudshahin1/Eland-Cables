@@ -49,7 +49,9 @@ import {
   InquiryHeaderFormState,
   InquirySubmitMissingItem,
   inquiryFinancialTotalReady,
+  internationalMetalPriceNotice,
 } from '../../services/inquiryHeaderFormService';
+import { requiredMetalsForLines } from '../../domain/inquiryRequiredMetals';
 import { suggestDrumPlan, validateCuttingLength } from '../../domain/drumPlanService';
 import { canEditLineTechnicalAttachments } from '../../domain/inquiryLineAttachments';
 import { SystemNotification } from '../../types';
@@ -579,6 +581,21 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
 
   const mappedLinesNeedingCalc = submitSummaryLines.filter((l) => l.hasMaterial && !l.calculated);
 
+  const requiredMetals = useMemo(
+    () =>
+      requiredMetalsForLines(
+        (inquiry?.lines || []).map((line) => ({
+          conductor: line.conductor,
+          cableDescription: line.cableDescription,
+        }))
+      ),
+    [inquiry?.lines]
+  );
+  const marketPriceNotice = useMemo(
+    () => (headerForm ? internationalMetalPriceNotice(headerForm, requiredMetals) : null),
+    [headerForm, requiredMetals]
+  );
+
   const submitMissingItemsFromForm = useMemo(() => {
     const meta = inquiry?.commercialMetadata || {};
     return collectInquirySubmitMissingItems({
@@ -589,8 +606,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       lineCount: inquiry?.lines?.length || 0,
       mappedLinesNeedingCalc,
       linesMissingTechnicalOffer: [], // Decision 5: SIGNED — catalog & VIP cables bypass Technical Office blockage
+      requiredMetals,
     });
-  }, [headerForm, inquiry, mappedLinesNeedingCalc]);
+  }, [headerForm, inquiry, mappedLinesNeedingCalc, requiredMetals]);
 
   const logisticsStatusLabel = useMemo(() => {
     const status =
@@ -804,7 +822,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       }
 
       try {
-        const vipRes = await calculateVipInquiry(jwtToken, inquiry.id);
+        const vipRes = await calculateVipInquiry(jwtToken, inquiry.id, { recalculate: true });
         setVipCalcResult(vipRes);
       } catch {
         try {
@@ -1130,7 +1148,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     setVipCalcResult(null);
     try {
       if (canCalculateInquiry(inquiry)) {
-        const result = await calculateVipInquiry(jwtToken, inquiry.id);
+        const result = await calculateVipInquiry(jwtToken, inquiry.id, { recalculate: true });
         setVipCalcResult(result);
         const refreshed = await fetchCommercialInquiry(jwtToken, inquiry.id);
         setInquiry(refreshed);
@@ -1521,7 +1539,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 Commercial Inquiry / {inquiryDisplayRef(inquiry)} - V{inquiry.versionNo || 1}
               </h1>
               {commercialTotals.grandTotal != null &&
-                inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate) && (
+                inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate, requiredMetals) && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Grand Total</p>
                   <p className="text-sm font-black tabular-nums text-emerald-900">
@@ -1619,6 +1637,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   result={vipCalcResult}
                   loading={costingLoading && isVipV2Inquiry}
                   customerSafe={isCustomer}
+                  marketNote={marketPriceNotice}
                   onViewQuotation={openQuotationTab}
                 />
               </div>
@@ -1784,6 +1803,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           result={vipCalcResult}
           loading={costingLoading && isVipV2Inquiry}
           customerSafe={isCustomer}
+          marketNote={marketPriceNotice}
           onViewQuotation={openQuotationTab}
         />
       ) : null}
@@ -2638,6 +2658,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             </div>
 
             {/* VIP Official Commercial Offer Document & Technical TDS */}
+            {marketPriceNotice ? <p className="text-xs text-slate-600">{marketPriceNotice}</p> : null}
             {(isVipV2Inquiry || inquiry.commercialMetadata?.inquiryProcessCode === 'VIP_FAST_TRACK') && (
               <VipCommercialOfferDocumentViewer
                 inquiry={inquiry}
@@ -2931,7 +2952,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     <div>
                       <span className="text-slate-400 block text-[11px]">Grand Total:</span>
                       <span className="font-bold text-base text-emerald-800 font-mono">
-                        {inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate) &&
+                        {inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate, requiredMetals) &&
                         commercialTotals.grandTotal != null
                           ? formatCommercialMoney(commercialTotals.grandTotal)
                           : 'Incomplete'}

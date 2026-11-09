@@ -108,6 +108,7 @@ export function InquiryAutomaticProcessingPanel(props: {
   result: VipCalculateResultDto | null;
   loading?: boolean;
   customerSafe?: boolean;
+  marketNote?: string | null;
   onViewQuotation?: () => void;
 }) {
   const stages = stageFromResult(props.result, Boolean(props.loading));
@@ -143,6 +144,7 @@ export function InquiryAutomaticProcessingPanel(props: {
           </li>
         ))}
       </ul>
+      {props.marketNote ? <p className="text-xs text-slate-600">{props.marketNote}</p> : null}
       {props.result?.status === 'COMPLETED' && props.result.quotation && props.result.financialOffer && props.onViewQuotation && (
         <button
           type="button"

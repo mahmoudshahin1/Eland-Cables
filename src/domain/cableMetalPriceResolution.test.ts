@@ -5,6 +5,7 @@ import { affectsCableCost } from './lmeOfficialPriceImport';
 import {
   metalHeaderPatchFromPublished,
   resolveInquiryMetalPricingForCosting,
+  selectLatestPublishedCableQuotes,
   selectPublishedCableQuotes,
   selectPublishedCableQuotesForDate,
   type CableMetalPriceCandidate,
@@ -172,5 +173,40 @@ describe('cable metal price resolution', () => {
     );
     assert.equal('copperPriceRate' in manual, false);
     assert.equal('aluminiumPriceRate' in manual, false);
+  });
+
+  it('uses the exact date, otherwise the newest published cash ask on or before it', () => {
+    const rows: CableMetalPriceCandidate[] = [
+      { id: 'cu-future', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: true, quoteDate: '2026-11-10', cashAsk: 16000, threeMonthAsk: 15900 },
+      { id: 'cu-exact', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-11-08', cashAsk: 14672, threeMonthAsk: 14632 },
+      { id: 'cu-older', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-11-01', cashAsk: 14000, threeMonthAsk: 13900 },
+      { id: 'al-older', code: 'ALUMINIUM', costingUsage: 'CABLE_ALUMINIUM', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-11-05', cashAsk: 3352, threeMonthAsk: 3338 },
+      { id: 'al-draft', code: 'ALUMINIUM', costingUsage: 'CABLE_ALUMINIUM', status: 'IN_REVIEW', isCurrent: false, quoteDate: '2026-11-08', cashAsk: 1, threeMonthAsk: 1 },
+      { id: 'cu-zero', code: 'COPPER', costingUsage: 'CABLE_COPPER', status: 'PUBLISHED', isCurrent: false, quoteDate: '2026-11-08', cashAsk: 0, threeMonthAsk: 1 },
+    ];
+    const exact = selectLatestPublishedCableQuotes(rows, '2026-11-08');
+    assert.equal(exact.copper?.id, 'cu-exact');
+    assert.equal(exact.copper?.cashAsk, 14672);
+    assert.notEqual(exact.copper?.cashAsk, 14632);
+    assert.equal(exact.aluminium?.id, 'al-older');
+    assert.equal(exact.aluminium?.quoteDate, '2026-11-05');
+    const olderOnly = selectLatestPublishedCableQuotes(
+      rows.filter((row) => row.id !== 'cu-exact' && row.id !== 'cu-zero'),
+      '2026-11-08'
+    );
+    assert.equal(olderOnly.copper?.id, 'cu-older');
+    assert.notEqual(olderOnly.copper?.id, 'cu-future');
+    const none = selectLatestPublishedCableQuotes([], '2026-11-08');
+    assert.equal(none.copper, null);
+    assert.equal(none.aluminium, null);
+    const manual = metalHeaderPatchFromPublished(
+      { copperPriceRate: 11111, aluminiumPriceRate: 2222 },
+      exact
+    );
+    assert.equal('copperPriceRate' in manual, false);
+    assert.equal('aluminiumPriceRate' in manual, false);
+    const copperOnly = metalHeaderPatchFromPublished({}, exact, { copper: true, aluminium: false });
+    assert.equal(copperOnly.copperPriceRate, 14672);
+    assert.equal('aluminiumPriceRate' in copperOnly, false);
   });
 });

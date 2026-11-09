@@ -5,6 +5,7 @@
 
 import { DECISION5_STATUS } from './v2CostingRequestService';
 import { readMetalPriceDate } from './cableMetalPriceResolution';
+import { requiredMetalsForLines } from './inquiryRequiredMetals';
 import {
   ALUMINIUM_PRICE_REQUIRED,
   COPPER_PRICE_REQUIRED,
@@ -64,6 +65,8 @@ export interface VipLineReadinessInput {
     lifecycleStatus: string;
     validationStatus?: string | null;
   } | null;
+  conductor?: string | null;
+  cableDescription?: string | null;
 }
 
 export interface VipInquiryReadinessInput {
@@ -270,12 +273,19 @@ export function evaluateVipInquiryReadiness(input: VipInquiryReadinessInput): {
     };
   }
 
+  const requiredMetals = requiredMetalsForLines(
+    input.lines.map((line) => ({
+      conductor: line.conductor,
+      cableDescription: line.cableDescription,
+    }))
+  );
   const headerMissing = collectInquirySubmitMissingItems({
     copperPriceRate: input.copperPriceRate,
     aluminiumPriceRate: input.aluminiumPriceRate,
     deliveryDestination: input.deliveryDestination,
     incoterms: input.incoterms,
     lineCount: input.lines.length,
+    requiredMetals,
   }).filter((item) => item.code !== 'CALCULATION_REQUIRED' && item.code !== 'TECHNICAL_OFFER_REQUIRED');
   const metalDate = readMetalPriceDate(metadataRecord(input.commercialMetadata));
   const blockingHeader = headerMissing.filter((item) => !isMetalPriceGapCode(item.code));

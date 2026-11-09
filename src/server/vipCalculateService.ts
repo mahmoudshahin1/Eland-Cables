@@ -35,6 +35,7 @@ import { emitDomainEvent } from '../domain/domainEventBus';
 import { DECISION5_STATUS } from '../domain/v2CostingRequestService';
 import { isQuotationIssued } from '../domain/v2QuotationService';
 import { snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
+import { shouldSkipVipLineCosting } from '../domain/vipLineCostingRefresh';
 import { loadImportedCableCalculationEvidence } from './importedCableCalculationEvidence';
 import { executeCostingForInquiryLine } from './costingOrchestrationService';
 import { buildCostingRequestFromInquiryLine } from '../services/costingRequestService';
@@ -96,6 +97,17 @@ async function loadVipLineReadinessInputs(inquiryId: string, actor: RequestActor
   const inquiry = await loadV2InquiryScoped(inquiryId, actor);
   const prisma = requirePrisma();
   const lines: VipLineReadinessInput[] = [];
+  const materialNumbers = [
+    ...new Set(inquiry.lines.map((line) => line.materialNumber).filter((value): value is string => Boolean(value))),
+  ];
+  const conductorByMaterial = new Map<string, string | null>();
+  if (materialNumbers.length > 0) {
+    const cables = await prisma.cableMaster.findMany({
+      where: { materialNumber: { in: materialNumbers } },
+      select: { materialNumber: true, conductor: true },
+    });
+    for (const cable of cables) conductorByMaterial.set(cable.materialNumber, cable.conductor);
+  }
 
   for (const line of inquiry.lines) {
     const snapshot = line.v2CurrentSnapshotId
@@ -114,6 +126,8 @@ async function loadVipLineReadinessInputs(inquiryId: string, actor: RequestActor
       v2CurrentSnapshotId: line.v2CurrentSnapshotId,
       v2CurrentCuttingPlanId: line.v2CurrentCuttingPlanId,
       v2CurrentDrumPlanId: line.v2CurrentDrumPlanId,
+      conductor: line.materialNumber ? conductorByMaterial.get(line.materialNumber) ?? null : null,
+      cableDescription: line.cableDescription,
       importedCable: await loadImportedCableCalculationEvidence(line.materialNumber),
       configurationSnapshot: snapshot
         ? {
@@ -312,9 +326,7 @@ export async function calculateInquiry(
     const readinessLine = readinessLines.find((l) => l.lineId === line.id);
     if (!readinessLine) continue;
 
-    const skipCosting =
-      !options?.recalculate &&
-      Boolean(line.costingCalculationId && line.costingRunId);
+    const skipCosting = shouldSkipVipLineCosting(options?.recalculate, line);
 
     if (skipCosting) {
       lineOutcomes.push({

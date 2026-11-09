@@ -3,10 +3,12 @@ import { getPrisma } from './db';
 import {
   metalHeaderPatchFromPublished,
   readMetalPriceDate,
+  selectLatestPublishedCableQuotes,
   selectPublishedCableQuotes,
   selectPublishedCableQuotesForDate,
   type PublishedCableMetalQuotes,
 } from '../domain/cableMetalPriceResolution';
+import { requiredMetalsForLines, type RequiredInquiryMetals } from '../domain/inquiryRequiredMetals';
 import {
   ActiveMarketMetalDefault,
   MarketMetalPriceDefaultInput,
@@ -133,6 +135,35 @@ function utcQuoteDate(isoDate: string): Date {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
+/** Newest published cash ask on or before the date. Does not use a future quote. */
+export async function getPublishedCableMetalQuotesOnOrBefore(quoteDate: string): Promise<PublishedCableMetalQuotes> {
+  const day = quoteDate.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { copper: null, aluminium: null };
+  const prisma = requirePrisma();
+  const rows = await prisma.marketMetalPrice.findMany({
+    where: {
+      status: 'PUBLISHED',
+      quoteDate: { lte: utcQuoteDate(day) },
+      instrument: { costingUsage: { in: ['CABLE_COPPER', 'CABLE_ALUMINIUM'] } },
+    },
+    include: { instrument: { select: { code: true, costingUsage: true } } },
+    orderBy: [{ quoteDate: 'desc' }, { publishedAt: 'desc' }],
+  });
+  return selectLatestPublishedCableQuotes(
+    rows.map((row) => ({
+      id: row.id,
+      code: row.instrument.code,
+      costingUsage: row.instrument.costingUsage,
+      status: row.status,
+      isCurrent: row.isCurrent,
+      quoteDate: row.quoteDate.toISOString().slice(0, 10),
+      cashAsk: row.cashAsk == null ? null : Number(row.cashAsk),
+      threeMonthAsk: row.threeMonthAsk == null ? null : Number(row.threeMonthAsk),
+    })),
+    day
+  );
+}
+
 /** Published cash ask for one quote date. Does not fall back to the current row. */
 export async function getPublishedCableMetalQuotesForDate(quoteDate: string): Promise<PublishedCableMetalQuotes> {
   const day = quoteDate.trim().slice(0, 10);
@@ -162,10 +193,36 @@ export async function getPublishedCableMetalQuotesForDate(quoteDate: string): Pr
   );
 }
 
+/** Conductor on the cable master, otherwise the line description. */
+export async function requiredMetalsForStoredInquiry(inquiryId: string): Promise<RequiredInquiryMetals> {
+  const prisma = requirePrisma();
+  const lines = await prisma.commercialInquiryLine.findMany({
+    where: { inquiryId },
+    select: { materialNumber: true, cableDescription: true },
+  });
+  const materialNumbers = lines
+    .map((line) => line.materialNumber)
+    .filter((value): value is string => Boolean(value));
+  const cables = materialNumbers.length
+    ? await prisma.cableMaster.findMany({
+        where: { materialNumber: { in: materialNumbers } },
+        select: { materialNumber: true, conductor: true },
+      })
+    : [];
+  const conductorByMaterial = new Map(cables.map((cable) => [cable.materialNumber, cable.conductor]));
+  return requiredMetalsForLines(
+    lines.map((line) => ({
+      conductor: line.materialNumber ? conductorByMaterial.get(line.materialNumber) : null,
+      cableDescription: line.cableDescription,
+    }))
+  );
+}
+
 /**
- * Copies a published cash ask onto an inquiry header only where that metal rate is missing.
- * A metalPriceDate uses that date's published row. A blank date keeps the current published row.
- * A positive manual rate is left untouched. Does not touch costing runs or quotations.
+ * Copies a published cash ask onto an inquiry header only where a required metal rate is missing.
+ * A metalPriceDate uses that date, then the newest published cash ask on or before it.
+ * A blank date keeps the current published row. A positive manual rate is left untouched.
+ * Does not touch costing runs or quotations. Does not write zero.
  */
 export async function snapshotMissingInquiryMetalPrices(inquiryId: string): Promise<Record<string, unknown>> {
   const prisma = requirePrisma();
@@ -179,10 +236,11 @@ export async function snapshotMissingInquiryMetalPrices(inquiryId: string): Prom
       : {};
   if (!inquiry) return meta;
   const metalDate = readMetalPriceDate(meta);
-  const quotes = metalDate
-    ? await getPublishedCableMetalQuotesForDate(metalDate)
-    : await getPublishedCableMetalQuotes();
-  const patch = metalHeaderPatchFromPublished(meta, quotes);
+  const [quotes, required] = await Promise.all([
+    metalDate ? getPublishedCableMetalQuotesOnOrBefore(metalDate) : getPublishedCableMetalQuotes(),
+    requiredMetalsForStoredInquiry(inquiryId),
+  ]);
+  const patch = metalHeaderPatchFromPublished(meta, quotes, required);
   if (Object.keys(patch).length === 0) return meta;
   const next = { ...meta, ...patch };
   await prisma.commercialInquiry.update({

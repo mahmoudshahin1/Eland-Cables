@@ -41,6 +41,7 @@ import {
   formatDeliveryCombinationLabel,
   matchCustomerDestinationPort,
 } from '../../domain/customerDeliveryCombination';
+import { requiredMetalsForLines } from '../../domain/inquiryRequiredMetals';
 
 interface InquiryHeaderFormProps {
   form: InquiryHeaderFormState;
@@ -162,18 +163,44 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   const destinationCountryLabel = selectedDeliveryCombo?.countryLabel || '';
   const deliveryFocused = Boolean(showReturnToContainerStudy);
   const defaultedDeliveryFor = useRef<string | null>(null);
+  const requiredMetals = useMemo(
+    () =>
+      requiredMetalsForLines(
+        (inquiry.lines || []).map((line) => ({
+          conductor: line.conductor,
+          cableDescription: line.cableDescription,
+        }))
+      ),
+    [inquiry.lines]
+  );
+  const requiredMetalsRef = useRef(requiredMetals);
+  requiredMetalsRef.current = requiredMetals;
+
+  const publishedQuotePatch = (
+    quotes: {
+      copper: { id: string; quoteDate: string; cashAsk: number } | null;
+      aluminium: { id: string; quoteDate: string; cashAsk: number } | null;
+    }
+  ) =>
+    applyPublishedMetalQuotesToForm(
+      formRef.current,
+      {
+        copper: quotes.copper ? { ...quotes.copper, threeMonthAsk: null } : null,
+        aluminium: quotes.aluminium ? { ...quotes.aluminium, threeMonthAsk: null } : null,
+      },
+      requiredMetalsRef.current
+    );
 
   const onMetalPriceDateChange = (value: string) => {
-    requestedMetalDate.current = value;
+    const requestKey = value || 'latest';
+    requestedMetalDate.current = requestKey;
     onChange({ metalPriceDate: value });
-    if (!isEditable || !jwtToken || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
-    void fetchMarketMetalQuotesForDate(jwtToken, value)
+    if (!isEditable || !jwtToken) return;
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+    void fetchMarketMetalQuotesForDate(jwtToken, date)
       .then((quotes) => {
-        if (requestedMetalDate.current !== value) return;
-        const patch = applyPublishedMetalQuotesToForm(formRef.current, {
-          copper: quotes.copper ? { ...quotes.copper, threeMonthAsk: null } : null,
-          aluminium: quotes.aluminium ? { ...quotes.aluminium, threeMonthAsk: null } : null,
-        });
+        if (requestedMetalDate.current !== requestKey) return;
+        const patch = publishedQuotePatch(quotes);
         if (Object.keys(patch).length > 0) onChange(patch);
       })
       .catch(() => undefined);
@@ -181,18 +208,17 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
   useEffect(() => {
     if (!isEditable || !jwtToken) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.metalPriceDate)) return;
-    if (form.copperPriceRate && form.aluminiumPriceRate) return;
-    const key = `${inquiry.id}|${form.metalPriceDate}|${form.copperPriceRate}|${form.aluminiumPriceRate}`;
+    const needsCopper = requiredMetals.copper && !form.copperPriceRate;
+    const needsAluminium = requiredMetals.aluminium && !form.aluminiumPriceRate;
+    if (!needsCopper && !needsAluminium) return;
+    const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(form.metalPriceDate) ? form.metalPriceDate : '';
+    const key = `${inquiry.id}|${requestedDate}|${form.copperPriceRate}|${form.aluminiumPriceRate}|${requiredMetals.copper}|${requiredMetals.aluminium}`;
     if (requestedMetalDate.current === `loaded:${key}`) return;
     requestedMetalDate.current = `loaded:${key}`;
-    void fetchMarketMetalQuotesForDate(jwtToken, form.metalPriceDate)
+    void fetchMarketMetalQuotesForDate(jwtToken, requestedDate || undefined)
       .then((quotes) => {
         if (requestedMetalDate.current !== `loaded:${key}`) return;
-        const patch = applyPublishedMetalQuotesToForm(formRef.current, {
-          copper: quotes.copper ? { ...quotes.copper, threeMonthAsk: null } : null,
-          aluminium: quotes.aluminium ? { ...quotes.aluminium, threeMonthAsk: null } : null,
-        });
+        const patch = publishedQuotePatch(quotes);
         if (Object.keys(patch).length > 0) onChange(patch);
       })
       .catch(() => undefined);
@@ -204,22 +230,35 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
     isEditable,
     jwtToken,
     onChange,
+    requiredMetals.aluminium,
+    requiredMetals.copper,
   ]);
 
   const metalNote = (metal: 'copper' | 'aluminium') => {
-    const note = metalPriceFieldNote(form, metal);
+    const required = metal === 'copper' ? requiredMetals.copper : requiredMetals.aluminium;
+    const note = metalPriceFieldNote(form, metal, { required });
+    if (!note.text) return null;
     return (
       <div
         className={
           note.tone === 'warn'
             ? 'text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200'
-            : 'text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200'
+            : note.tone === 'muted'
+              ? 'text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200'
+              : 'text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200'
         }
       >
         {note.text}
       </div>
     );
   };
+
+  const metalLabel = (label: string, required: boolean) => (
+    <>
+      {label}
+      {required ? <span className="text-red-500"> *</span> : null}
+    </>
+  );
 
   useEffect(() => {
     if (!isEditable) return;
@@ -538,7 +577,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
             {show('copperPriceRate') && (
               <HeaderField
-                label="Copper Price"
+                label={metalLabel('Copper Price', requiredMetals.copper)}
               >
                 {isEditable ? (
                   <div className="space-y-1">
@@ -570,7 +609,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
             {show('aluminiumPriceRate') && (
               <HeaderField
-                label="Aluminium Price"
+                label={metalLabel('Aluminium Price', requiredMetals.aluminium)}
               >
                 {isEditable ? (
                   <div className="space-y-1">
@@ -1188,7 +1227,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     </HeaderField>
                   )}
                   {show('copperPriceRate') && (
-                    <HeaderField label="Copper Price (MT)">
+                    <HeaderField label={metalLabel('Copper Price (MT)', requiredMetals.copper)}>
                       {isEditable ? (
                         <input
                           type="number"
@@ -1207,7 +1246,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     </HeaderField>
                   )}
                   {show('aluminiumPriceRate') && (
-                    <HeaderField label="Aluminum Price (MT)">
+                    <HeaderField label={metalLabel('Aluminum Price (MT)', requiredMetals.aluminium)}>
                       {isEditable ? (
                         <input
                           type="number"
