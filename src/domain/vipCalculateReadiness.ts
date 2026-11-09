@@ -4,7 +4,12 @@
  */
 
 import { DECISION5_STATUS } from './v2CostingRequestService';
-import { collectInquirySubmitMissingItems } from '../services/inquiryHeaderFormService';
+import { readMetalPriceDate } from './cableMetalPriceResolution';
+import {
+  ALUMINIUM_PRICE_REQUIRED,
+  COPPER_PRICE_REQUIRED,
+  collectInquirySubmitMissingItems,
+} from '../services/inquiryHeaderFormService';
 import { evaluateContainerStudyGate } from './containerStudyReadiness';
 import {
   approvedCatalogCableCanCalculate,
@@ -72,6 +77,17 @@ export interface VipInquiryReadinessInput {
 }
 
 const INVALID_SNAPSHOT_STATUSES = new Set(['INVALID_CONFIGURATION', 'ENGINEERING_BLOCKED']);
+
+const METAL_PRICE_GAP_CODES = new Set([COPPER_PRICE_REQUIRED, ALUMINIUM_PRICE_REQUIRED]);
+
+export function isMetalPriceGapCode(code: string | undefined): boolean {
+  return METAL_PRICE_GAP_CODES.has(String(code || ''));
+}
+
+function metadataRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
 
 function isSnapshotValid(snapshot: NonNullable<VipLineReadinessInput['configurationSnapshot']>): boolean {
   if (INVALID_SNAPSHOT_STATUSES.has(snapshot.validationStatus)) return false;
@@ -261,9 +277,12 @@ export function evaluateVipInquiryReadiness(input: VipInquiryReadinessInput): {
     incoterms: input.incoterms,
     lineCount: input.lines.length,
   }).filter((item) => item.code !== 'CALCULATION_REQUIRED' && item.code !== 'TECHNICAL_OFFER_REQUIRED');
+  const metalDate = readMetalPriceDate(metadataRecord(input.commercialMetadata));
+  const blockingHeader = headerMissing.filter((item) => !isMetalPriceGapCode(item.code));
+  const missingMetals = headerMissing.filter((item) => isMetalPriceGapCode(item.code));
 
-  if (headerMissing.length > 0) {
-    for (const item of headerMissing) {
+  if (blockingHeader.length > 0) {
+    for (const item of blockingHeader) {
       gates.push({
         gate: 'HEADER_COMMERCIAL_CONFIG',
         status: 'BLOCK',
@@ -271,7 +290,17 @@ export function evaluateVipInquiryReadiness(input: VipInquiryReadinessInput): {
         code: item.code,
       });
     }
-  } else {
+  }
+  for (const item of missingMetals) {
+    const when = metalDate ? ` for ${metalDate}` : '';
+    gates.push({
+      gate: 'HEADER_COMMERCIAL_CONFIG',
+      status: 'WARN',
+      message: `${item.label} is missing${when}. Pricing stays incomplete until a published cash ask is available.`,
+      code: item.code,
+    });
+  }
+  if (blockingHeader.length === 0 && missingMetals.length === 0) {
     gates.push({
       gate: 'HEADER_COMMERCIAL_CONFIG',
       status: 'PASS',

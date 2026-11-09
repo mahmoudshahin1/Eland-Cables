@@ -17,8 +17,18 @@ function stageFromResult(result: VipCalculateResultDto | null, loading: boolean)
   }
   if (!result) return [];
 
+  const priceWarning = (result.gates || [])
+    .filter(
+      (gate) =>
+        gate.status === 'WARN' &&
+        (gate.code === 'COPPER_PRICE_REQUIRED' || gate.code === 'ALUMINIUM_PRICE_REQUIRED')
+    )
+    .map((gate) => gate.message)
+    .join(' ');
+  const pricePending =
+    Boolean(priceWarning) && result.status === 'PARTIAL' && result.blockingReasons.length === 0 && !result.financialOffer;
   const engineeringFailed = result.status === 'BLOCKED';
-  const costingFailed = result.status === 'PARTIAL';
+  const costingFailed = result.status === 'PARTIAL' && !pricePending;
   const offerBlocked = result.status === 'QUOTATION_BLOCKED';
   const passed = result.status === 'COMPLETED' && Boolean(result.financialOffer);
   const quote = passed ? result.quotation : null;
@@ -36,23 +46,33 @@ function stageFromResult(result: VipCalculateResultDto | null, loading: boolean)
     {
       id: 'costing',
       label: 'Cost calculation',
-      detail: costingFailed
-        ? result.blockingReasons[0] || 'Costing could not complete.'
-        : passed || offerBlocked
-          ? 'Cost calculated successfully.'
-          : 'Waiting for engineering to pass.',
-      state: engineeringFailed ? 'pending' : costingFailed ? 'fail' : passed || offerBlocked ? 'pass' : 'pending',
+      detail: pricePending
+        ? priceWarning
+        : costingFailed
+          ? result.blockingReasons[0] || 'Costing could not complete.'
+          : passed || offerBlocked
+            ? 'Cost calculated successfully.'
+            : 'Waiting for engineering to pass.',
+      state: pricePending ? 'warn' : engineeringFailed ? 'pending' : costingFailed ? 'fail' : passed || offerBlocked ? 'pass' : 'pending',
     },
     {
       id: 'pricing',
       label: 'Pricing',
-      detail: passed || offerBlocked ? 'Commercial price calculated.' : costingFailed || engineeringFailed ? 'Not started.' : 'Waiting.',
-      state: passed || offerBlocked ? 'pass' : costingFailed || engineeringFailed ? 'pending' : 'pending',
+      detail: pricePending
+        ? 'Pricing is incomplete.'
+        : passed || offerBlocked
+          ? 'Commercial price calculated.'
+          : costingFailed || engineeringFailed
+            ? 'Not started.'
+            : 'Waiting.',
+      state: pricePending ? 'warn' : passed || offerBlocked ? 'pass' : 'pending',
     },
     {
       id: 'offer',
       label: 'Financial offer',
-      detail: offer
+      detail: pricePending
+        ? 'Waiting for the missing metal price.'
+        : offer
         ? `Financial offer generated${offer.inquiryTotal ? ` · ${offer.inquiryTotal}` : ''}.`
         : offerBlocked
           ? result.blockingReasons[0] || 'Financial offer could not be generated.'

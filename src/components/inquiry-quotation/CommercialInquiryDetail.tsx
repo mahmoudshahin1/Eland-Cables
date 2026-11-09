@@ -48,6 +48,7 @@ import {
   collectInquirySubmitMissingItems,
   InquiryHeaderFormState,
   InquirySubmitMissingItem,
+  inquiryFinancialTotalReady,
 } from '../../services/inquiryHeaderFormService';
 import { suggestDrumPlan, validateCuttingLength } from '../../domain/drumPlanService';
 import { canEditLineTechnicalAttachments } from '../../domain/inquiryLineAttachments';
@@ -1511,7 +1512,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <h1 className="text-xl sm:text-2xl font-black text-brand-800 tracking-tight font-display">
                 Commercial Inquiry / {inquiryDisplayRef(inquiry)} - V{inquiry.versionNo || 1}
               </h1>
-              {commercialTotals.grandTotal != null && (
+              {commercialTotals.grandTotal != null &&
+                inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate) && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Grand Total</p>
                   <p className="text-sm font-black tabular-nums text-emerald-900">
@@ -2921,7 +2923,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     <div>
                       <span className="text-slate-400 block text-[11px]">Grand Total:</span>
                       <span className="font-bold text-base text-emerald-800 font-mono">
-                        {commercialTotals.grandTotal == null ? '—' : formatCommercialMoney(commercialTotals.grandTotal)}
+                        {inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate) &&
+                        commercialTotals.grandTotal != null
+                          ? formatCommercialMoney(commercialTotals.grandTotal)
+                          : 'Incomplete'}
                       </span>
                       <span className="text-slate-500 mt-1 block">
                         {commercialDestination || 'Destination not configured'} ({headerForm?.incoterms || inquiry.incoterms || 'DAP'})
