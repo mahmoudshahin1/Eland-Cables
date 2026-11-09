@@ -30,7 +30,7 @@ import { assertCanAccessInquiryOwnership } from './rbac';
 import { RequestActor } from './auth';
 import { lookupCustomerMasterId, resolveCustomerMasterIdForActor, assertCustomerBusinessScope } from './customerScope';
 import { applyMarketMetalSourceOnUpdate, applySystemMarketMetalDefaultsOnCreate } from '../domain/marketMetalPriceDefaults';
-import { snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
+import { requiredMetalsForStoredInquiry, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
 import {
   AddInquiryLineInput,
   CreateInquiryInput,
@@ -84,11 +84,13 @@ async function fetchInquiryLineWithAttachments(lineId: string) {
   });
 }
 
-function assertInquirySubmitHeader(inquiry: { commercialMetadata?: unknown }) {
+async function assertInquirySubmitHeader(inquiry: { id: string; commercialMetadata?: unknown }) {
   const meta = commercialMetadataRecord(inquiry.commercialMetadata);
+  const requiredMetals = await requiredMetalsForStoredInquiry(inquiry.id);
   const codes = collectInquirySubmitHeaderCodes({
     copperPriceRate: meta.copperPriceRate,
     aluminiumPriceRate: meta.aluminiumPriceRate,
+    requiredMetals,
   });
   if (codes.length === 0) return;
   const err = new Error(formatInquirySubmitHeaderMessage(codes)) as Error & {
@@ -386,8 +388,25 @@ export async function getInquiryById(id: string) {
     },
   });
   if (!inquiry) return inquiry;
+  const materialNumbers = inquiry.lines
+    .map((line) => line.materialNumber)
+    .filter((value): value is string => Boolean(value));
+  const cables = materialNumbers.length
+    ? await prisma.cableMaster.findMany({
+        where: { materialNumber: { in: materialNumbers } },
+        select: { materialNumber: true, conductor: true },
+      })
+    : [];
+  const conductorByMaterial = new Map(cables.map((cable) => [cable.materialNumber, cable.conductor]));
+  const withConductor = {
+    ...inquiry,
+    lines: inquiry.lines.map((line) => ({
+      ...line,
+      conductor: line.materialNumber ? conductorByMaterial.get(line.materialNumber) ?? null : null,
+    })),
+  };
   const { attachInquiryCommercialPricing } = await import('./commercialLinePricingAttach');
-  return attachInquiryCommercialPricing(inquiry);
+  return attachInquiryCommercialPricing(withConductor);
 }
 
 export async function addInquiryLine(
@@ -599,7 +618,7 @@ export async function submitInquiry(
   }
 
   inquiry.commercialMetadata = (await snapshotMissingInquiryMetalPrices(inquiry.id)) as typeof inquiry.commercialMetadata;
-  assertInquirySubmitHeader(inquiry);
+  await assertInquirySubmitHeader(inquiry);
 
   const stillMissing = inquiry.lines.filter((line) => line.materialNumber && !line.costingCalculationId);
   if (stillMissing.length > 0) {

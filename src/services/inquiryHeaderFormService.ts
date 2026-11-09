@@ -4,6 +4,7 @@ import {
   metalHeaderPatchFromPublished,
   type PublishedCableMetalQuotes,
 } from '../domain/cableMetalPriceResolution';
+import type { RequiredInquiryMetals } from '../domain/inquiryRequiredMetals';
 import {
   formatDeliveryCombinationLabel,
   type CustomerDeliveryCombinationView,
@@ -185,16 +186,18 @@ export function parsePositiveMetalRate(value: unknown): number | null {
 export function collectInquirySubmitHeaderCodes(input: {
   copperPriceRate?: unknown;
   aluminiumPriceRate?: unknown;
+  requiredMetals?: RequiredInquiryMetals;
 }): string[] {
+  const required = input.requiredMetals ?? { copper: true, aluminium: true };
   const codes: string[] = [];
-  if (parsePositiveMetalRate(input.copperPriceRate) == null) codes.push(COPPER_PRICE_REQUIRED);
-  if (parsePositiveMetalRate(input.aluminiumPriceRate) == null) codes.push(ALUMINIUM_PRICE_REQUIRED);
+  if (required.copper && parsePositiveMetalRate(input.copperPriceRate) == null) codes.push(COPPER_PRICE_REQUIRED);
+  if (required.aluminium && parsePositiveMetalRate(input.aluminiumPriceRate) == null) codes.push(ALUMINIUM_PRICE_REQUIRED);
   return codes;
 }
 
 export function formatInquirySubmitHeaderMessage(codes: string[]): string {
   if (!codes.length) return '';
-  return `Inquiry submit blocked: ${codes.join(', ')}. Copper Price and Aluminium Price must be numeric and greater than 0.`;
+  return `Inquiry submit blocked: ${codes.join(', ')}. The required metal price must be numeric and greater than 0.`;
 }
 
 export function collectInquirySubmitMissingItems(input: {
@@ -205,12 +208,14 @@ export function collectInquirySubmitMissingItems(input: {
   lineCount?: number;
   mappedLinesNeedingCalc?: Array<{ lineNumber: number }>;
   linesMissingTechnicalOffer?: number[];
+  requiredMetals?: RequiredInquiryMetals;
 }): InquirySubmitMissingItem[] {
+  const required = input.requiredMetals ?? { copper: true, aluminium: true };
   const items: InquirySubmitMissingItem[] = [];
-  if (parsePositiveMetalRate(input.copperPriceRate) == null) {
+  if (required.copper && parsePositiveMetalRate(input.copperPriceRate) == null) {
     items.push({ code: COPPER_PRICE_REQUIRED, label: 'Copper Price' });
   }
-  if (parsePositiveMetalRate(input.aluminiumPriceRate) == null) {
+  if (required.aluminium && parsePositiveMetalRate(input.aluminiumPriceRate) == null) {
     items.push({ code: ALUMINIUM_PRICE_REQUIRED, label: 'Aluminium Price' });
   }
   if (!String(input.deliveryDestination ?? '').trim()) {
@@ -349,14 +354,16 @@ export function applyInquiryCurrencyChange(
 /** Fills only empty metal rates from a published cash ask. A typed positive rate stays. */
 export function applyPublishedMetalQuotesToForm(
   form: Pick<InquiryHeaderFormState, 'copperPriceRate' | 'aluminiumPriceRate'>,
-  quotes: PublishedCableMetalQuotes
+  quotes: PublishedCableMetalQuotes,
+  required?: RequiredInquiryMetals
 ): Partial<InquiryHeaderFormState> {
   const patch = metalHeaderPatchFromPublished(
     {
       copperPriceRate: parseFiniteNumber(form.copperPriceRate),
       aluminiumPriceRate: parseFiniteNumber(form.aluminiumPriceRate),
     },
-    quotes
+    quotes,
+    required
   );
   const next: Partial<InquiryHeaderFormState> = {};
   if (patch.copperPriceRate != null) {
@@ -413,8 +420,10 @@ export function metalPriceFieldNote(
     | 'aluminiumMarketQuoteDate'
     | 'metalPriceDate'
   >,
-  metal: 'copper' | 'aluminium'
-): { tone: 'ok' | 'warn'; text: string } {
+  metal: 'copper' | 'aluminium',
+  options?: { required?: boolean }
+): { tone: 'ok' | 'warn' | 'muted'; text: string } {
+  const required = options?.required !== false;
   const rate = metal === 'copper' ? form.copperPriceRate : form.aluminiumPriceRate;
   const source = metal === 'copper' ? form.copperPriceSource : form.aluminiumPriceSource;
   const marketId = metal === 'copper' ? form.copperMarketPriceId : form.aluminiumMarketPriceId;
@@ -423,10 +432,18 @@ export function metalPriceFieldNote(
     const labeled = metalPriceSourceLabel(source);
     if (labeled) return { tone: 'ok', text: `Source: ${labeled}` };
     if (marketId || quoteDate) {
-      return { tone: 'ok', text: `Published LME cash ask${quoteDate ? ` · ${quoteDate}` : ''}` };
+      const actual = String(quoteDate || '').trim().slice(0, 10);
+      const requested = String(form.metalPriceDate || '').trim().slice(0, 10);
+      const latest = /^\d{4}-\d{2}-\d{2}$/.test(actual) && /^\d{4}-\d{2}-\d{2}$/.test(requested) && actual !== requested;
+      const dated = /^\d{4}-\d{2}-\d{2}$/.test(actual) ? ` - ${actual}` : '';
+      return {
+        tone: 'ok',
+        text: `LME cash ask (international market price)${dated}${latest ? ' · latest available' : ''}`,
+      };
     }
     return { tone: 'ok', text: 'USD/MT' };
   }
+  if (!required) return { tone: 'muted', text: 'Not required for the selected cables.' };
   const when = /^\d{4}-\d{2}-\d{2}$/.test(form.metalPriceDate) ? ` for ${form.metalPriceDate}` : '';
   const label = metal === 'copper' ? 'Copper price' : 'Aluminium price';
   return {
@@ -435,8 +452,43 @@ export function metalPriceFieldNote(
   };
 }
 
-export function inquiryFinancialTotalReady(copperPriceRate: unknown, aluminiumPriceRate: unknown): boolean {
-  return parsePositiveMetalRate(copperPriceRate) != null && parsePositiveMetalRate(aluminiumPriceRate) != null;
+export function internationalMetalPriceNotice(
+  form: Pick<
+    InquiryHeaderFormState,
+    | 'copperPriceRate'
+    | 'aluminiumPriceRate'
+    | 'copperPriceSource'
+    | 'aluminiumPriceSource'
+    | 'copperMarketQuoteDate'
+    | 'aluminiumMarketQuoteDate'
+    | 'metalPriceDate'
+  >,
+  required: RequiredInquiryMetals
+): string | null {
+  const dates: string[] = [];
+  const take = (needed: boolean, rate: unknown, source: string, quoteDate: string) => {
+    if (!needed || parsePositiveMetalRate(rate) == null) return;
+    if (metalPriceSourceLabel(source) === 'Inquiry Override') return;
+    const day = String(quoteDate || '').trim().slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(day)) dates.push(day);
+  };
+  take(required.copper, form.copperPriceRate, form.copperPriceSource, form.copperMarketQuoteDate);
+  take(required.aluminium, form.aluminiumPriceRate, form.aluminiumPriceSource, form.aluminiumMarketQuoteDate);
+  if (dates.length === 0) return null;
+  const unique = [...new Set(dates)];
+  const requested = String(form.metalPriceDate || '').trim().slice(0, 10);
+  const latest = /^\d{4}-\d{2}-\d{2}$/.test(requested) && unique.some((day) => day !== requested);
+  return `Metal prices are based on the LME international market price of ${unique.join(' and ')}${latest ? ' (latest available)' : ''}.`;
+}
+
+export function inquiryFinancialTotalReady(
+  copperPriceRate: unknown,
+  aluminiumPriceRate: unknown,
+  required: RequiredInquiryMetals = { copper: true, aluminium: true }
+): boolean {
+  if (required.copper && parsePositiveMetalRate(copperPriceRate) == null) return false;
+  if (required.aluminium && parsePositiveMetalRate(aluminiumPriceRate) == null) return false;
+  return required.copper || required.aluminium;
 }
 
 export function metalPriceSourceLabel(source: string): 'System Default' | 'Inquiry Override' | null {

@@ -95,4 +95,57 @@ describe('metal price gaps do not block engineering readiness', () => {
     assert.equal(unconfirmed.ready, false);
     assert.ok(unconfirmed.blockingReasons.some((reason) => reason.includes('drum plan')));
   });
+
+  it('reads copper from a Cu cable description when the conductor field is empty', () => {
+    const result = evaluateVipInquiryReadiness({
+      commercialMetadata: {},
+      copperPriceRate: 9000,
+      aluminiumPriceRate: '',
+      deliveryDestination: 'Lisbon',
+      incoterms: 'CIF',
+      lines: [{ ...line, cableDescription: 'Cu / XLPE / LSHF 0.6/1 kV' }],
+    });
+    assert.equal(result.gates.some((gate) => gate.code === 'ALUMINIUM_PRICE_REQUIRED'), false);
+    assert.equal(result.gates.some((gate) => gate.code === 'COPPER_PRICE_REQUIRED'), false);
+  });
+
+  it('requires only copper when every cable conductor is copper', () => {
+    const result = evaluateVipInquiryReadiness({
+      commercialMetadata: { metalPriceDate: '2026-11-08' },
+      copperPriceRate: '',
+      aluminiumPriceRate: '',
+      deliveryDestination: 'Lisbon',
+      incoterms: 'CIF',
+      lines: [{ ...line, conductor: 'Copper', cableDescription: 'Cu / XLPE' }],
+    });
+    assert.equal(result.ready, true);
+    assert.equal(result.gates.find((gate) => gate.code === 'COPPER_PRICE_REQUIRED')?.status, 'WARN');
+    assert.equal(result.gates.some((gate) => gate.code === 'ALUMINIUM_PRICE_REQUIRED'), false);
+  });
+
+  it('requires only aluminium when the cable description says aluminium and conductor is empty', () => {
+    const result = evaluateVipInquiryReadiness({
+      commercialMetadata: {},
+      copperPriceRate: '',
+      aluminiumPriceRate: 2500,
+      deliveryDestination: 'Lisbon',
+      incoterms: 'CIF',
+      lines: [{ ...line, conductor: '', cableDescription: 'Al / XLPE 1 kV' }],
+    });
+    assert.equal(result.gates.some((gate) => gate.code === 'COPPER_PRICE_REQUIRED'), false);
+    assert.equal(result.gates.some((gate) => gate.code === 'ALUMINIUM_PRICE_REQUIRED'), false);
+  });
+
+  it('requires both prices when the inquiry mixes copper and aluminium cables', () => {
+    const result = evaluateVipInquiryReadiness({
+      commercialMetadata: { metalPriceDate: '2026-11-08' },
+      deliveryDestination: 'Lisbon',
+      incoterms: 'CIF',
+      lines: [
+        { ...line, conductor: 'Copper', cableDescription: 'Cu cable' },
+        { ...line, lineId: 'line-2', lineNumber: 2, conductor: 'Aluminum', cableDescription: 'Al cable' },
+      ],
+    });
+    assert.equal(result.gates.filter((gate) => gate.status === 'WARN' && gate.gate === 'HEADER_COMMERCIAL_CONFIG').length, 2);
+  });
 });

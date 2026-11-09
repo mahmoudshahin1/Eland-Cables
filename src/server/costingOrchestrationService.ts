@@ -24,7 +24,7 @@ import type { ExtensionLayerResult } from './costingExtensionLayers';
 import { ensureEngineeringMappingApprovedForCosting } from './governanceRepository';
 import { computeInquiryLineTotalValue } from '../domain/inquiryLineValue';
 import { readMetalPriceDate, resolveInquiryMetalPricingForCosting } from '../domain/cableMetalPriceResolution';
-import { getPublishedCableMetalQuotes, getPublishedCableMetalQuotesForDate, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
+import { getPublishedCableMetalQuotes, getPublishedCableMetalQuotesOnOrBefore, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
 import {
   buildInquiryMetalPricingFromMetadata,
   buildMetalPricingSnapshot,
@@ -255,7 +255,7 @@ async function metalPricingForCosting(
   const inquiry = buildInquiryMetalPricingFromMetadata(metadata, currency);
   const metalDate = readMetalPriceDate(metadata);
   const published = metalDate
-    ? await getPublishedCableMetalQuotesForDate(metalDate)
+    ? await getPublishedCableMetalQuotesOnOrBefore(metalDate)
     : await getPublishedCableMetalQuotes();
   return resolveInquiryMetalPricingForCosting(inquiry, published).pricing;
 }

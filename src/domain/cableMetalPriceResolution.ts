@@ -1,10 +1,12 @@
 import type { InquiryMetalPricing } from './inquiryMetalPricing';
+import type { RequiredInquiryMetals } from './inquiryRequiredMetals';
 
 /**
  * Cable copper/aluminium price resolution.
  * A. Inquiry snapshot or header override already stored on the inquiry.
- * B. Current published LME cash ask.
- * C. Block. No system-default table, no previous price, no zero, no unapproved row.
+ * B. Published LME cash ask: the requested date, otherwise the newest published
+ *    cash ask on or before that date. A blank date uses the current published row.
+ * C. Block. No system-default table, no zero, no unapproved row, no future date.
  * Cash ask is the costing basis. 3-month ask stays on the price row and is not substituted.
  */
 
@@ -65,7 +67,8 @@ export function selectPublishedCableQuotes(rows: CableMetalPriceCandidate[]): Pu
 
 /**
  * Published cash ask for one quote date. Historical rows do not need isCurrent.
- * A different date is never substituted. 3-month ask is not used as the rate.
+ * This exact-date selector does not substitute another date.
+ * 3-month ask is not used as the rate.
  */
 export function selectPublishedCableQuotesForDate(
   rows: CableMetalPriceCandidate[],
@@ -82,6 +85,30 @@ export function selectPublishedCableQuotesForDate(
           positive(candidate.cashAsk) != null
       )
     );
+  return { copper: pick('CABLE_COPPER'), aluminium: pick('CABLE_ALUMINIUM') };
+}
+
+/**
+ * Newest published cash ask on or before asOfDate, per metal.
+ * An exact date wins because it is the newest row that is not after asOfDate.
+ * A later quote date is ignored. 3-month ask is not used as the rate.
+ */
+export function selectLatestPublishedCableQuotes(
+  rows: CableMetalPriceCandidate[],
+  asOfDate: string
+): PublishedCableMetalQuotes {
+  const day = asOfDate.trim().slice(0, 10);
+  const pick = (usage: 'CABLE_COPPER' | 'CABLE_ALUMINIUM'): PublishedCableMetalQuote | null => {
+    const matches = rows.filter(
+      (candidate) =>
+        candidate.costingUsage === usage &&
+        candidate.status === 'PUBLISHED' &&
+        candidate.quoteDate <= day &&
+        positive(candidate.cashAsk) != null
+    );
+    matches.sort((left, right) => right.quoteDate.localeCompare(left.quoteDate));
+    return publishedCashQuote(matches[0]);
+  };
   return { copper: pick('CABLE_COPPER'), aluminium: pick('CABLE_ALUMINIUM') };
 }
 
@@ -145,12 +172,20 @@ function positiveMetaRate(value: unknown): number | null {
  */
 export function metalHeaderPatchFromPublished(
   metadata: Record<string, unknown> | null | undefined,
-  published: PublishedCableMetalQuotes
+  published: PublishedCableMetalQuotes,
+  required?: RequiredInquiryMetals
 ): Record<string, unknown> {
   const meta = metadata || {};
   const patch: Record<string, unknown> = {};
+  const needCopper = required?.copper !== false;
+  const needAluminium = required?.aluminium !== false;
   const copperCash = positive(published.copper?.cashAsk);
-  if (positiveMetaRate(meta.copperPriceRate) == null && published.copper && copperCash != null) {
+  if (
+    needCopper &&
+    positiveMetaRate(meta.copperPriceRate) == null &&
+    published.copper &&
+    copperCash != null
+  ) {
     patch.copperPriceRate = copperCash;
     patch.copperPriceUom = 'MT';
     patch.copperPriceCurrency = 'USD';
@@ -159,7 +194,12 @@ export function metalHeaderPatchFromPublished(
     patch.copperPriceSource = null;
   }
   const aluminiumCash = positive(published.aluminium?.cashAsk);
-  if (positiveMetaRate(meta.aluminiumPriceRate) == null && published.aluminium && aluminiumCash != null) {
+  if (
+    needAluminium &&
+    positiveMetaRate(meta.aluminiumPriceRate) == null &&
+    published.aluminium &&
+    aluminiumCash != null
+  ) {
     patch.aluminiumPriceRate = aluminiumCash;
     patch.aluminiumPriceUom = 'MT';
     patch.aluminiumPriceCurrency = 'USD';

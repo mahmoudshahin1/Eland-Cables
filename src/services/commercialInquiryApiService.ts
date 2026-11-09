@@ -12,6 +12,7 @@ export interface CommercialInquiryLineDto {
   customerCode?: string | null;
   itemCode?: string | null;
   cableDescription: string;
+  conductor?: string | null;
   configurationPayload?: Record<string, unknown> | null;
   requestedQuantity: number | string;
   quantityUom?: string | null;
@@ -135,11 +136,13 @@ export interface MarketMetalCashQuote {
   cashAsk: number;
 }
 
-/** Published cash ask for one metal price date. Missing metals are null. */
-export async function fetchMarketMetalQuotesForDate(token: string, date: string) {
-  const params = new URLSearchParams({ date });
+/** Published cash ask. A date uses that day or the newest quote on or before it. No date uses the current published row. */
+export async function fetchMarketMetalQuotesForDate(token: string, date?: string) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  const query = params.toString();
   return httpClient.get<{ copper: MarketMetalCashQuote | null; aluminium: MarketMetalCashQuote | null }>(
-    `/api/inquiries/market-metal-quotes?${params.toString()}`,
+    `/api/inquiries/market-metal-quotes${query ? `?${query}` : ''}`,
     { token }
   );
 }
