@@ -254,7 +254,7 @@ export async function calculateInquiry(
       inquiryId: inquiry.id,
       inquiryNumber: inquiry.inquiryNumber,
       gates: readiness.gates,
-      blockingReasons: [],
+      blockingReasons: metalPriceWarnings.map((gate) => gate.message),
       optionalComponents,
       optionalWarnings: [...optionalWarnings, ...metalPriceWarnings.map((gate) => gate.message)],
       lines: [],
@@ -393,7 +393,7 @@ export async function calculateInquiry(
             currency: inquiry.currency,
             inquiryDate: inquiry.inquiryDate,
             incoterms: inquiry.incoterms,
-            commercialMetadata: inquiry.commercialMetadata as Record<string, unknown> | null,
+            commercialMetadata: meta,
           },
           { previewOnly: false }
         );

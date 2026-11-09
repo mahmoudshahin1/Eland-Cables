@@ -1132,10 +1132,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       if (canCalculateInquiry(inquiry)) {
         const result = await calculateVipInquiry(jwtToken, inquiry.id);
         setVipCalcResult(result);
+        const refreshed = await fetchCommercialInquiry(jwtToken, inquiry.id);
+        setInquiry(refreshed);
+        setHeaderForm(buildHeaderFormFromInquiry(refreshed));
+        notifyInquiryChanged(refreshed);
         if (result.status === 'COMPLETED' && result.financialOffer && result.quotation) {
-          const refreshed = await fetchCommercialInquiry(jwtToken, inquiry.id);
-          setInquiry(refreshed);
-          notifyInquiryChanged(refreshed);
           notify(
             result.quotation.created
               ? `Quotation ${result.quotation.quotationNumber} created. Approval and issue remain governed.`
@@ -1143,10 +1144,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           );
         } else {
           setCostingError(result.blockingReasons.join(' '));
+          const metalPriceOnly =
+            result.blockingReasons.length > 0 &&
+            result.blockingReasons.every((reason) =>
+              /copper price|aluminium price|aluminum price|published cash ask/i.test(reason)
+            );
           notify(
             result.status === 'QUOTATION_BLOCKED'
               ? 'Financial offer was not created — quotation is not ready.'
-              : 'Automatic processing blocked — see processing status below.'
+              : metalPriceOnly
+                ? 'Pricing is incomplete until the metal price is available.'
+                : 'Automatic processing blocked — see processing status below.'
           );
         }
         return;
