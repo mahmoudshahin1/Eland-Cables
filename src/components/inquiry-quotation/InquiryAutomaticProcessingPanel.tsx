@@ -17,16 +17,21 @@ function stageFromResult(result: VipCalculateResultDto | null, loading: boolean)
   }
   if (!result) return [];
 
-  const priceWarning = (result.gates || [])
-    .filter(
-      (gate) =>
-        gate.status === 'WARN' &&
-        (gate.code === 'COPPER_PRICE_REQUIRED' || gate.code === 'ALUMINIUM_PRICE_REQUIRED')
-    )
-    .map((gate) => gate.message)
-    .join(' ');
+  const priceMessages = [
+    ...(result.gates || [])
+      .filter(
+        (gate) =>
+          gate.status === 'WARN' &&
+          (gate.code === 'COPPER_PRICE_REQUIRED' || gate.code === 'ALUMINIUM_PRICE_REQUIRED')
+      )
+      .map((gate) => gate.message),
+    ...(result.blockingReasons || []),
+    ...(result.optionalWarnings || []),
+  ].filter((message, index, all) => /copper price|aluminium price|aluminum price|published cash ask/i.test(message) && all.indexOf(message) === index);
+  const priceWarning = priceMessages.join(' ');
+  const otherBlocks = (result.blockingReasons || []).filter((message) => !priceMessages.includes(message));
   const pricePending =
-    Boolean(priceWarning) && result.status === 'PARTIAL' && result.blockingReasons.length === 0 && !result.financialOffer;
+    Boolean(priceWarning) && otherBlocks.length === 0 && !result.financialOffer && result.status !== 'COMPLETED' && result.status !== 'BLOCKED';
   const engineeringFailed = result.status === 'BLOCKED';
   const costingFailed = result.status === 'PARTIAL' && !pricePending;
   const offerBlocked = result.status === 'QUOTATION_BLOCKED';
@@ -49,7 +54,12 @@ function stageFromResult(result: VipCalculateResultDto | null, loading: boolean)
       detail: pricePending
         ? priceWarning
         : costingFailed
-          ? result.blockingReasons[0] || 'Costing could not complete.'
+          ? result.blockingReasons.filter(Boolean).join(' ') ||
+            (result.gates || [])
+              .filter((gate) => gate.status === 'BLOCK')
+              .map((gate) => gate.message)
+              .join(' ') ||
+            'Commercial calculation is incomplete.'
           : passed || offerBlocked
             ? 'Cost calculated successfully.'
             : 'Waiting for engineering to pass.',

@@ -114,6 +114,25 @@ describe('InquiryAutomaticProcessingPanel', () => {
     assert.match(html, /Waiting for the missing metal price/);
     assert.doesNotMatch(html, /Header commercial config incomplete/);
     assert.doesNotMatch(html, /125000/);
+    assert.doesNotMatch(html, /Costing could not complete/);
+  });
+
+  it('shows a metal-price warning when the result only carries the warning text', () => {
+    const pending: VipCalculateResultDto = {
+      ...blocked,
+      status: 'PARTIAL',
+      blockingReasons: [
+        'Copper Price is missing for 2026-11-08. Pricing stays incomplete until a published cash ask is available.',
+      ],
+      gates: [],
+    };
+    const html = renderToStaticMarkup(
+      React.createElement(InquiryAutomaticProcessingPanel, { result: pending, customerSafe: true })
+    );
+    assert.match(html, /Copper Price is missing for 2026-11-08/);
+    assert.match(html, /Pricing is incomplete/);
+    assert.doesNotMatch(html, /Costing could not complete/);
+    assert.doesNotMatch(html, /Commercial calculation is incomplete/);
   });
 
   it('does not present quotation success when the financial offer snapshot is missing', () => {
