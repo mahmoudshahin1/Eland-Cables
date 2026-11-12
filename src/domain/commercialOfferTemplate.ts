@@ -168,15 +168,8 @@ export function commercialOfferDocumentActions(input: {
   isCustomer: boolean;
   isVip?: boolean;
 }): Array<{ id: string; label: string; draft: boolean }> {
-  if (input.isCustomer && !input.issued && !input.isVip) return [];
-  if (input.issued || input.isVip) {
-    return [
-      { id: 'print-final', label: 'Print Commercial Offer', draft: false },
-      { id: 'export-final', label: 'Export Commercial Offer PDF', draft: false },
-    ];
-  }
-  return [
-    { id: 'print-draft', label: 'Print Commercial Offer', draft: true },
-    { id: 'export-draft', label: 'Export Commercial Offer PDF', draft: true },
-  ];
+  void input.issued;
+  void input.isCustomer;
+  void input.isVip;
+  return [];
 }

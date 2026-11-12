@@ -1,4 +1,5 @@
 import type { CommercialInquiryDto, CommercialInquiryLineDto } from '../../services/commercialInquiryApiService';
+import { displayInquiryNumber, portalLifecycleFromInquiry } from '../../domain/inquiryPortalLifecycle';
 import type { InquiryWorkspaceTab } from '../inquiry-quotation/inquiryWorkspaceTabs';
 
 export type CustomerInquiryPresentationTabId =
@@ -183,9 +184,11 @@ export function snapshotConflictLabel(line: {
   return null;
 }
 
-export function customerInquiryDetailTitle(inquiry: Pick<CommercialInquiryDto, 'inquiryNumber' | 'status'>): string {
-  const number = inquiry.inquiryNumber || '—';
-  return (inquiry.status || '').toUpperCase() === 'DRAFT' ? `New Inquiry / ${number}` : `Inquiry / ${number}`;
+export function customerInquiryDetailTitle(
+  inquiry: Pick<CommercialInquiryDto, 'inquiryNumber' | 'status'> & { commercialMetadata?: unknown }
+): string {
+  const number = displayInquiryNumber(inquiry) || '—';
+  return portalLifecycleFromInquiry(inquiry) === 'OPEN' ? `New Inquiry / ${number}` : `Inquiry / ${number}`;
 }
 
 export function customerInquiryBreadcrumbLabel(status?: string | null): string {

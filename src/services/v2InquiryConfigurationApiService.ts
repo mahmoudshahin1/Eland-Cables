@@ -224,6 +224,8 @@ export interface VipCalculateResultDto {
   } | null;
   decision5Status: string;
   idempotent: boolean;
+  unpricedMaterials?: Array<{ rawMaterialCode: string; message: string; lineNumber?: number }>;
+  partial?: boolean;
 }
 
 export async function calculateVipInquiry(

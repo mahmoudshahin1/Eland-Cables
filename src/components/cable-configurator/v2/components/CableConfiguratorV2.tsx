@@ -34,13 +34,7 @@ import {
   buildConfigurationSnapshot,
   canProceedToDownstream,
 } from '../services/v2CableConfigurationService';
-import {
-  addV2InquiryLine,
-  createV2Inquiry,
-  persistV2ConfigurationSnapshot,
-} from '../../../../services/v2InquiryConfigurationApiService';
 import type { DrumSelectionHandoffDto } from '../../../../services/v2CuttingLengthApiService';
-import { V2InquiryConfigurationPanel } from '../../../inquiry-quotation/V2InquiryConfigurationPanel';
 
 interface CableConfiguratorV2Props {
   onNavigateTab?: (tab: CustomerPortalTab) => void;
@@ -59,7 +53,6 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
   v2InquiryId,
   v2LineId,
   customerMode = false,
-  onConfigurationSaved,
 }) => {
   const { jwtToken, currentUser } = useAuth();
   const isCustomerActor = customerMode || currentUser?.userType === 'customer';
@@ -151,15 +144,11 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
   }, [selections, catalogItems, jwtToken]);
 
   const [manuallySelectedCable, setManuallySelectedCable] = useState<CableRecordV2 | null>(null);
-  const [activeInquiryId, setActiveInquiryId] = useState<string | undefined>(v2InquiryId);
-  const [activeLineId, setActiveLineId] = useState<string | undefined>(v2LineId);
-  const [persistedSnapshotId, setPersistedSnapshotId] = useState<string | undefined>();
-  const [panelRefreshKey, setPanelRefreshKey] = useState(0);
+  const [activeInquiryId] = useState<string | undefined>(v2InquiryId);
+  const [activeLineId] = useState<string | undefined>(v2LineId);
+  const [persistedSnapshotId] = useState<string | undefined>();
   const [cuttingHandoff, setCuttingHandoff] = useState<DrumSelectionHandoffDto | null>(null);
   const [drumPlanConfirmed, setDrumPlanConfirmed] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   // -------------------------------------------------------------
   // Filtered Master Records (for Mode 1 and suggestions)
@@ -293,50 +282,6 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
     }
   };
 
-  const handleSaveConfiguration = async () => {
-    if (!jwtToken) {
-      setSaveError('Sign in is required to persist configuration on the server.');
-      return;
-    }
-    setSaving(true);
-    setSaveError(null);
-    setSaveMessage(null);
-    try {
-      let inquiryId = activeInquiryId;
-      let lineId = activeLineId;
-      if (!inquiryId) {
-        const inquiry = await createV2Inquiry(jwtToken, {
-          projectName: validationResult.summaryDescription || 'V2 Cable Configuration',
-        });
-        inquiryId = inquiry.id;
-        setActiveInquiryId(inquiryId);
-      }
-      if (!lineId) {
-        const { line } = await addV2InquiryLine(jwtToken, inquiryId, {
-          cableDescription: validationResult.summaryDescription,
-        });
-        lineId = line.id;
-        setActiveLineId(lineId);
-      }
-      const result = await persistV2ConfigurationSnapshot(jwtToken, inquiryId, lineId, {
-        selections,
-        catalogSource,
-        catalogAuthoritative,
-        cableDescription: validationResult.summaryDescription,
-      });
-      setPersistedSnapshotId(result.line.v2CurrentSnapshotId || undefined);
-      setPanelRefreshKey((k) => k + 1);
-      setSaveMessage(
-        `Saved snapshot ${result.snapshot.snapshotId} on inquiry ${result.inquiry.inquiryNumber}.`
-      );
-      onConfigurationSaved?.();
-    } catch (err) {
-      setSaveError((err as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const steps = [
     { num: 1, label: 'Family & Voltage', done: Boolean(selections.family && selections.voltage) },
     { num: 2, label: 'Conductor', done: Boolean(selections.conductorMaterial && selections.conductorSize) },
@@ -357,36 +302,6 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
           cutting length, drum selection, and costing are blocked until PostgreSQL Cable Master is available.
         </div>
       )}
-
-      {configurationSnapshot.bomGovernanceBlocked && (
-        <div className="p-3 rounded-xl border border-error-200 dark:border-red-900 bg-error-50 dark:bg-red-950/30 text-xs text-error-900 dark:text-red-200">
-          <strong>ENGINEERING DATA BLOCKED</strong> — {configurationSnapshot.unresolvedBomConflictCount}{' '}
-          unresolved Cable BOM governance conflicts. Costing and quotation paths remain blocked (Task
-          04B-13). Configuration matching may proceed; no silent BOM fallback.
-        </div>
-      )}
-
-      <div className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">Server persistence (V2)</p>
-            <button
-              type="button"
-              onClick={() => void handleSaveConfiguration()}
-              disabled={saving}
-              className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Save configuration snapshot'}
-            </button>
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Persists immutable snapshot to PostgreSQL. Submitted inquiries do not rely on localStorage.
-          </p>
-          {saveMessage && <p className="text-xs text-emerald-700">{saveMessage}</p>}
-          {saveError && <p className="text-xs text-red-600">{saveError}</p>}
-        </div>
-        <V2InquiryConfigurationPanel inquiryId={activeInquiryId} refreshKey={panelRefreshKey} internalView={!isCustomerActor} />
-      </div>
 
       <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-x-auto">
         <div className="flex items-center justify-between min-w-[720px] text-xs font-semibold">
@@ -513,7 +428,6 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
             inquiryId={activeInquiryId}
             lineId={activeLineId}
             jwtToken={jwtToken}
-            onPlanSaved={() => setPanelRefreshKey((k) => k + 1)}
             onHandoffReady={setCuttingHandoff}
           />
         </div>
@@ -526,7 +440,6 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
             inquiryId={activeInquiryId}
             lineId={activeLineId}
             jwtToken={jwtToken}
-            onPlanSaved={() => setPanelRefreshKey((k) => k + 1)}
             onDrumPlanConfirmed={setDrumPlanConfirmed}
           />
         </div>
@@ -539,7 +452,7 @@ export const CableConfiguratorV2: React.FC<CableConfiguratorV2Props> = ({
           drumPlanConfirmed={drumPlanConfirmed}
           bomGovernanceBlocked={configurationSnapshot.bomGovernanceBlocked}
           unresolvedBomConflictCount={configurationSnapshot.unresolvedBomConflictCount}
-          onCostingUpdated={() => setPanelRefreshKey((k) => k + 1)}
+          onCostingUpdated={() => undefined}
         />
       )}
       {activeInquiryId && validationResult.matchingCable && drumPlanConfirmed && !isCustomerActor && (

@@ -63,12 +63,10 @@ export function resolveInquiryWorkspaceTabs(input: {
   isStandardWorkflow?: boolean;
   counts: InquiryTabCounts;
 }): { id: InquiryWorkspaceTab; label: string; count?: number }[] {
-  const base = input.isCustomer
-    ? CUSTOMER_PORTAL_TABS
-    : CANONICAL_INTERNAL_TABS.filter((tab) => {
-        if (tab === 'costing' && !input.canViewCosting) return false;
-        return true;
-      });
+  const base = (input.isCustomer ? CUSTOMER_PORTAL_TABS : CANONICAL_INTERNAL_TABS).filter((tab) => {
+    if (tab === 'costing' && (input.isCustomer || !input.canViewCosting)) return false;
+    return true;
+  });
 
   const tabs = [...base];
   if (input.isStandardWorkflow) {

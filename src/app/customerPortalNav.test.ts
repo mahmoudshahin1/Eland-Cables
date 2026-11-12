@@ -24,7 +24,6 @@ describe('Customer home presentation navigation', () => {
       'Products',
       'My Inquiries',
       'Quotations',
-      'Orders',
       'Documents',
       'Help & Support',
     ]);
@@ -41,7 +40,7 @@ describe('Customer home presentation navigation', () => {
     assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('products'), true);
     assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('drum_optimizer'), false);
     assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('configurator'), false);
-    assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('sales_orders'), true);
+    assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('sales_orders'), false);
     assert.equal(CUSTOMER_PORTAL_VISIBLE_TABS.has('tds_library'), true);
     assert.equal(labels.includes('Pricing Rules'), false);
     assert.equal(labels.includes('Commercial Pricing Rules'), false);

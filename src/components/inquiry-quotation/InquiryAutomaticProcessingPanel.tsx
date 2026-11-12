@@ -111,6 +111,10 @@ export function InquiryAutomaticProcessingPanel(props: {
   marketNote?: string | null;
   onViewQuotation?: () => void;
 }) {
+  const completedForCustomer =
+    props.customerSafe && !props.loading && props.result?.status === 'COMPLETED';
+  if (completedForCustomer) return null;
+
   const stages = stageFromResult(props.result, Boolean(props.loading));
   if (stages.length === 0) return null;
 

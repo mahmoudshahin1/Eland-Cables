@@ -18,6 +18,7 @@ import {
   cancelInquiry,
   calculateInquiryCost,
   calculateInquiryLineCost,
+  countInquiryPortalStatuses,
   createInquiry,
   createInquiryRevision,
   createQuotationFromInquiry,
@@ -48,7 +49,13 @@ import {
   projectMetadataForActor,
   toPlatformMergeInput,
 } from '../platform/metadata/metadataService';
-import { projectInquiryForActor, projectInquiryListForActor, projectLineCostingForActor } from './commercialProjection';
+import { getPrisma } from './db';
+import {
+  projectInquiryForActor,
+  projectInquiryListForActor,
+  projectLineCostingForActor,
+  projectQuotationListForActor,
+} from './commercialProjection';
 import { resolveCustomerScope, assertCustomerBusinessScope, auditAmbiguousCustomerScope } from './customerScope';
 import {
   deleteInquiryLineAttachment,
@@ -114,7 +121,8 @@ function parseListQuery(req: { query: Record<string, unknown> }) {
       ? (req.query.sortBy as 'inquiryDate' | 'updatedAt' | 'customerName' | 'status')
       : 'updatedAt';
   const sortDir: 'asc' | 'desc' = req.query.sortDir === 'asc' ? 'asc' : 'desc';
-  const isCurrent = req.query.isCurrent === 'false' ? false : true;
+  const includeVersions = req.query.includeVersions === 'true';
+  const isCurrent = includeVersions ? undefined : req.query.isCurrent === 'false' ? false : true;
   const dateFrom = typeof req.query.dateFrom === 'string' ? req.query.dateFrom : undefined;
   const dateTo = typeof req.query.dateTo === 'string' ? req.query.dateTo : undefined;
   return { status, q, page, pageSize, sortBy, sortDir, isCurrent, dateFrom, dateTo };
@@ -140,6 +148,19 @@ const COSTING_UNPROCESSABLE = new Set([
   'DRUM_CONFIGURATION_REQUIRED',
   'INVALID_REQUEST_INPUTS',
 ]);
+
+async function primaryCustomerPhone(customerMasterId: string | null | undefined): Promise<string | null> {
+  if (!customerMasterId) return null;
+  const prisma = getPrisma();
+  if (!prisma) return null;
+  const contact = await prisma.customerContact.findFirst({
+    where: { customerId: customerMasterId, active: true },
+    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+    select: { phone: true, mobile: true },
+  });
+  const phone = contact?.phone?.trim() || contact?.mobile?.trim() || '';
+  return phone || null;
+}
 
 export const inquiriesRouter = Router();
 export const quotationsRouter = Router();
@@ -169,6 +190,34 @@ inquiriesRouter.get('/', async (req, res) => {
       ...result,
       inquiries: projectInquiryListForActor(result.inquiries, actor),
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+inquiriesRouter.get('/status-counts', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  try {
+    const query = parseListQuery(req);
+    const scope = {
+      q: query.q,
+      isCurrent: query.isCurrent,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+    };
+    if (actor.userType === 'customer') {
+      const customerScope = await resolveCustomerScope(actor);
+      const counts = await countInquiryPortalStatuses({
+        customerIds: customerScope.matchKeys,
+        customerMasterIds: customerScope.masterIds,
+        ...scope,
+      });
+      res.json(counts);
+      return;
+    }
+    const customerId = typeof req.query.customerId === 'string' ? req.query.customerId : undefined;
+    res.json(await countInquiryPortalStatuses({ customerId, ...scope }));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -282,7 +331,14 @@ inquiriesRouter.get('/:id', async (req, res) => {
     } catch {
       shipmentMasters = { destinationPorts: [], incoterms: [], combinations: [] };
     }
-    res.json({ inquiry: projectInquiryForActor(inquiry, actor), shipmentMasters });
+    const phone = await primaryCustomerPhone(inquiry.customerMasterId);
+    res.json({
+      inquiry: projectInquiryForActor(
+        { ...inquiry, customerContact: phone ? { phone } : null },
+        actor
+      ),
+      shipmentMasters,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -720,6 +776,69 @@ inquiriesRouter.post('/:id/cancel', async (req, res) => {
   }
 });
 
+inquiriesRouter.post('/:id/copy', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  try {
+    const { copyInquiryAsNew } = await import('./inquiryPortalLifecycleRepository');
+    const inquiry = await copyInquiryAsNew(req.params.id, actor);
+    res.status(201).json({
+      inquiry: projectInquiryForActor(inquiry, actor),
+      message: 'Inquiry copied as a new Open inquiry.',
+    });
+  } catch (err: any) {
+    if (err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message });
+    if (err.code === 'UNAUTHORIZED') return res.status(403).json({ error: err.message, code: err.code });
+    res.status(500).json({ error: err.message, code: err.code });
+  }
+});
+
+inquiriesRouter.post('/:id/approve', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  try {
+    const body = (req.body || {}) as { fulfillmentType?: string };
+    if (body.fulfillmentType != null && body.fulfillmentType !== 'DIRECT_ORDER' && body.fulfillmentType !== 'SALES_AGREEMENT') {
+      return res.status(400).json({
+        error: 'fulfillmentType must be DIRECT_ORDER or SALES_AGREEMENT.',
+        code: 'VALIDATION_FAILED',
+      });
+    }
+    const fulfillmentType = body.fulfillmentType === 'SALES_AGREEMENT' ? 'SALES_AGREEMENT' : 'DIRECT_ORDER';
+    const { acceptPortalInquiry } = await import('./inquiryPortalLifecycleRepository');
+    const inquiry = await acceptPortalInquiry(req.params.id, actor, fulfillmentType);
+    if (actor.id) {
+      try {
+        const { createUserNotification } = await import('./userNotificationService');
+        await createUserNotification({
+          userAccountId: actor.id,
+          title: `Inquiry ${inquiry.inquiryNumber} accepted`,
+          message: `The inquiry was approved as a ${fulfillmentType === 'SALES_AGREEMENT' ? 'Sales Agreement' : 'Direct Sales Order'}.`,
+          eventCode: 'INQUIRY_ACCEPTED',
+          entityType: 'CommercialInquiry',
+          entityId: inquiry.id,
+        });
+      } catch {
+        // Approval already succeeded.
+      }
+    }
+    res.json({
+      inquiry: projectInquiryForActor(inquiry, actor),
+      message: 'Inquiry accepted.',
+    });
+  } catch (err: any) {
+    if (err instanceof DomainError || err?.code) {
+      if (err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message, code: err.code });
+      if (err.code === 'UNAUTHORIZED') return res.status(403).json({ error: err.message, code: err.code });
+      if (err.code === 'VALIDATION_FAILED') return res.status(400).json({ error: err.message, code: err.code });
+      if (err.code === 'INVALID_STATE' || err.code === 'CONFLICT' || err.code === 'BUSINESS_RULE_REQUIRED') {
+        return res.status(409).json({ error: err.message, code: err.code });
+      }
+    }
+    res.status(500).json({ error: err.message, code: err.code });
+  }
+});
+
 inquiriesRouter.post('/:id/quotation', async (req, res) => {
   const actor = await requireQuotationAuth(req, res);
   if (!actor) return;
@@ -758,23 +877,29 @@ quotationsRouter.get('/', async (req, res) => {
 
   try {
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const portalStatus = typeof req.query.portalStatus === 'string' ? req.query.portalStatus : undefined;
     const isCurrent = req.query.isCurrent !== undefined ? req.query.isCurrent === 'true' : undefined;
     const q = typeof req.query.q === 'string' ? req.query.q : undefined;
+    const dateFrom = typeof req.query.dateFrom === 'string' ? req.query.dateFrom : undefined;
+    const dateTo = typeof req.query.dateTo === 'string' ? req.query.dateTo : undefined;
     if (actor.userType === 'customer') {
       const scope = await resolveCustomerScope(actor);
       const quotations = await listQuotations({
         customerIds: scope.matchKeys,
         customerMasterIds: scope.masterIds,
         status,
+        portalStatus,
         isCurrent,
         q,
+        dateFrom,
+        dateTo,
       });
-      res.json({ quotations });
+      res.json({ quotations: projectQuotationListForActor(quotations, actor) });
       return;
     }
     const customerId = typeof req.query.customerId === 'string' ? req.query.customerId : undefined;
-    const quotations = await listQuotations({ customerId, status, isCurrent, q });
-    res.json({ quotations });
+    const quotations = await listQuotations({ customerId, status, portalStatus, isCurrent, q, dateFrom, dateTo });
+    res.json({ quotations: projectQuotationListForActor(quotations, actor) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

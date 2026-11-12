@@ -137,10 +137,36 @@ describe('CostingEngine Domain Unit Tests', () => {
     // XL08: 11.92 * 2.40 = 28.61
     // Total: 1313.30 USD
     assert.equal(res.materialCost, 1313.3);
+    assert.equal(res.partial, false);
     assert.equal(res.costingLines.length, 2);
     assert.equal(res.processCostStatus, 'NOT_CONFIGURED');
     assert.equal(res.overheadCostStatus, 'NOT_CONFIGURED');
     assert.equal(res.manufacturingCost, null);
+  });
+
+  it('prices the other materials when one raw material has no price and does not treat the cable as zero', () => {
+    const req: CostingRequest = {
+      materialNumber: '10009487',
+      costingDate: new Date('2026-08-20'),
+      quantity: 1,
+      lengthMeters: 1000,
+      currency: 'USD',
+    };
+    const missingXlpe: CostingContext = {
+      ...sampleContext,
+      approvedPrices: sampleContext.approvedPrices.filter((price) => price.rawMaterialCode !== 'XL08'),
+    };
+    const res = calculateCableManufacturingCost(req, missingXlpe);
+    assert.equal(res.success, true);
+    assert.equal(res.partial, true);
+    assert.equal(res.materialCost, 1284.69);
+    const xlpe = res.costingLines.find((line) => line.rawMaterialCode === 'XL08');
+    assert.equal(xlpe?.lineCost, 0);
+    assert.equal(xlpe?.price, 0);
+    assert.match(String(xlpe?.calculationNotes), /not configured/i);
+    assert.ok(res.unpricedMaterials?.some((item) => item.rawMaterialCode === 'XL08'));
+    const copper = res.costingLines.find((line) => line.rawMaterialCode === 'CR01');
+    assert.equal(copper?.lineCost, 1284.69);
   });
 
   it('does not add Premium, Shipping or Clearance into Direct RM Cost (Option B — LME/Base only)', () => {

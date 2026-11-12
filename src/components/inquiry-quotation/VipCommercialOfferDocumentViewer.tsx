@@ -1,11 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { printIsolatedElement } from '../../utils/isolatedPrint';
 import * as XLSX from 'xlsx';
 import {
   FileText,
   FileSpreadsheet,
-  Download,
-  Printer,
   ShieldCheck,
   CheckCircle2,
   Cpu,
@@ -21,7 +18,6 @@ import {
   type CommercialInquiryLineDto,
 } from '../../services/commercialInquiryApiService';
 import type { V2QuotationDto } from '../../services/v2QuotationApiService';
-import { v2QuotationPdfUrl } from '../../services/v2QuotationApiService';
 import { DEFAULT_VIP_CABLES } from '../customer/vipCableCatalogData';
 import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 
@@ -294,11 +290,9 @@ export function resolveCableTdsSpecs(
 export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocumentViewerProps> = ({
   inquiry,
   quotation,
-  jwtToken,
   preferredContainerType = '40HQ',
 }) => {
   const [expandedDocuments, setExpandedDocuments] = useState({ commercialOffer: false, tds: false });
-  const [downloading, setDownloading] = useState(false);
   const [selectedLineIndex, setSelectedLineIndex] = useState(0);
 
   const lines = inquiry.lines || [];
@@ -457,45 +451,6 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
     .trim() || 'Doncaster';
   const deliveryPlace = `${incoterm} ${destination}`;
   const destinationDisplay = deliveryPlace;
-
-  // Download PDF handler
-  const handleDownloadOfferPdf = async () => {
-    if (!jwtToken) return;
-    setDownloading(true);
-    try {
-      const url = v2QuotationPdfUrl(inquiry.id);
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      });
-      if (!res.ok) {
-        const errorJson = await res.json().catch(() => ({}));
-        throw new Error(errorJson.error || `Download failed with HTTP ${res.status}`);
-      }
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = `COMMERCIAL-OFFER-${quoteNumber}-REV${revision}.pdf`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-    } catch (err: any) {
-      console.error('Failed to download offer PDF:', err);
-      alert(`Could not download PDF quotation: ${err.message || 'Unknown error'}. Calculate costing first, or refresh the page.`);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  const handlePrintDocument = (target: 'commercial_offer' | 'tds') => {
-    const selector = target === 'commercial_offer' ? '.vip-print-commercial-offer' : '.vip-print-tds';
-    const node = document.querySelector(selector);
-    if (!(node instanceof HTMLElement)) {
-      alert('The document is not ready to print yet.');
-      return;
-    }
-    printIsolatedElement(node, target === 'commercial_offer' ? 'Commercial Offer' : 'Technical Data Sheet');
-    return;
-  };
 
   // Download Technical Data Sheet (TDS) as Excel (.xlsx) workbook
   const handleDownloadTdsExcel = () => {
@@ -671,25 +626,6 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             <span>Commercial Offer</span>
             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">Official</span>
           </button>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handlePrintDocument('commercial_offer')}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-            >
-              <Printer className="h-3.5 w-3.5" />
-              <span>Print Offer</span>
-            </button>
-            <button
-              type="button"
-              disabled={downloading}
-              onClick={handleDownloadOfferPdf}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:from-brand-700 hover:to-blue-700 disabled:opacity-50"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>{downloading ? 'Generating PDF…' : 'Download Commercial Offer (PDF)'}</span>
-            </button>
-          </div>
         </div>
         <div className={`vip-document-panel-content ${expandedDocuments.commercialOffer ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.commercialOffer} inert={!expandedDocuments.commercialOffer}>
 
@@ -1083,24 +1019,14 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             <span>Technical Data Sheet (TDS)</span>
             <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">BASEC Specs</span>
           </button>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handlePrintDocument('tds')}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-            >
-              <Printer className="h-3.5 w-3.5 text-blue-600" />
-              <span>Print TDS / PDF</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleDownloadTdsExcel}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-emerald-500/20 transition-all hover:from-emerald-700 hover:to-teal-700"
-            >
-              <FileSpreadsheet className="h-3.5 w-3.5" />
-              <span>Download TDS (Excel / XLSX)</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleDownloadTdsExcel}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-emerald-500/20 transition-all hover:from-emerald-700 hover:to-teal-700"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            <span>Download TDS (Excel / XLSX)</span>
+          </button>
         </div>
         <div className={`vip-document-panel-content ${expandedDocuments.tds ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.tds} inert={!expandedDocuments.tds}>
       {/* DOCUMENT VIEW 2: TECHNICAL DATA SHEET (TDS) */}

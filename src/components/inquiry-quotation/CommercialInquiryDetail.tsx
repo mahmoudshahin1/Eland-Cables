@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   AlertTriangle,
@@ -22,7 +23,6 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  Printer,
   RefreshCw,
   Ruler,
   Save,
@@ -57,10 +57,6 @@ import { canEditLineTechnicalAttachments } from '../../domain/inquiryLineAttachm
 import { SystemNotification } from '../../types';
 import { useDrumMasterList } from '../common/DrumMasterSelect';
 import { InquiryDrumsTable } from './InquiryDrumsTable';
-import {
-  findAllDrumMastersForInquiryLine,
-  resolveDrumDescription,
-} from '../../services/drumMasterService';
 import { InquiryHeaderForm } from './InquiryHeaderForm';
 import { InquiryFieldVisibilityPanel } from './InquiryFieldVisibilityPanel';
 import { InquirySummaryBar } from './InquirySummaryBar';
@@ -79,20 +75,25 @@ import {
 } from './inquiryWorkspaceTabs';
 import { isV2InquiryMetadata } from '../../domain/v2InquiryWorkflow';
 import { canCalculateInquiry, canSubmitInquiry } from '../../domain/inquiryProcessCommands';
+import { portalCanApprove, portalInquiryEditable, portalLifecycleFromInquiry } from '../../domain/inquiryPortalLifecycle';
+import { customerInquiryDetailPath } from '../../app/shellRoutes';
 import { fetchV2Quotation, v2QuotationPdfUrl, type V2QuotationDto } from '../../services/v2QuotationApiService';
 import { CustomerQuotationView } from '../customer/CustomerQuotationView';
 import { InquiryAutomaticProcessingPanel } from './InquiryAutomaticProcessingPanel';
 import { QuotationSectionV2 } from '../cable-configurator/v2/components/QuotationSectionV2';
 import { CommercialOfferDocumentsPanel } from './CommercialOfferDocumentsPanel';
 import { computeCableOrderLengthRange, parseInquiryDrumSchedule } from '../../domain/inquiryDrumSchedule';
+import { formatInquiryDrumScheduleExpression } from '../../domain/inquiryDrumLineSummary';
 import { AddInquiryLineInput } from '../../domain/commercialDomain';
 import {
   addCommercialInquiryLine,
   calculateInquiryCost,
   calculateInquiryLineCost,
+  approveCommercialInquiry,
   cancelCommercialInquiry,
   CommercialInquiryDto,
   CommercialInquiryLineDto,
+  copyCommercialInquiry,
   createCommercialInquiryVersion,
   deleteCommercialInquiryLine,
   duplicateCommercialInquiryLine,
@@ -131,7 +132,6 @@ import { CableSearchSelectModal } from '../common/CableSearchSelectModal';
 import { autoConfirmPersistedCommercialDrumSchedule } from '../../services/confirmInquiryDrumPlanFromSchedule';
 import { InquiryLineAttachmentsCell, inquiryLinesMissingTechnicalOffer } from './InquiryLineAttachmentsCell';
 import { countInquiryWorkspaceDocuments } from '../../domain/inquiryDocuments';
-import { escapeHtml, printIsolatedHtml } from '../../utils/isolatedPrint';
 import { VipFastTrackJourneyBar } from './VipFastTrackJourneyBar';
 import { VipContainerStudyPlanner } from './VipContainerStudyPlanner';
 import { VipContractFulfillmentSelector } from './VipContractFulfillmentSelector';
@@ -159,7 +159,6 @@ import { resolveInquiryCommercialTotals, resolveSubmittedProductsTotal } from '.
 import { StatusBadge } from '../ui/Badge';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import {
-  CustomerInquiryActionToolbar,
   CustomerInquiryDetailHero,
   CustomerInquiryFooterKpis,
   CustomerInquiryPrimaryActions,
@@ -268,6 +267,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   portalMode = 'internal',
 }) => {
   const { jwtToken, currentUser, hasPermission } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const requestedTab = (location.state as { tab?: DetailTab } | null)?.tab;
   const isCustomer = portalMode === 'customer';
   const drumMaster = useDrumMasterList(true);
   const canQuote = hasPermission('salesQuotations') && !isCustomer;
@@ -287,12 +289,12 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [tab, setTab] = useState<DetailTab>('lines');
+  const [tab, setTab] = useState<DetailTab>(requestedTab === 'quotation' ? 'quotation' : 'lines');
   const [headerForm, setHeaderForm] = useState<InquiryHeaderFormState | null>(null);
   const [savingHeader, setSavingHeader] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedLineIds, setSelectedLineIds] = useState<Set<string>>(new Set());
-  const [showFieldPanel, setShowFieldPanel] = useState(false);
+  const showFieldPanel = false;
   const [showLineColumns, setShowLineColumns] = useState(false);
   const [showColumnModal, setShowColumnModal] = useState(false);
   const [scheduleLine, setScheduleLine] = useState<CommercialInquiryLineDto | null>(null);
@@ -339,6 +341,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [compareVersionB, setCompareVersionB] = useState<string>('');
   const [cuttingError, setCuttingError] = useState<string | null>(null);
   const [v2Quotation, setV2Quotation] = useState<V2QuotationDto | null>(null);
+  const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>('DIRECT_ORDER');
   const [deliveryFocusSignal, setDeliveryFocusSignal] = useState(0);
   const [shipmentMasters, setShipmentMasters] = useState<{
     destinationPorts: Array<{ code: string; name: string }>;
@@ -408,6 +411,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
 
   const notifyInquiryChanged = (next: CommercialInquiryDto) => {
     onInquiryChangedRef.current?.(next);
+    window.dispatchEvent(new CustomEvent('portal-inquiry-changed'));
   };
 
   useEffect(() => {
@@ -421,6 +425,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       setIsEditing(false);
     }
   }, [inquiry?.id, inquiry?.status]);
+
+  useEffect(() => {
+    const stored = inquiry?.commercialMetadata?.requestedFulfillmentType;
+    setFulfillmentType(stored === 'SALES_AGREEMENT' ? 'SALES_AGREEMENT' : 'DIRECT_ORDER');
+  }, [inquiry?.id]);
 
   useEffect(() => {
     if (!showMoreMenu) return;
@@ -505,10 +514,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     () => visibleFieldsForUser(platformHeaderFields, headerPref, isCustomer),
     [platformHeaderFields, headerPref, isCustomer]
   );
-  const visibleLineColumns = useMemo(
-    () => visibleFieldsForUser(platformLineFields, linePref, isCustomer),
-    [platformLineFields, linePref, isCustomer]
-  );
+  const visibleLineColumns = useMemo(() => {
+    const columns = visibleFieldsForUser(platformLineFields, linePref, isCustomer);
+    if (!isCustomer) return columns;
+    return columns.filter((column) => column.id !== 'cuttingLengthMeters');
+  }, [platformLineFields, linePref, isCustomer]);
 
   const summary = useMemo(() => (inquiry ? inquirySummary(inquiry) : null), [inquiry]);
   const isV2Inquiry = useMemo(
@@ -767,6 +777,33 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     }
   };
 
+  const handleCopyInquiry = async () => {
+    if (!jwtToken || !inquiry) return;
+    try {
+      const copied = await copyCommercialInquiry(jwtToken, inquiry.id);
+      notify(`Copied as ${copied.inquiryNumber}.`);
+      notifyInquiryChanged(copied);
+      if (isCustomer) navigate(customerInquiryDetailPath(copied.id));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Copy failed');
+    }
+  };
+
+  const handleApproveInquiry = async (selected: FulfillmentType = fulfillmentType) => {
+    if (!jwtToken || !inquiry) return;
+    try {
+      const updated = await approveCommercialInquiry(jwtToken, inquiry.id, selected);
+      setInquiry(updated);
+      setHeaderForm(buildHeaderFormFromInquiry(updated));
+      setFulfillmentType(selected);
+      notify('Inquiry approved.');
+      notifyInquiryChanged(updated);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Approve failed');
+      throw err;
+    }
+  };
+
   const handleCancel = async () => {
     if (!jwtToken || !inquiry) return;
     try {
@@ -949,40 +986,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     }
   };
 
-  const printInquiryReport = (kind: 'summary' | 'costing' | 'offer') => {
-    if (!inquiry) return;
-    const lines = inquiry.lines || [];
-    const title =
-      kind === 'summary' ? 'Inquiry Summary' : kind === 'costing' ? 'Costing Breakdown' : 'Technical Offer';
-    const cell = (value: unknown) => escapeHtml(value);
-    const rows = lines
-      .map((line) => {
-        const cutting = line.cuttingLengthMeters != null ? `${line.cuttingLengthMeters} m` : '—';
-        const cost =
-          !isCustomer && line.materialCost != null
-            ? `${line.materialCost} ${inquiry.currency}`
-            : isCustomer
-              ? '—'
-              : line.costingReadinessStatus || 'NOT_READY';
-        return `<tr><td>${cell(line.lineNumber)}</td><td>${cell(line.materialNumber || '')}</td><td>${cell(line.cableDescription)}</td><td>${cell(line.requestedQuantity)}</td><td>${cell(resolveInquiryLineTotalLengthMeters(line))}</td><td>${cell(cutting)}</td><td>${cell(line.drumType || 'DRUM_CONFIGURATION_REQUIRED')}</td><td>${cell(cost)}</td><td>${cell(line.costingCalculationId || '—')}</td></tr>`;
-      })
-      .join('');
-    const costingBlock =
-      kind === 'costing' && costingBreakdown
-        ? `<pre>${escapeHtml(JSON.stringify({ status: costingBreakdown.status, errorCode: costingBreakdown.errorCode, blockingReasons: costingBreakdown.blockingReasons, totals: costingBreakdown.totals }, null, 2))}</pre>`
-        : '';
-    printIsolatedHtml(`<!doctype html><html><head><title>${escapeHtml(title)} ${escapeHtml(inquiry.inquiryNumber)}</title>
-      <style>body{font-family:sans-serif;padding:24px;color:#0f172a}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #cbd5e1;padding:6px;text-align:left}h1{font-size:18px}</style>
-      </head><body>
-      <h1>${escapeHtml(title)}</h1>
-      <p>${escapeHtml(inquiry.inquiryNumber)} v${escapeHtml(inquiry.versionNo)} · ${escapeHtml(inquiry.customerName)} · ${escapeHtml(inquiry.status)} · ${escapeHtml(inquiry.incoterms || '')} · ${escapeHtml(inquiry.currency)}</p>
-      <p>Source: PostgreSQL inquiry + costing snapshot. Totals are shown only when Calculate returned READY. Missing configuration is never printed as zero.</p>
-      <table><thead><tr><th>Line</th><th>Cable</th><th>Description</th><th>Drums</th><th>Length m</th><th>Cutting</th><th>Drum</th><th>Cost</th><th>costingCalculationId</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-      ${costingBlock}
-      </body></html>`);
-  };
-
   const addLine = async () => {
     if (!jwtToken || !inquiry) return;
     setCableSearchTargetLineId(null);
@@ -1150,10 +1153,12 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       if (canCalculateInquiry(inquiry)) {
         const result = await calculateVipInquiry(jwtToken, inquiry.id, { recalculate: true });
         setVipCalcResult(result);
-        const refreshed = await fetchCommercialInquiry(jwtToken, inquiry.id);
+        const nextId = result.inquiryId || inquiry.id;
+        const refreshed = await fetchCommercialInquiry(jwtToken, nextId);
         setInquiry(refreshed);
         setHeaderForm(buildHeaderFormFromInquiry(refreshed));
         notifyInquiryChanged(refreshed);
+        if (nextId !== inquiry.id && isCustomer) navigate(customerInquiryDetailPath(nextId));
         if (result.status === 'COMPLETED' && result.financialOffer && result.quotation) {
           notify(
             result.quotation.created
@@ -1315,13 +1320,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           : '—';
       case 'quantityUom':
         return line.quantityUom || 'M';
-      case 'drumType': {
-        const drums = findAllDrumMastersForInquiryLine(line.drumType, drumMaster);
-        if (!drums.length) return line.drumType || '—';
-        return drums
-          .map((drum) => `${drum.drumCode} · ${resolveDrumDescription(drum)}`)
-          .join(' + ');
-      }
+      case 'drumType':
+        return formatInquiryDrumScheduleExpression(line);
       case 'cableAuthorityStatus':
         return (
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${techStatusBadgeClass(line.cableAuthorityStatus || '')}`}>
@@ -1405,6 +1405,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       : null;
   const formatCommercialMoney = (amount: number) =>
     `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency || 'USD'}`;
+  const hasCalculatedQuotation = Boolean(v2Quotation?.id || inquiry.quotations?.some((row) => row.id));
+  const canApproveInquiry = portalCanApprove({
+    status: inquiry.status,
+    commercialMetadata: inquiry.commercialMetadata,
+    hasQuotation: hasCalculatedQuotation,
+    total: commercialTotals.grandTotal == null ? null : Number(commercialTotals.grandTotal),
+  });
 
   return (
     <div className="space-y-4">
@@ -1460,51 +1467,37 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           <CustomerInquiryDetailHero
             inquiry={inquiry}
             totalContractValueSlot={
-              isCustomer && isVipV2Inquiry && (inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales)) &&
               commercialTotals.grandTotal != null ? (
                 <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
                   <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">
                     {formatCommercialMoney(commercialTotals.grandTotal)}
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Fulfillment: <span className="font-bold text-slate-800">{(inquiry.commercialMetadata?.requestedFulfillmentType || v2Quotation?.fulfillmentType) === 'SALES_AGREEMENT' ? 'Sales Agreement' : 'Direct Sales Order'}</span>
-                  </p>
+                  <p className="text-[10px] text-slate-500 mt-1">Commercial total for this inquiry version.</p>
                 </div>
               ) : undefined
             }
             actions={
               <CustomerInquiryPrimaryActions
-                isEditable={isEditable}
-                canCalculate={canCalculate}
-                canSubmit={canSubmit}
+                canEdit={Boolean(inquiry && portalInquiryEditable(inquiry))}
+                canSave={Boolean(inquiry && portalInquiryEditable(inquiry))}
+                canCalculate={Boolean(inquiry && portalInquiryEditable(inquiry) && canCalculate)}
+                canApprove={canApproveInquiry}
+                canCancel={Boolean(canCancel)}
+                canCopy={Boolean(inquiry)}
                 savingHeader={savingHeader}
                 costingLoading={costingLoading}
                 hasLines={(inquiry.lines || []).length > 0}
+                onEdit={() => {
+                  document.getElementById('inquiry-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
                 onSave={() => void saveHeader()}
                 onCalculate={() => void runCalculateInquiry()}
-                onSubmit={() => void handleSubmit()}
-                hideSaveAndCalculate={Boolean(inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales))}
-                showAutoSaveAction={!(isCustomer && isVipV2Inquiry)}
-                extra={
-                  <CustomerInquiryActionToolbar
-                    showDiscard={isEditable && headerIsDirty}
-                    showCancel={Boolean(canCancel)}
-                    onOverview={() => {
-                      setTab('overview');
-                      window.setTimeout(() => {
-                        document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }, 60);
-                    }}
-                    onQuotation={() => openQuotationTab()}
-                    onPrintSummary={() => printInquiryReport('summary')}
-                    onPrintTechnical={() => printInquiryReport('offer')}
-                    onExport={() => void handleExportData()}
-                    onFieldVisibility={() => setShowFieldPanel((v) => !v)}
-                    onDiscard={() => setConfirmDiscardOpen(true)}
-                    onCancel={() => setConfirmCancelOpen(true)}
-                  />
-                }
+                onApprove={() => {
+                  void handleApproveInquiry(fulfillmentType).catch(() => undefined);
+                }}
+                onCancel={() => setConfirmCancelOpen(true)}
+                onCopy={() => void handleCopyInquiry()}
               />
             }
           />
@@ -1643,11 +1636,28 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </div>
             ) : null}
 
+            {!isCustomer && vipCalcResult?.unpricedMaterials && vipCalcResult.unpricedMaterials.length > 0 && (
+              <div className="w-full mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
+                <div className="flex items-center gap-1.5 font-bold mb-2">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Partial price. These raw materials have no configured price and were excluded from the total.
+                </div>
+                <ul className="space-y-1">
+                  {vipCalcResult.unpricedMaterials.map((item) => (
+                    <li key={`${item.lineNumber || 0}-${item.rawMaterialCode}`}>
+                      <span className="font-semibold">{item.rawMaterialCode}</span>
+                      {item.lineNumber ? ` (line ${item.lineNumber})` : ''}: {item.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {!isCustomer && vipCalcResult && vipCalcResult.status === 'COMPLETED' && vipCalcResult.optionalWarnings.length > 0 && (
               <div className="w-full mt-2 rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-950">
                 <div className="flex items-center gap-1.5 font-bold mb-2">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  VIP Calculate complete — optional costs defaulted to zero
+                  Calculate complete — optional costs defaulted to zero
                 </div>
                 <ul className="space-y-1 mb-2">
                   {vipCalcResult.optionalComponents
@@ -1670,7 +1680,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <div className="w-full mt-2 rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-950">
                 <div className="flex items-center gap-1.5 font-bold mb-2">
                   <ShieldAlert className="h-3.5 w-3.5" />
-                  VIP Calculate blocked — readiness gates
+                  Calculate blocked — readiness gates
                 </div>
                 <ul className="space-y-1">
                   {vipCalcResult.gates
@@ -1731,41 +1741,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
               {showMoreMenu && (
                 <div className="absolute right-0 mt-1.5 w-48 rounded-2xl border border-slate-200 bg-white shadow-xl z-30 py-1.5 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      printInquiryReport('summary');
-                      setShowMoreMenu(false);
-                    }}
-                    className="w-full px-4 py-2.5 text-left flex items-center gap-2 hover:bg-slate-50 text-slate-700 font-medium"
-                  >
-                    <Printer className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Print inquiry summary</span>
-                  </button>
-                  {!isCustomer && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        printInquiryReport('costing');
-                        setShowMoreMenu(false);
-                      }}
-                      className="w-full px-4 py-2.5 text-left flex items-center gap-2 hover:bg-slate-50 text-slate-700 font-medium"
-                    >
-                      <FileSpreadsheet className="h-3.5 w-3.5 text-slate-400" />
-                      <span>Print costing breakdown</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      printInquiryReport('offer');
-                      setShowMoreMenu(false);
-                    }}
-                    className="w-full px-4 py-2.5 text-left flex items-center gap-2 hover:bg-slate-50 text-slate-700 font-medium"
-                  >
-                    <FileText className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Print technical offer</span>
-                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -1842,7 +1817,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   customerCode: currentUser?.customerCode,
                   companyName: currentUser?.companyName || currentUser?.companyLegalName,
                   email: currentUser?.email,
-                  phone: currentUser?.mobile,
+                  phone: currentUser?.mobile || inquiry.customerContact?.phone,
                 }
               : undefined
           }
@@ -1870,8 +1845,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
 
       <WorkflowStatusIndicator inquiryId={inquiryId} className="mt-1" />
 
-      {/* VIP Fast-Track Order Journey stays off the sales order page and off the VIP customer page. */}
-      {isCustomer && !isVipV2Inquiry && inquiry.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK' && <VipFastTrackJourneyBar
+      {false && isCustomer && !isVipV2Inquiry && inquiry.commercialMetadata?.inquiryProcessCode !== 'VIP_FAST_TRACK' && <VipFastTrackJourneyBar
         currentTab={tab}
         onSelectTab={(selectedTab) => {
           const nextTab = isCustomer
@@ -2668,34 +2642,34 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               />
             )}
 
-            {/* VIP Commercial Fulfillment Selector: Choose Direct Sales Order or Sales Agreement */}
+            {hasCalculatedQuotation && (
             <VipContractFulfillmentSelector
               quotationId={v2Quotation?.id || inquiry.quotations?.[0]?.id}
-              quotationNumber={v2Quotation?.quotationNumber || inquiry.quotations?.[0]?.quotationNumber || 'QUO26-00004'}
+              quotationNumber={v2Quotation?.quotationNumber || inquiry.quotations?.[0]?.quotationNumber || inquiry.inquiryNumber}
               versionNo={v2Quotation?.versionNo || inquiry.quotations?.[0]?.versionNo || 1}
               totalAmount={commercialTotals.grandTotal}
               currency={inquiry.currency}
-              initialFulfillmentType={
-                (inquiry.commercialMetadata?.requestedFulfillmentType as FulfillmentType) ||
-                v2Quotation?.fulfillmentType ||
-                'DIRECT_ORDER'
-              }
+              initialFulfillmentType={fulfillmentType}
               commercialApprovalStatus={
-                v2Quotation?.commercialApprovalStatus ||
-                inquiry.quotations?.[0]?.commercialApprovalStatus ||
-                'NOT_SUBMITTED'
+                portalLifecycleFromInquiry(inquiry) === 'ACCEPTED'
+                  ? 'APPROVED'
+                  : v2Quotation?.commercialApprovalStatus ||
+                    inquiry.quotations?.[0]?.commercialApprovalStatus ||
+                    'NOT_SUBMITTED'
               }
               isSubmittedToSales={
-                inquiry.status === 'SUBMITTED' ||
-                Boolean(inquiry.commercialMetadata?.submittedToSales)
+                !isCustomer &&
+                (inquiry.status === 'SUBMITTED' || Boolean(inquiry.commercialMetadata?.submittedToSales))
               }
-              canApprove={canQuote || !isCustomer}
+              canApprove={isCustomer ? canApproveInquiry : canQuote || !isCustomer}
+              onSelectedTypeChange={setFulfillmentType}
               onSubmitToSales={handleSubmitToSales}
-              onApproveCommercial={handleApproveCommercialBySales}
+              onApproveCommercial={isCustomer ? handleApproveInquiry : handleApproveCommercialBySales}
               createdOrderId={releasedSalesOrderId}
               createdAgreementId={releasedAgreementId}
               isCustomer={isCustomer}
             />
+            )}
 
             {(inquiry.quotations || []).length === 0 && !v2Quotation ? (
               <p className="text-slate-400 py-8 text-center">No quotations generated yet.</p>
@@ -2742,7 +2716,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50">
                   <p className="font-bold text-blue-900 mb-1">Internal Sales Comments</p>
                   <p className="text-blue-800">
-                    {inquiry.commercialMetadata?.salesComments || 'No internal sales comments.'}
+                    {typeof inquiry.commercialMetadata?.salesComments === 'string'
+                      ? inquiry.commercialMetadata.salesComments
+                      : 'No internal sales comments.'}
                   </p>
                 </div>
               )}
@@ -3326,10 +3302,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     notify(`Container type selected: ${t}`);
                   }}
                   onProceedToCosting={() => {
-                    setTab('costing');
-                    window.setTimeout(() => {
-                      document.getElementById('inquiry-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 60);
+                    notify('Container plan saved.');
                   }}
                   isEditable={isEditable}
                   lines={inquiry.lines}

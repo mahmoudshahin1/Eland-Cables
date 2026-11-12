@@ -5,12 +5,16 @@ import { INITIAL_USERS_DATABASE } from '../data/mockUsers';
 import { applyDemoUserLogin } from '../domain/demoAuth';
 import { UNIFIED_LOGIN_PATH } from '../auth/loginRoutes';
 import {
+  ACCESS_TOKEN_KEY,
+  claimRefreshLock,
   clearAuthTokens,
   getJwtExpiryMs,
   isRememberedSession,
   persistAuthTokens,
   readAccessToken,
   readRefreshToken,
+  REFRESH_TOKEN_KEY,
+  releaseRefreshLock,
 } from '../auth/tokenStorage';
 
 interface AuthContextType {
@@ -93,8 +97,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const refreshJwtToken = useCallback(async (): Promise<boolean> => {
-    const storedRefresh = refreshToken || readRefreshToken();
+    const storedRefresh = readRefreshToken() || refreshToken;
     if (!storedRefresh) return false;
+    if (!claimRefreshLock()) {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      const latestAccess = readAccessToken();
+      const latestRefresh = readRefreshToken();
+      if (latestAccess && latestRefresh && latestRefresh !== storedRefresh) {
+        setJwtToken(latestAccess);
+        setRefreshToken(latestRefresh);
+        return true;
+      }
+      return Boolean(latestAccess && latestRefresh);
+    }
     try {
       const res = await fetch('/api/auth/refresh-token', {
         method: 'POST',
@@ -112,8 +127,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
         return true;
       }
+      const latestRefresh = readRefreshToken();
+      const latestAccess = readAccessToken();
+      if (latestRefresh && latestRefresh !== storedRefresh && latestAccess) {
+        setJwtToken(latestAccess);
+        setRefreshToken(latestRefresh);
+        return true;
+      }
     } catch (e) {
       console.error('Refresh token error:', e);
+    } finally {
+      releaseRefreshLock();
     }
     return false;
   }, [refreshToken]);
@@ -172,6 +196,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   }, [jwtToken, logout]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== ACCESS_TOKEN_KEY && event.key !== REFRESH_TOKEN_KEY) return;
+      const access = readAccessToken();
+      const refresh = readRefreshToken();
+      if (!access && !refresh) {
+        clearLocalSession();
+        return;
+      }
+      setJwtToken(access);
+      setRefreshToken(refresh);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [clearLocalSession]);
 
   // Refresh access token before JWT expiry; log out if the session cannot be renewed
   useEffect(() => {

@@ -763,11 +763,6 @@ export const SupportCenter: React.FC = () => {
                         Quotation {detail.quotation.quotationNumber}
                       </Link>
                     )}
-                    {detail.salesOrder && (
-                      <Link className="rounded-xl border border-slate-100 px-3 py-2 hover:bg-slate-50" to={customerPathForTab('sales_orders')}>
-                        Sales order {detail.salesOrder.salesOrderNumber}
-                      </Link>
-                    )}
                     {detail.shipment && (
                       <Link className="rounded-xl border border-slate-100 px-3 py-2 hover:bg-slate-50" to={customerPathForTab('shipment_tracking')}>
                         Shipment {detail.shipment.groupCode}

@@ -1,5 +1,12 @@
 import type { BadgeTone } from '../ui';
 import {
+  displayInquiryNumber,
+  portalInquiryEditable,
+  portalLifecycleFromInquiry,
+  portalLifecycleLabel,
+  portalVersionLabel,
+} from '../../domain/inquiryPortalLifecycle';
+import {
   resolveInquiryLineTotalLengthMeters,
   type CommercialInquiryDto,
   type CommercialInquiryLineDto,
@@ -10,33 +17,36 @@ export type CustomerInquiryWorkspaceTab = 'inquiries' | 'quotations';
 
 export type CustomerInquiryKpiBucket = 'draft' | 'inProgress' | 'submitted' | 'quoted' | 'other';
 
-export type CustomerInquiryRowAction = 'view' | 'continue' | 'view_quotation' | 'download_pdf';
+export type CustomerInquiryRowAction = 'view' | 'edit' | 'continue' | 'view_quotation' | 'download_pdf';
 
-export const CUSTOMER_INQUIRY_STATUS_FILTERS: Array<{ value: string; label: string }> = [
-  { value: '', label: 'All' },
-  { value: 'DRAFT', label: 'Draft' },
-  { value: 'SUBMITTED', label: 'Submitted' },
-  { value: 'UNDER_REVIEW', label: 'Under Technical Review' },
-  { value: 'ENGINEERING_REVIEW', label: 'Under Technical Review' },
-  { value: 'ENGINEERING_BLOCKED', label: 'Action Required' },
-  { value: 'READY_FOR_COMMERCIAL', label: 'Ready for Quotation' },
-  { value: 'QUOTED', label: 'Quotation Sent' },
-  { value: 'CLOSED', label: 'Closed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
-];
-
-/** Unique dropdown options — UNDER_REVIEW and ENGINEERING_REVIEW share a customer label. */
+/** Customer status filter. Values are portal lifecycle codes, not the Prisma enum. */
 export const CUSTOMER_INQUIRY_STATUS_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: '', label: 'All' },
-  { value: 'DRAFT', label: 'Draft' },
-  { value: 'SUBMITTED', label: 'Submitted' },
-  { value: 'ENGINEERING_REVIEW', label: 'Under Technical Review' },
-  { value: 'ENGINEERING_BLOCKED', label: 'Action Required' },
-  { value: 'READY_FOR_COMMERCIAL', label: 'Ready for Quotation' },
-  { value: 'QUOTED', label: 'Quotation Sent' },
-  { value: 'CLOSED', label: 'Closed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'OPEN', label: 'Draft' },
+  { value: 'NOT_SUBMITTED', label: 'Submitted' },
+  { value: 'CANCELED', label: 'Canceled' },
+  { value: 'ACCEPTED', label: 'Approved' },
 ];
+
+export const CUSTOMER_INQUIRY_STATUS_FILTERS = CUSTOMER_INQUIRY_STATUS_FILTER_OPTIONS;
+
+export type CustomerInquiryStatusCard = 'total' | 'draft' | 'submitted' | 'canceled' | 'approved';
+
+/** Card click and the status dropdown send the same lifecycle code. */
+export function customerInquiryStatusCardFilter(card: CustomerInquiryStatusCard): string {
+  switch (card) {
+    case 'draft':
+      return 'OPEN';
+    case 'submitted':
+      return 'NOT_SUBMITTED';
+    case 'canceled':
+      return 'CANCELED';
+    case 'approved':
+      return 'ACCEPTED';
+    default:
+      return '';
+  }
+}
 
 export const CUSTOMER_CABLE_TYPE_FILTERS: Array<{ value: string; label: string }> = [
   { value: '', label: 'All' },
@@ -64,50 +74,20 @@ export const CUSTOMER_INQUIRY_TIMELINE = [
 
 const COSTING_LEAK_RE = /costing|raw material|manufacturing cost|g&a|margin|formula/i;
 
-export function customerFacingInquiryStatusLabel(status: string): string {
-  switch ((status || '').toUpperCase()) {
-    case 'DRAFT':
-      return 'Draft';
-    case 'SUBMITTED':
-      return 'Submitted';
-    case 'UNDER_REVIEW':
-    case 'ENGINEERING_REVIEW':
-      return 'Under Technical Review';
-    case 'ENGINEERING_BLOCKED':
-      return 'Action Required';
-    case 'READY_FOR_COMMERCIAL':
-      return 'Ready for Quotation';
-    case 'QUOTED':
-      return 'Quotation Sent';
-    case 'CLOSED':
-      return 'Closed';
-    case 'CANCELLED':
-      return 'Cancelled';
-    default:
-      return (status || '—').replace(/_/g, ' ');
-  }
+export function customerFacingInquiryStatusLabel(status: string, metadata?: unknown): string {
+  return portalLifecycleLabel(portalLifecycleFromInquiry({ status, commercialMetadata: metadata }));
 }
 
-export function customerFacingInquiryStatusTone(status: string): BadgeTone {
-  switch ((status || '').toUpperCase()) {
-    case 'DRAFT':
+export function customerFacingInquiryStatusTone(status: string, metadata?: unknown): BadgeTone {
+  switch (portalLifecycleFromInquiry({ status, commercialMetadata: metadata })) {
+    case 'OPEN':
       return 'neutral';
-    case 'SUBMITTED':
+    case 'NOT_SUBMITTED':
       return 'info';
-    case 'UNDER_REVIEW':
-    case 'ENGINEERING_REVIEW':
-      return 'warning';
-    case 'ENGINEERING_BLOCKED':
+    case 'CANCELED':
       return 'error';
-    case 'READY_FOR_COMMERCIAL':
-      return 'brand';
-    case 'QUOTED':
+    case 'ACCEPTED':
       return 'copper';
-    case 'CLOSED':
-    case 'CANCELLED':
-      return 'neutral';
-    default:
-      return 'neutral';
   }
 }
 
@@ -215,7 +195,10 @@ export function inquiryHasCustomerQuotation(inquiry: CommercialInquiryDto): bool
 
 export function customerInquiryRowActions(inquiry: CommercialInquiryDto): CustomerInquiryRowAction[] {
   const actions: CustomerInquiryRowAction[] = ['view'];
-  if ((inquiry.status || '').toUpperCase() === 'DRAFT') actions.push('continue');
+  if (portalInquiryEditable(inquiry)) {
+    actions.push('continue');
+    actions.push('edit');
+  }
   if (inquiryHasCustomerQuotation(inquiry)) {
     actions.push('view_quotation');
     actions.push('download_pdf');
@@ -258,6 +241,7 @@ export function customerInquiryTimelineState(status: string): Array<{
 export type CustomerInquiryListRow = {
   id: string;
   inquiryNumber: string;
+  versionLabel: string;
   createdDate: string;
   projectName: string;
   cableType: string;
@@ -274,15 +258,16 @@ export type CustomerInquiryListRow = {
 export function buildCustomerInquiryListRow(inquiry: CommercialInquiryDto): CustomerInquiryListRow {
   return {
     id: inquiry.id,
-    inquiryNumber: inquiry.inquiryNumber,
+    inquiryNumber: displayInquiryNumber(inquiry),
+    versionLabel: portalVersionLabel(inquiry.versionNo),
     createdDate: formatCustomerListDate(inquiry.inquiryDate || inquiry.createdAt),
     projectName: inquiry.projectName || inquiry.customerReference || '—',
     cableType: customerCableTypeLabel(inquiry),
     application: customerApplicationLabel(inquiry),
     quantityLabel: formatCustomerQuantityMeters(inquiryTotalQuantityMeters(inquiry)),
     status: inquiry.status,
-    statusLabel: customerFacingInquiryStatusLabel(inquiry.status),
-    statusTone: customerFacingInquiryStatusTone(inquiry.status),
+    statusLabel: customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata),
+    statusTone: customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata),
     lastUpdated: formatCustomerListDate(inquiry.updatedAt || inquiry.inquiryDate),
     lineCount: inquiry.lines?.length || 0,
     actions: customerInquiryRowActions(inquiry),
@@ -329,12 +314,6 @@ export type CustomerQuotationListRow = {
   currency: string;
 };
 
-function quotationTone(label: string): BadgeTone {
-  if (label === 'Quotation Sent' || label === 'Quotation Accepted') return 'copper';
-  if (label === 'Rejected' || label === 'Cancelled') return 'error';
-  return 'neutral';
-}
-
 export function sanitizeCustomerQuotationListItem(
   quotation: CommercialQuotationListDto
 ): CustomerQuotationListRow {
@@ -344,12 +323,23 @@ export function sanitizeCustomerQuotationListItem(
     id: quotation.id,
     inquiryId: quotation.inquiryId,
     quotationNumber: quotation.quotationNumber,
-    inquiryNumber: quotation.inquiry?.inquiryNumber || '—',
+    inquiryNumber: displayInquiryNumber({
+      inquiryNumber: quotation.inquiry?.inquiryNumber,
+      commercialMetadata: quotation.inquiry?.commercialMetadata,
+    }) || '—',
     projectName: quotation.inquiry?.projectName || quotation.inquiry?.customerReference || '—',
     issuedDate: formatCustomerListDate(quotation.issuedAt || quotation.createdAt),
     validUntil: formatCustomerListDate(quotation.validUntil),
-    statusLabel: customerFacingQuotationStatusLabel(quotation),
-    statusTone: quotationTone(customerFacingQuotationStatusLabel(quotation)),
+    statusLabel: portalLifecycleLabel(
+      portalLifecycleFromInquiry({
+        status: quotation.inquiry?.status,
+        commercialMetadata: quotation.inquiry?.commercialMetadata,
+      })
+    ),
+    statusTone: customerFacingInquiryStatusTone(
+      quotation.inquiry?.status || 'DRAFT',
+      quotation.inquiry?.commercialMetadata
+    ),
     totalLabel:
       Number.isFinite(selling) && selling > 0
         ? `${currency} ${selling.toLocaleString(undefined, { maximumFractionDigits: 2 })}`

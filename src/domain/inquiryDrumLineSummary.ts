@@ -82,6 +82,37 @@ export function formatInquiryDrumLineSummaryEntry(entry: InquiryDrumLineSummaryE
   return `${code} — ${desc}`;
 }
 
+/** Cable-lines expression: `1 × 1,000m (EWD2600-K26) + 2 × 800m (EWD2200-39)`. */
+export function formatInquiryDrumScheduleExpression(line: {
+  drumSchedule?: unknown;
+  drumType?: string | null;
+  requestedQuantity?: number | string | null;
+  cuttingLengthMeters?: number | string | null;
+  requestedLengthMeters?: number | string | null;
+}): string {
+  const meters = (value: number) => Number(value).toLocaleString('en-GB');
+  const schedule = parseInquiryDrumSchedule(line.drumSchedule);
+  if (schedule?.rows.length) {
+    return schedule.rows
+      .map((row) => `${row.noOfDrums} × ${meters(row.cuttingLengthM)}m (${row.drumCode})`)
+      .join(' + ');
+  }
+  const drums = Number(line.requestedQuantity);
+  const cutting = Number(line.cuttingLengthMeters);
+  const total = Number(line.requestedLengthMeters);
+  const length =
+    Number.isFinite(cutting) && cutting > 0
+      ? cutting
+      : Number.isFinite(drums) && drums > 0 && Number.isFinite(total) && total > 0
+        ? total / drums
+        : null;
+  const code = String(line.drumType || '').trim();
+  if (Number.isFinite(drums) && drums > 0 && length != null && code) {
+    return `${drums} × ${meters(length)}m (${code})`;
+  }
+  return code || '—';
+}
+
 export function formatInquiryDrumLineSummaryDrums(entries: InquiryDrumLineSummaryEntry[]): string {
   if (!entries.length) return 'Not selected';
   return entries

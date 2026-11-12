@@ -1,18 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Banknote,
   Bot,
   Calculator,
   ClipboardList,
-  Download,
-  Eye,
-  FileText,
+  Copy,
   Headphones,
   Layers,
-  ChevronDown,
-  LayoutDashboard,
-  Printer,
+  Pencil,
   Ruler,
   Save,
   UserRound,
@@ -26,6 +22,7 @@ import { CustomerPageHero } from './CustomerPageHero';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import { SupportChatPanel } from './SupportChatPanel';
 import { customerFacingInquiryStatusLabel, customerFacingInquiryStatusTone } from './customerInquiryListPresentation';
+import { portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
 import {
   customerInquiryBreadcrumbLabel,
   customerInquiryDetailTitle,
@@ -45,8 +42,9 @@ export function CustomerInquiryDetailHero({
 }) {
   const titleAccessory = (
     <>
-      <Badge tone={customerFacingInquiryStatusTone(inquiry.status)}>
-        {customerFacingInquiryStatusLabel(inquiry.status)}
+      <Badge tone="neutral">{portalVersionLabel(inquiry.versionNo)}</Badge>
+      <Badge tone={customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata)}>
+        {customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
       </Badge>
       {totalContractValuePlacement === 'titleAccessory' ? totalContractValueSlot : null}
     </>
@@ -73,182 +71,72 @@ export function CustomerInquiryDetailHero({
   );
 }
 
+const inquiryToolButtonClass =
+  'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed';
+
 export function CustomerInquiryPrimaryActions({
-  isEditable,
+  canEdit,
+  canSave,
   canCalculate,
-  canSubmit,
+  canApprove,
+  canCancel,
+  canCopy,
   savingHeader,
   costingLoading,
   hasLines,
+  onEdit,
   onSave,
   onCalculate,
-  onSubmit,
-  extra,
-  hideSaveAndCalculate = false,
-  showAutoSaveAction = true,
+  onApprove,
+  onCancel,
+  onCopy,
 }: {
-  isEditable: boolean;
+  canEdit: boolean;
+  canSave: boolean;
   canCalculate: boolean;
-  canSubmit: boolean;
+  canApprove: boolean;
+  canCancel: boolean;
+  canCopy: boolean;
   savingHeader: boolean;
   costingLoading: boolean;
   hasLines: boolean;
+  onEdit: () => void;
   onSave: () => void;
   onCalculate: () => void;
-  onSubmit: () => void;
-  extra?: React.ReactNode;
-  hideSaveAndCalculate?: boolean;
-  showAutoSaveAction?: boolean;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      {!hideSaveAndCalculate && showAutoSaveAction && (
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={savingHeader}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold border border-emerald-200 bg-emerald-50/60 text-emerald-800 hover:bg-emerald-100/60 disabled:opacity-50 transition-colors"
-          title="Changes are automatically saved in real time"
-        >
-          <Save className="h-3.5 w-3.5 text-emerald-600" />
-          {savingHeader ? 'Saving…' : '✓ Auto-saved'}
-        </button>
-      )}
-      {!hideSaveAndCalculate && isEditable && canCalculate && (
-        <button
-          type="button"
-          onClick={onCalculate}
-          disabled={costingLoading || !hasLines}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-        >
-          <Calculator className="h-3.5 w-3.5 text-slate-500" />
-          {costingLoading ? 'Processing…' : 'Calculate'}
-        </button>
-      )}
-      {!hideSaveAndCalculate && canSubmit && (
-        <button
-          type="button"
-          onClick={onSubmit}
-          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg text-[13px] font-semibold bg-[#2F6BFF] hover:bg-[#2563eb] text-white shadow-[0_6px_16px_rgba(47,107,255,0.28)]"
-        >
-          Submit Inquiry
-        </button>
-      )}
-      {extra}
-    </div>
-  );
-}
-
-const customerToolButtonClass =
-  'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50';
-
-export function CustomerInquiryActionToolbar({
-  showDiscard,
-  showCancel,
-  onOverview,
-  onQuotation,
-  onPrintSummary,
-  onPrintTechnical,
-  onExport,
-  onFieldVisibility,
-  onDiscard,
-  onCancel,
-}: {
-  showDiscard: boolean;
-  showCancel: boolean;
-  onOverview: () => void;
-  onQuotation: () => void;
-  onPrintSummary: () => void;
-  onPrintTechnical: () => void;
-  onExport: () => void;
-  onFieldVisibility: () => void;
-  onDiscard: () => void;
+  onApprove: () => void;
   onCancel: () => void;
+  onCopy: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
-
-  const choose = (action: () => void) => {
-    setOpen(false);
-    action();
-  };
-
-  const itemClass = 'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] font-semibold text-slate-700 hover:bg-slate-50';
-
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <button type="button" onClick={onOverview} className={customerToolButtonClass}>
-        <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
-        Overview
+    <div className="flex flex-wrap items-center justify-end gap-2" role="toolbar" aria-label="Inquiry actions">
+      <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
+        <Pencil className="h-3.5 w-3.5 text-slate-500" />
+        Edit
       </button>
-      <div className="relative" ref={menuRef}>
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          className={customerToolButtonClass}
-          aria-expanded={open}
-          aria-haspopup="menu"
-        >
-          Actions
-          <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
-        </button>
-        {open && (
-          <div role="menu" className="absolute right-0 z-30 mt-1 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
-            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onQuotation)}>
-              <FileText className="h-3.5 w-3.5 text-slate-500" />
-              Quotation
-            </button>
-            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onPrintSummary)}>
-              <Printer className="h-3.5 w-3.5 text-slate-500" />
-              Print inquiry summary
-            </button>
-            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onPrintTechnical)}>
-              <Printer className="h-3.5 w-3.5 text-slate-500" />
-              Print technical offer
-            </button>
-            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onExport)}>
-              <Download className="h-3.5 w-3.5 text-slate-500" />
-              Export Data
-            </button>
-            <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onFieldVisibility)}>
-              <Eye className="h-3.5 w-3.5 text-slate-500" />
-              Field Visibility
-            </button>
-            {showDiscard && (
-              <button type="button" role="menuitem" className={itemClass} onClick={() => choose(onDiscard)}>
-                Discard
-              </button>
-            )}
-            {showCancel && (
-              <button
-                type="button"
-                role="menuitem"
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] font-semibold text-red-700 hover:bg-red-50"
-                onClick={() => choose(onCancel)}
-              >
-                <XCircle className="h-3.5 w-3.5" />
-                Cancel Inquiry
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      <button type="button" className={inquiryToolButtonClass} onClick={onSave} disabled={!canSave || savingHeader}>
+        <Save className="h-3.5 w-3.5 text-slate-500" />
+        {savingHeader ? 'Saving…' : 'Save'}
+      </button>
+      <button
+        type="button"
+        className={inquiryToolButtonClass}
+        onClick={onCalculate}
+        disabled={!canCalculate || costingLoading || !hasLines}
+      >
+        <Calculator className="h-3.5 w-3.5 text-slate-500" />
+        {costingLoading ? 'Processing…' : 'Calculate'}
+      </button>
+      <button type="button" className={inquiryToolButtonClass} onClick={onApprove} disabled={!canApprove}>
+        Approve
+      </button>
+      <button type="button" className={inquiryToolButtonClass} onClick={onCancel} disabled={!canCancel}>
+        <XCircle className="h-3.5 w-3.5 text-slate-500" />
+        Cancel
+      </button>
+      <button type="button" className={inquiryToolButtonClass} onClick={onCopy} disabled={!canCopy}>
+        <Copy className="h-3.5 w-3.5 text-slate-500" />
+        Copy
+      </button>
     </div>
   );
 }

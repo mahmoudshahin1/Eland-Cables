@@ -24,16 +24,30 @@ export function isRememberedSession(): boolean {
   return Boolean(localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY));
 }
 
+const REFRESH_LOCK_KEY = 'jwt_refresh_lock';
+
+/** Tokens live in localStorage so a duplicated tab shares the same session. */
 export function persistAuthTokens(accessToken: string, refreshToken: string, rememberMe: boolean): void {
   if (!browserStorageAvailable()) return;
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  const store = rememberMe ? localStorage : sessionStorage;
-  store.setItem(ACCESS_TOKEN_KEY, accessToken);
-  store.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   localStorage.setItem(REMEMBER_SESSION_KEY, rememberMe ? '1' : '0');
+}
+
+export function claimRefreshLock(now = Date.now()): boolean {
+  if (!browserStorageAvailable()) return true;
+  const raw = localStorage.getItem(REFRESH_LOCK_KEY);
+  const ts = raw ? Number(raw) : 0;
+  if (Number.isFinite(ts) && now - ts < 8000) return false;
+  localStorage.setItem(REFRESH_LOCK_KEY, String(now));
+  return true;
+}
+
+export function releaseRefreshLock(): void {
+  if (!browserStorageAvailable()) return;
+  localStorage.removeItem(REFRESH_LOCK_KEY);
 }
 
 export function clearAuthTokens(): void {

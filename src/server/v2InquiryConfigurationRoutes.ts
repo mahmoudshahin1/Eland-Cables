@@ -58,7 +58,7 @@ import {
   reviseV2Quotation,
 } from './v2QuotationRepository';
 import { generateV2QuotationPdf } from './v2QuotationPdfService';
-import { calculateInquiry } from './vipCalculateService';
+import { calculateInquiry, projectCalculateResultForActor } from './vipCalculateService';
 import {
   assertCanCalculateVipInquiry,
   assertCanCreateContainerStudy,
@@ -622,7 +622,10 @@ v2InquiryConfigurationRouter.post('/:id/calculate', async (req, res) => {
   try {
     assertCanCalculateVipInquiry(actor);
     const body = (req.body || {}) as { recalculate?: boolean };
-    const result = await calculateInquiry(req.params.id, actor, { recalculate: body.recalculate === true });
+    const result = projectCalculateResultForActor(
+      await calculateInquiry(req.params.id, actor, { recalculate: body.recalculate === true }),
+      actor
+    );
     const status = result.status === 'COMPLETED' ? 200 : 409;
     res.status(status).json({ result });
   } catch (err) {

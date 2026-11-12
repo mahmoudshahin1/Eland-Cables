@@ -157,10 +157,21 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
     });
     const unitFreight = containersRequired > 0 ? (freightTotals.freightTotal || 0) / containersRequired : 0;
     const totalFreight = freightTotals.freightTotal || 0;
-    const capacityUsedPct = Math.min(
-      100,
-      Math.round(((totalDrums || 1) / (containersRequired * (spec?.maxDrums || 12))) * 100)
-    );
+    const lengthM = type === '20STD' ? 5.9 : 12.03;
+    const containerVolume = spec?.volumeM3 || lengthM * 2.35 * (type === '40HQ' ? 2.7 : 2.39);
+    let occupiedLengthM = 0;
+    let occupiedVolumeM3 = 0;
+    for (const drum of drumInputs) {
+      const qty = Math.max(0, Number(drum.quantity) || 0);
+      const flangeM = Math.max(0.1, Number(drum.flangeMm || 1000) / 1000);
+      const widthM = Math.max(0.1, Number(drum.widthMm || 800) / 1000);
+      occupiedLengthM += qty * flangeM;
+      occupiedVolumeM3 += qty * Math.PI * (flangeM / 2) ** 2 * widthM;
+    }
+    const slots = Math.max(1, containersRequired);
+    const lengthPct = (occupiedLengthM / (slots * lengthM)) * 100;
+    const volumePct = (occupiedVolumeM3 / (slots * containerVolume)) * 100;
+    const capacityUsedPct = Math.min(100, Math.round(Math.max(lengthPct, volumePct)));
 
     return {
       spec,
@@ -350,7 +361,7 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
           }}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 active:bg-blue-800 transition-colors shrink-0"
         >
-          <span>Confirm Container Plan & Proceed to Costing</span>
+          <span>Confirm Container Plan</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

@@ -66,15 +66,14 @@ describe('InquiryAutomaticProcessingPanel', () => {
     assert.match(html, /QT-26-00001/);
   });
 
-  it('uses customer-safe labels without costing leakage', () => {
+  it('hides the processing card from customers after a completed calculation', () => {
     const html = renderToStaticMarkup(
       React.createElement(InquiryAutomaticProcessingPanel, {
         result: completed,
         customerSafe: true,
       })
     );
-    assert.match(html, /Commercial calculation/);
-    assert.doesNotMatch(html, /Cost calculation/);
+    assert.equal(html, '');
     assert.equal(htmlContainsCustomerCostingLeak(html), false);
   });
 

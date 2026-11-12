@@ -139,6 +139,8 @@ src/server/increment9.price.test.ts
 src/domain/priceUom.test.ts
 src/domain/costingEngine.test.ts
 src/domain/inquiryMetalPricing.test.ts
+src/domain/inquiryPortalLifecycle.test.ts
+src/server/inquiryPortalStatusCounts.test.ts
 src/domain/costingFormulaEngine.test.ts
 src/domain/currencyConversion.test.ts
 src/domain/costingCalculator.test.ts

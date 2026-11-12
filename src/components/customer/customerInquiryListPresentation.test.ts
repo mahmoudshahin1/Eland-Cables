@@ -14,6 +14,7 @@ import {
   formatCustomerQuantityMeters,
   inquiryMatchesCableTypeFilter,
   presentationContainsCostingLeak,
+  customerInquiryStatusCardFilter,
   sanitizeCustomerQuotationListItem,
 } from './customerInquiryListPresentation';
 
@@ -46,14 +47,24 @@ function inquiry(overrides: Partial<CommercialInquiryDto> = {}): CommercialInqui
 
 describe('customer inquiry list presentation', () => {
   it('maps backend statuses to customer-facing labels without costing language', () => {
-    assert.equal(customerFacingInquiryStatusLabel('ENGINEERING_REVIEW'), 'Under Technical Review');
-    assert.equal(customerFacingInquiryStatusLabel('ENGINEERING_BLOCKED'), 'Action Required');
-    assert.equal(customerFacingInquiryStatusLabel('READY_FOR_COMMERCIAL'), 'Ready for Quotation');
-    assert.equal(customerFacingInquiryStatusLabel('QUOTED'), 'Quotation Sent');
+    assert.equal(customerFacingInquiryStatusLabel('ENGINEERING_REVIEW'), 'Submitted');
+    assert.equal(customerFacingInquiryStatusLabel('ENGINEERING_BLOCKED'), 'Submitted');
+    assert.equal(customerFacingInquiryStatusLabel('READY_FOR_COMMERCIAL'), 'Submitted');
+    assert.equal(customerFacingInquiryStatusLabel('QUOTED'), 'Submitted');
     assert.equal(customerFacingInquiryStatusLabel('DRAFT'), 'Draft');
+    assert.equal(customerFacingInquiryStatusLabel('CANCELLED'), 'Canceled');
+    assert.equal(customerFacingInquiryStatusLabel('CLOSED'), 'Approved');
     assert.equal(customerFacingLineStatusLabel('COSTING_NOT_READY'), 'In Progress');
     assert.equal(customerFacingLineStatusLabel('COSTING_READY'), 'Ready for Quotation');
     assert.equal(presentationContainsCostingLeak(customerFacingLineStatusLabel('COSTING_NOT_READY')), false);
+  });
+
+  it('maps status cards to the same lifecycle codes as the dropdown', () => {
+    assert.equal(customerInquiryStatusCardFilter('total'), '');
+    assert.equal(customerInquiryStatusCardFilter('draft'), 'OPEN');
+    assert.equal(customerInquiryStatusCardFilter('submitted'), 'NOT_SUBMITTED');
+    assert.equal(customerInquiryStatusCardFilter('canceled'), 'CANCELED');
+    assert.equal(customerInquiryStatusCardFilter('approved'), 'ACCEPTED');
   });
 
   it('buckets KPI statuses from real inquiry workflow states', () => {
@@ -76,9 +87,13 @@ describe('customer inquiry list presentation', () => {
   });
 
   it('only offers quotation actions when a quotation exists', () => {
-    assert.deepEqual(customerInquiryRowActions(inquiry()), ['view', 'continue']);
+    assert.deepEqual(customerInquiryRowActions(inquiry()), ['view', 'continue', 'edit']);
     assert.deepEqual(
       customerInquiryRowActions(inquiry({ status: 'SUBMITTED' })),
+      ['view', 'continue', 'edit']
+    );
+    assert.deepEqual(
+      customerInquiryRowActions(inquiry({ status: 'CANCELLED' })),
       ['view']
     );
     assert.deepEqual(
@@ -88,7 +103,7 @@ describe('customer inquiry list presentation', () => {
           quotations: [{ quotationNumber: 'QUO-26-00015', status: 'SUBMITTED' }],
         })
       ),
-      ['view', 'view_quotation', 'download_pdf']
+      ['view', 'continue', 'edit', 'view_quotation', 'download_pdf']
     );
   });
 
@@ -116,10 +131,15 @@ describe('customer inquiry list presentation', () => {
       sellingPrice: 12500,
       currency: 'USD',
       commercialOfferStatus: 'ISSUED',
-      inquiry: { inquiryNumber: 'INQ-2026-0012', projectName: 'New Port Project' },
+      inquiry: {
+        inquiryNumber: 'INQ-2026-0012',
+        projectName: 'New Port Project',
+        status: 'DRAFT',
+        commercialMetadata: { portalLifecycle: 'ACCEPTED' },
+      },
     });
     assert.equal(row.quotationNumber, 'QUO-26-00015');
-    assert.equal(row.statusLabel, 'Quotation Sent');
+    assert.equal(row.statusLabel, 'Approved');
     assert.match(row.totalLabel, /12,500/);
     assert.equal('materialCostTotal' in row, false);
   });

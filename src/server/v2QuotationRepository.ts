@@ -478,8 +478,11 @@ export async function persistV2QuotationPricing(
       ? Number(readinessLine.costingRun.materialCost)
       : Number(line.materialCost ?? 0);
     const matCost = freshCost > 0 ? freshCost : Number(line.materialCost ?? 0);
-    if (matCost <= 0) throwCode(`Line ${line.lineNumber} has no material cost.`, 'PRICE_NOT_READY');
-    totalMaterialCost += matCost;
+    const pricedFromRun = Boolean(readinessLine?.costingRun || line.costingRunId);
+    if (matCost <= 0 && !pricedFromRun) {
+      throwCode(`Line ${line.lineNumber} has no material cost.`, 'PRICE_NOT_READY');
+    }
+    totalMaterialCost += matCost > 0 ? matCost : 0;
 
     const customerId = quotation.customerMasterId || quotation.customerId;
     const context = await loadPricingResolutionContext(customerId, line.materialNumber);
@@ -1343,10 +1346,86 @@ export async function createV2QuotationDraftForVipCalculate(
 
   const existing = await getV2CurrentQuotation(inquiry.id, actor);
   if (existing && !isQuotationIssued(existing)) {
-    return existing;
+    await appendInquiryLinesMissingFromDraft(existing.id, inquiry, lines, actor);
+    return (await getV2CurrentQuotation(inquiry.id, actor)) ?? existing;
   }
 
   return createV2QuotationDraft(inquiryId, actor, { ...options, vipOrchestratorBypassRbac: true });
+}
+
+/**
+ * A second cable line added after the draft exists has no quotation line, so the
+ * financial offer reports that the line has no commercial price snapshot.
+ * Append only the missing lines. Existing priced lines stay untouched.
+ */
+async function appendInquiryLinesMissingFromDraft(
+  quotationId: string,
+  inquiry: Awaited<ReturnType<typeof loadV2InquiryScoped>>,
+  readinessLines: V2LineReadinessInput[],
+  actor: RequestActor
+) {
+  const prisma = requirePrisma();
+  const quotation = await prisma.commercialQuotation.findUnique({
+    where: { id: quotationId },
+    include: { lines: { select: { inquiryLineId: true } } },
+  });
+  if (!quotation) return;
+  const linked = new Set(quotation.lines.map((line) => line.inquiryLineId).filter(Boolean));
+  const missing = inquiry.lines.filter((line) => !linked.has(line.id));
+  if (!missing.length) return;
+
+  for (const line of missing) {
+    const readinessLine = readinessLines.find((row) => row.lineId === line.id);
+    if (!readinessLine?.configurationSnapshot) {
+      const snapshotGate = evaluateMissingSnapshotForCalculation({
+        lineNumber: line.lineNumber,
+        importedCable: readinessLine?.importedCable || {
+          materialNumber: line.materialNumber,
+          bomLineCount: 0,
+          unresolvedBomConflictCount: 0,
+        },
+      });
+      if (snapshotGate.status === 'BLOCK') {
+        throwCode(snapshotGate.message, snapshotGate.code);
+      }
+    }
+    const cfg = readinessLine?.configurationSnapshot;
+    let handoff = readinessLine?.handoff ?? null;
+    if (!handoff && line.v2CurrentDrumPlanId) {
+      handoff = await getV2DrumPlanHandoff(inquiry.id, line.id, line.v2CurrentDrumPlanId, actor).catch(() => null);
+    }
+    const plannedLength = handoff?.totalPlannedLengthM ?? Number(line.requestedLengthMeters) ?? 1000;
+    if (readinessLine) assertAuthoritativeCostingWhenClaimed(line, readinessLine);
+    const matCost = Number(readinessLine?.costingRun?.materialCost ?? 0);
+    await prisma.commercialQuotationLine.create({
+      data: {
+        quotationId,
+        lineNumber: line.lineNumber,
+        inquiryLineId: line.id,
+        materialNumber: cfg?.cableMaterialNumber || line.materialNumber,
+        itemDescription: line.cableDescription || line.materialNumber || `Line ${line.lineNumber}`,
+        quantity: line.requestedQuantity == null ? 1 : Number(line.requestedQuantity),
+        quantityUom: line.quantityUom || 'KM',
+        lengthMeters: plannedLength,
+        plannedLengthM: handoff ? handoff.totalPlannedLengthM : null,
+        customerCableCode: line.customerCode,
+        cuttingLengthMeters:
+          readinessLine?.cuttingPlan?.nominalLengthM != null
+            ? Number(readinessLine.cuttingPlan.nominalLengthM)
+            : line.cuttingLengthMeters == null
+              ? null
+              : Number(line.cuttingLengthMeters),
+        drumType: line.drumType || handoff?.lines?.[0]?.drumCode || null,
+        costingRunId: readinessLine?.costingRun?.id || line.costingRunId,
+        costingCalculationId: readinessLine?.costingCalculation?.id || line.costingCalculationId,
+        materialCost: matCost > 0 ? matCost : null,
+        materialCostCurrency: line.materialCostCurrency || inquiry.currency,
+        commercialStatus: matCost > 0 ? 'MATERIAL_COST_AVAILABLE' : 'MATERIAL_COST_NOT_READY',
+        workflowChannel: V2_QUOTATION_WORKFLOW_CHANNEL,
+        notes: line.notes,
+      },
+    });
+  }
 }
 
 /** VIP Calculate orchestrator — persists pricing on draft without quotation-manage RBAC. */

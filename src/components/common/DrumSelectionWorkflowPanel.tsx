@@ -705,21 +705,13 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Cutting Length</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div>
-            <div className="text-slate-500">Cutting length / drum</div>
-            <div className="font-bold text-slate-900 dark:text-white">
-              {focusCutting > 0 ? `${focusCutting.toLocaleString()} m` : '—'}
-            </div>
+        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Order Length</div>
+        <div className="text-xs">
+          <div className="text-slate-500">Total Length (m)</div>
+          <div className="font-bold text-slate-900 dark:text-white">
+            {totalLengthM > 0 ? `${totalLengthM.toLocaleString()} m` : '—'}
           </div>
-          <div>
-            <div className="text-slate-500">Total Length (m)</div>
-            <div className="font-bold text-slate-900 dark:text-white">
-              {totalLengthM > 0 ? `${totalLengthM.toLocaleString()} m` : '—'}
-            </div>
-            <div className="text-[10px] text-slate-500">cutting length × number of drums</div>
-          </div>
+          <div className="text-[10px] text-slate-500">Sum of drums × cutting length across all schedule lines</div>
         </div>
         <p className="text-[11px] text-slate-500">
           {cableCode} · Ø {cableDiameterMm || '—'} mm · {approxWeightKgKm || '—'} kg/km · {cableDescription}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardList, FileCheck, FileText, Plus, ShoppingCart } from 'lucide-react';
+import { ClipboardList, FileCheck, FileText, Plus } from 'lucide-react';
 import type { CustomerPortalTab } from '../../types';
 
 type QuickAction = {
@@ -39,14 +39,6 @@ const ACTIONS: QuickAction[] = [
     iconClass: 'bg-violet-50 text-violet-600',
   },
   {
-    id: 'orders',
-    label: 'Orders',
-    hint: 'Track order status',
-    icon: ShoppingCart,
-    tab: 'sales_orders',
-    iconClass: 'bg-orange-50 text-orange-500',
-  },
-  {
     id: 'documents',
     label: 'Documents',
     hint: 'Access technical documents',
@@ -64,7 +56,7 @@ export function CustomerHomeQuickActions({ onNavigateTab }: CustomerHomeQuickAct
   return (
     <section aria-label="Quick actions">
       <h2 className="text-[15px] font-semibold text-slate-800 mb-3">Quick Actions</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {ACTIONS.map((action) => {
           const Icon = action.icon;
           return (

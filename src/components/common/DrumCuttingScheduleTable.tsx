@@ -205,9 +205,9 @@ export function DrumCuttingScheduleTable({
               {showCableDescription && (
                 <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 min-w-[180px] align-bottom">Cable Description</th>
               )}
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 min-w-[260px] align-bottom">Drum Type &amp; Specs</th>
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-24 min-w-[84px] align-bottom">No. of Drums</th>
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-44 min-w-[160px] align-bottom">Cutting Length / Drum</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 min-w-[440px] align-bottom">Drum Type &amp; Specs</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-36 min-w-[140px] align-bottom">No. of Drums</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-56 min-w-[200px] align-bottom">Cutting Length / Drum</th>
               {asymmetricDrumTolerance ? (
                 <th colSpan={2} className="px-3 pt-3 pb-1 text-center">
                   Drum Tolerance (%) <span className="text-red-500">*</span>
@@ -347,32 +347,32 @@ export function DrumCuttingScheduleTable({
                     )}
                   </td>
                   <td className="p-3">
-                    <div className="relative min-w-[68px]">
+                    <div className="relative min-w-[120px]">
                       <input
                         type="number"
                         min={1}
                         value={row.noOfDrums}
                         disabled={disabled}
                         onChange={(e) => onUpdateRow(row.id, { noOfDrums: e.target.value })}
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-center text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-400 dark:border-slate-500 rounded-xl px-3 py-2.5 text-center text-base font-mono font-bold text-slate-900 dark:text-white shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="1"
                       />
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="relative min-w-[120px]">
+                    <div className="relative min-w-[180px]">
                       <input
                         type="number"
                         min={1}
                         value={row.cuttingLengthM}
                         disabled={disabled}
                         onChange={(e) => onUpdateRow(row.id, { cuttingLengthM: e.target.value })}
-                        className={`w-full bg-white dark:bg-slate-900 border rounded-xl pl-3 pr-8 py-2 text-sm font-mono font-black shadow-xs transition-all focus:outline-none focus:ring-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                        className={`w-full bg-white dark:bg-slate-900 border-2 rounded-xl pl-3 pr-8 py-2.5 text-base font-mono font-black shadow-xs transition-all focus:outline-none focus:ring-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                           isCriticalOverload
                             ? 'border-red-500 text-red-600 dark:text-red-400 bg-red-50/40 dark:bg-red-950/20 focus:ring-red-400'
                             : isMildOverload
                             ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50/40 dark:bg-amber-950/20 focus:ring-amber-400'
-                            : 'border-slate-300 dark:border-slate-700 text-blue-600 dark:text-blue-400 focus:ring-blue-400'
+                            : 'border-slate-400 dark:border-slate-500 text-slate-900 dark:text-white focus:ring-blue-400'
                         }`}
                         placeholder="e.g. 1000"
                       />

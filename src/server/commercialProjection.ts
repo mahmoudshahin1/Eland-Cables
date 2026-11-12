@@ -55,6 +55,14 @@ const CUSTOMER_VISIBLE_COMMERCIAL_METADATA_KEYS = new Set([
   'salesApprovedBy',
   'containerStudy',
   'cuttingPlan',
+  'portalLifecycle',
+  'displayInquiryNumber',
+  'acceptedAt',
+  'contactPhone',
+  'destinationCountryCode',
+  'sourceQuotationId',
+  'sourceQuotationNumber',
+  'sourceQuotationVersion',
 ]);
 
 function projectCommercialMetadataForActor(metadata: unknown, actor: RequestActor): unknown {
@@ -75,9 +83,15 @@ export function canViewCostBreakdown(actor: RequestActor): boolean {
 }
 
 export function projectLineCostingForActor<T>(payload: T, actor: RequestActor): T {
-  if (canViewCostBreakdown(actor)) return payload;
   if (!payload || typeof payload !== 'object') return payload;
   const copy = { ...(payload as Record<string, unknown>) };
+  if (actor.userType === 'customer') {
+    delete copy.unpricedMaterials;
+    delete copy.partial;
+  }
+  if (canViewCostBreakdown(actor)) {
+    return (actor.userType === 'customer' ? copy : payload) as T;
+  }
   delete copy.materialBreakdown;
   delete copy.layers;
   delete copy.formulaTrace;
@@ -145,4 +159,14 @@ export function projectInquiryListForActor<T extends InquiryRecord>(
   actor: RequestActor
 ): T[] {
   return inquiries.map((row) => projectInquiryForActor(row, actor));
+}
+
+export function projectQuotationListForActor<T extends { inquiry?: InquiryRecord | null }>(
+  quotations: T[],
+  actor: RequestActor
+): T[] {
+  return quotations.map((quotation) => {
+    if (!quotation?.inquiry) return quotation;
+    return { ...quotation, inquiry: projectInquiryForActor(quotation.inquiry, actor) };
+  });
 }

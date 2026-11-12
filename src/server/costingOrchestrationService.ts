@@ -105,6 +105,8 @@ export interface CostingPreviewResult {
   engineeringRevision?: number;
   fxSnapshot?: FxSnapshotEntry[];
   resultCurrency?: string;
+  unpricedMaterials?: Array<{ rawMaterialCode: string; message: string }>;
+  partial?: boolean;
   extensionLayers?: {
     copper: ExtensionLayerResult;
     aluminium: ExtensionLayerResult;
@@ -685,6 +687,8 @@ export async function executeCostingPreview(request: StructuredCostingRequest): 
     engineeringRevision: mapping?.revision,
     fxSnapshot,
     resultCurrency: normalizeCostingCurrency(val.currency) || val.currency,
+    unpricedMaterials: materialEngineResult?.unpricedMaterials,
+    partial: Boolean(materialEngineResult?.partial),
   };
 }
 

@@ -22,6 +22,7 @@ interface VipContractFulfillmentSelectorProps {
   canApprove?: boolean;
   onSubmitToSales: (type: FulfillmentType) => Promise<void>;
   onApproveCommercial?: (type: FulfillmentType) => Promise<void>;
+  onSelectedTypeChange?: (type: FulfillmentType) => void;
   createdOrderId?: string | null;
   createdAgreementId?: string | null;
   isCustomer?: boolean;
@@ -39,6 +40,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
   canApprove = false,
   onSubmitToSales,
   onApproveCommercial,
+  onSelectedTypeChange,
   createdOrderId,
   createdAgreementId,
   isCustomer = true,
@@ -65,6 +67,15 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
     }
   }, [commercialApprovalStatus, initialFulfillmentType]);
 
+  React.useEffect(() => {
+    if (approved) return;
+    setSelectedType(initialFulfillmentType || 'DIRECT_ORDER');
+  }, [initialFulfillmentType, approved]);
+
+  React.useEffect(() => {
+    onSelectedTypeChange?.(selectedType);
+  }, [selectedType, onSelectedTypeChange]);
+
   const handleSubmit = async () => {
     setBusy(true);
     setFeedback(null);
@@ -86,7 +97,11 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
     try {
       await onApproveCommercial(selectedType);
       setApproved(true);
-      setFeedback('Commercial offer approved and released to the Production Floor successfully.');
+      setFeedback(
+        isCustomer
+          ? 'Inquiry approved.'
+          : 'Commercial offer approved and released to the Production Floor successfully.'
+      );
     } catch (err) {
       setFeedback(err instanceof Error ? err.message : 'Failed to approve quotation');
     } finally {
@@ -110,11 +125,11 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
               <span>Contract Fulfillment Path & Sign-Off</span>
               {approved ? (
                 <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" /> Formally Approved
+                  <CheckCircle2 className="h-3 w-3" /> Approved
                 </span>
-              ) : submitted ? (
+              ) : !isCustomer && submitted ? (
                 <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Awaiting Sales Approval
+                  <Clock className="h-3 w-3" /> Awaiting approval
                 </span>
               ) : null}
             </h3>
@@ -200,7 +215,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
       <div className="pt-2 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100">
         <div className="flex flex-wrap items-center gap-2">
           {/* Customer Submit Button */}
-          {!submitted && (
+          {!isCustomer && !submitted && (
             <button
               type="button"
               disabled={busy}
@@ -216,8 +231,19 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
             </button>
           )}
 
-          {/* Sales Approve Button (if internal/sales role or testing) */}
-          {(canApprove || !isCustomer) && submitted && !approved && (
+          {isCustomer && !approved && (
+            <button
+              type="button"
+              disabled={busy || !canApprove}
+              onClick={handleApprove}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span>{busy ? 'Approving…' : 'Approve'}</span>
+            </button>
+          )}
+
+          {!isCustomer && submitted && !approved && (
             <button
               type="button"
               disabled={busy}
@@ -225,20 +251,11 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>{busy ? 'Releasing to Production…' : 'Approve Quotation & Release to Production Floor'}</span>
+              <span>{busy ? 'Approving…' : 'Approve'}</span>
             </button>
           )}
 
-          {/* Customer waiting notice */}
-          {isCustomer && submitted && !approved && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-800">
-              <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-              <span>Awaiting Sales sign-off. You will receive an instant notification once released to the Production Floor.</span>
-            </div>
-          )}
-
-          {/* Links when approved */}
-          {approved && createdOrderId && (
+          {!isCustomer && approved && createdOrderId && (
             <button
               type="button"
               onClick={() => {
@@ -251,7 +268,7 @@ export const VipContractFulfillmentSelector: React.FC<VipContractFulfillmentSele
             </button>
           )}
 
-          {approved && createdAgreementId && (
+          {!isCustomer && approved && createdAgreementId && (
             <button
               type="button"
               onClick={() => {
