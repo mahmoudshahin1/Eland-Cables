@@ -5,21 +5,22 @@ import {
   createCommercialInquiry,
   fetchCommercialInquiries,
   fetchCommercialQuotations,
+  fetchInquiryStatusCounts,
   type CommercialInquiryDto,
   type CommercialQuotationListDto,
 } from '../../services/commercialInquiryApiService';
-import { v2QuotationPdfUrl } from '../../services/v2QuotationApiService';
 import {
   customerInquiryDetailPath,
   CUSTOMER_HOME_PATH,
 } from '../../app/shellRoutes';
+import { displayInquiryNumber, portalInquiryEditable, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
 import { Badge, Button, Card, Drawer, Input, Select } from '../ui';
 import { CustomerPageHero } from './CustomerPageHero';
 import {
   AlertCircle,
+  Ban,
   ChevronLeft,
   ChevronRight,
-  Download,
   Eye,
   FileCheck,
   FilePlus,
@@ -31,12 +32,10 @@ import {
   Plus,
   Search,
   Send,
-  Sparkles,
 } from 'lucide-react';
-import { VipCustomerJourneyWizard } from './VipCustomerJourneyWizard';
-import { ErrorBoundary } from '../common/ErrorBoundary';
 import {
   buildCustomerInquiryListRow,
+  customerInquiryStatusCardFilter,
   CUSTOMER_CABLE_TYPE_FILTERS,
   CUSTOMER_INQUIRY_STATUS_FILTER_OPTIONS,
   customerFacingInquiryStatusLabel,
@@ -44,7 +43,6 @@ import {
   customerFacingLineStatusLabel,
   customerInquiryDestination,
   customerInquiryTimelineState,
-  exportInquiryListCsv,
   formatCustomerListDate,
   formatCustomerQuantityMeters,
   inquiryMatchesCableTypeFilter,
@@ -66,38 +64,14 @@ interface CustomerInquiryListProps {
 type KpiCounts = {
   total: number;
   draft: number;
-  inProgress: number;
   submitted: number;
-  quoted: number;
+  canceled: number;
+  approved: number;
 };
 
-const EMPTY_KPI: KpiCounts = { total: 0, draft: 0, inProgress: 0, submitted: 0, quoted: 0 };
+const EMPTY_KPI: KpiCounts = { total: 0, draft: 0, submitted: 0, canceled: 0, approved: 0 };
 
-const IN_PROGRESS_STATUSES = [
-  'UNDER_REVIEW',
-  'ENGINEERING_REVIEW',
-  'ENGINEERING_BLOCKED',
-  'READY_FOR_COMMERCIAL',
-];
-
-async function countByStatus(token: string, status?: string): Promise<number> {
-  const result = await fetchCommercialInquiries(token, {
-    page: 1,
-    pageSize: 1,
-    status,
-  });
-  return result.total;
-}
-
-function downloadCsv(filename: string, csv: string) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+const PORTAL_STATUS_CODES = new Set(['OPEN', 'NOT_SUBMITTED', 'CANCELED', 'ACCEPTED']);
 
 export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   initialStatus,
@@ -118,10 +92,9 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [showVipJourney, setShowVipJourney] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState(
-    initialStatus && initialStatus !== 'QUOTED' ? initialStatus : initialStatus === 'QUOTED' ? 'QUOTED' : ''
+    initialStatus && initialStatus !== 'QUOTED' ? initialStatus : ''
   );
   const [searchInput, setSearchInput] = useState(initialSearch || '');
   const [search, setSearch] = useState(initialSearch || '');
@@ -139,7 +112,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     if (initialStatus === undefined) return;
     if (initialStatus === 'QUOTED') {
       setTab('quotations');
-      setStatusFilter('QUOTED');
+      setStatusFilter('');
     } else if (initialStatus) {
       setTab('inquiries');
       setStatusFilter(initialStatus);
@@ -174,20 +147,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
       return;
     }
     try {
-      const [totalCount, draft, submitted, quoted, ...inProgressParts] = await Promise.all([
-        countByStatus(jwtToken),
-        countByStatus(jwtToken, 'DRAFT'),
-        countByStatus(jwtToken, 'SUBMITTED'),
-        countByStatus(jwtToken, 'QUOTED'),
-        ...IN_PROGRESS_STATUSES.map((status) => countByStatus(jwtToken, status)),
-      ]);
-      setKpi({
-        total: totalCount,
-        draft,
-        submitted,
-        quoted,
-        inProgress: inProgressParts.reduce((sum, n) => sum + n, 0),
-      });
+      const counts = await fetchInquiryStatusCounts(jwtToken, { includeVersions: true });
+      setKpi(counts);
     } catch {
       setKpi(EMPTY_KPI);
     }
@@ -206,10 +167,14 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     setError(null);
     try {
       if (tab === 'quotations') {
+        const portalStatus = PORTAL_STATUS_CODES.has(statusFilter) ? statusFilter : undefined;
         try {
           const listed = await fetchCommercialQuotations(jwtToken, {
             q: search || undefined,
             isCurrent: true,
+            portalStatus,
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
           });
           setQuotations(listed.quotations || []);
           setRows([]);
@@ -217,35 +182,38 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
         } catch {
           const quoted = await fetchCommercialInquiries(jwtToken, {
             page: 1,
-            pageSize: 50,
-            status: 'QUOTED',
+            pageSize: 100,
+            status: portalStatus,
             q: search || undefined,
             dateFrom: dateFrom || undefined,
             dateTo: dateTo || undefined,
+            includeVersions: true,
             sortBy: 'updatedAt',
             sortDir: 'desc',
           });
-          setQuotations(
-            (quoted.inquiries || []).flatMap((item) =>
-              (item.quotations || [])
-                .filter((quotation) => quotation.id && quotation.quotationNumber)
-                .map((quotation) => ({
-                  id: quotation.id as string,
-                  quotationNumber: quotation.quotationNumber as string,
-                  inquiryId: item.id,
-                  status: quotation.status || item.status,
-                  inquiry: {
-                    id: item.id,
-                    inquiryNumber: item.inquiryNumber,
-                    projectName: item.projectName,
-                    customerReference: item.customerReference,
-                    status: item.status,
-                  },
-                }))
-            )
+          const nextQuotations = (quoted.inquiries || []).flatMap((item) =>
+            (item.quotations || [])
+              .filter((quotation) => quotation.id && quotation.quotationNumber)
+              .map((quotation) => ({
+                id: quotation.id as string,
+                quotationNumber: quotation.quotationNumber as string,
+                inquiryId: item.id,
+                status: quotation.status || item.status,
+                versionNo: quotation.versionNo,
+                currency: item.currency,
+                inquiry: {
+                  id: item.id,
+                  inquiryNumber: item.inquiryNumber,
+                  projectName: item.projectName,
+                  customerReference: item.customerReference,
+                  status: item.status,
+                  commercialMetadata: item.commercialMetadata,
+                },
+              }))
           );
+          setQuotations(nextQuotations);
           setRows([]);
-          setTotal(quoted.total);
+          setTotal(nextQuotations.length);
         }
       } else {
         const result = await fetchCommercialInquiries(jwtToken, {
@@ -257,6 +225,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
           dateTo: dateTo || undefined,
           sortBy: 'updatedAt',
           sortDir: 'desc',
+          includeVersions: true,
         });
         setRows(result.inquiries);
         setTotal(result.total);
@@ -280,6 +249,22 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     void loadKpis();
   }, [loadKpis]);
 
+  useEffect(() => {
+    const refresh = () => {
+      void reload();
+      void loadKpis();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    window.addEventListener('portal-inquiry-changed', refresh);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('portal-inquiry-changed', refresh);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [reload, loadKpis]);
+
   const inquiryRows: CustomerInquiryListRow[] = useMemo(() => {
     return rows
       .filter((inquiry) => inquiryMatchesCableTypeFilter(inquiry, cableType))
@@ -294,7 +279,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const filtersActive = Boolean(statusFilter || searchInput || cableType || dateFrom || dateTo);
 
-  const openInquiry = (id: string) => navigate(customerInquiryDetailPath(id));
+  const openInquiry = (id: string, detailTab?: 'quotation') =>
+    navigate(customerInquiryDetailPath(id), detailTab ? { state: { tab: detailTab } } : undefined);
 
   const handleCreate = async () => {
     if (!jwtToken) return;
@@ -320,22 +306,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     setPage(1);
     setSelectedIds(new Set());
     setExpandedId(null);
-    if (bucket === 'total') {
-      setTab('inquiries');
-      setStatusFilter('');
-    } else if (bucket === 'draft') {
-      setTab('inquiries');
-      setStatusFilter('DRAFT');
-    } else if (bucket === 'submitted') {
-      setTab('inquiries');
-      setStatusFilter('SUBMITTED');
-    } else if (bucket === 'quoted') {
-      setTab('quotations');
-      setStatusFilter('QUOTED');
-    } else if (bucket === 'inProgress') {
-      setTab('inquiries');
-      setStatusFilter('ENGINEERING_REVIEW');
-    }
+    setTab('inquiries');
+    setStatusFilter(customerInquiryStatusCardFilter(bucket));
   };
 
   const clearFilters = () => {
@@ -361,50 +333,11 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const visibleIds = tab === 'inquiries' ? inquiryRows.map((row) => row.id) : quotationRows.map((row) => row.id);
   const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
 
-  const handleExport = () => {
-    if (tab === 'quotations') {
-      const selected = quotationRows.filter((row) => selectedIds.size === 0 || selectedIds.has(row.id));
-      const header = 'Quotation No.,Inquiry No.,Project,Issued,Valid Until,Status,Total';
-      const body = selected
-        .map((row) =>
-          [row.quotationNumber, row.inquiryNumber, row.projectName, row.issuedDate, row.validUntil, row.statusLabel, row.totalLabel]
-            .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-            .join(',')
-        )
-        .join('\n');
-      downloadCsv('customer-quotations.csv', `${header}\n${body}`);
-      return;
-    }
-    const source = selectedIds.size > 0 ? inquiryRows.filter((row) => selectedIds.has(row.id)) : inquiryRows;
-    downloadCsv('customer-inquiries.csv', exportInquiryListCsv(source));
-  };
-
-  const downloadQuotationPdf = async (inquiryId: string) => {
-    if (!jwtToken) return;
-    try {
-      const url = v2QuotationPdfUrl(inquiryId);
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${jwtToken}` } });
-      if (!res.ok) {
-        setError('Quotation PDF is not available yet.');
-        return;
-      }
-      const bytes = await res.blob();
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      const objectUrl = URL.createObjectURL(blob);
-      window.open(objectUrl, '_blank', 'noopener');
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
-    } catch {
-      setError('Unable to download quotation.');
-    }
-  };
-
   const runAction = (action: CustomerInquiryRowAction, inquiryId: string) => {
     setMenuId(null);
-    if (action === 'view' || action === 'continue' || action === 'view_quotation') {
+    if (action === 'view' || action === 'edit' || action === 'continue' || action === 'view_quotation' || action === 'download_pdf') {
       openInquiry(inquiryId);
-      return;
     }
-    if (action === 'download_pdf') void downloadQuotationPdf(inquiryId);
   };
 
   const filterControls = (
@@ -486,25 +419,13 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   }> = [
     { key: 'total', label: 'Total Inquiries', value: kpi.total, icon: FileText, className: 'bg-slate-50 border-slate-200' },
     { key: 'draft', label: 'Draft', value: kpi.draft, icon: FilePlus, className: 'bg-emerald-50/80 border-emerald-100' },
-    { key: 'inProgress', label: 'In Progress', value: kpi.inProgress, icon: Send, className: 'bg-sky-50/80 border-sky-100' },
-    { key: 'submitted', label: 'Submitted', value: kpi.submitted, icon: FileCheck, className: 'bg-amber-50/80 border-amber-100' },
-    { key: 'quoted', label: 'Converted to Quotation', value: kpi.quoted, icon: FileText, className: 'bg-violet-50/80 border-violet-100' },
+    { key: 'submitted', label: 'Submitted', value: kpi.submitted, icon: Send, className: 'bg-amber-50/80 border-amber-100' },
+    { key: 'canceled', label: 'Canceled', value: kpi.canceled, icon: Ban, className: 'bg-rose-50/80 border-rose-100' },
+    { key: 'approved', label: 'Converted to Order', value: kpi.approved, icon: FileCheck, className: 'bg-violet-50/80 border-violet-100' },
   ];
 
   return (
     <div className="space-y-4">
-      {showVipJourney ? (
-        <ErrorBoundary fallbackTitle="VIP Customer Journey Encountered an Error">
-          <VipCustomerJourneyWizard
-            onBackToInquiries={() => setShowVipJourney(false)}
-            onCompletedSubmission={() => {
-              setShowVipJourney(false);
-              void load();
-            }}
-          />
-        </ErrorBoundary>
-      ) : (
-        <>
           <CustomerPageHero
             breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Inquiry / Quotation' }]}
             title="Inquiry / Quotation"
@@ -525,8 +446,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                       setPage(1);
                       setSelectedIds(new Set());
                       setExpandedId(null);
-                      if (id === 'quotations') setStatusFilter('QUOTED');
-                      if (id === 'inquiries' && statusFilter === 'QUOTED') setStatusFilter('');
+                      if (id === 'inquiries' && !PORTAL_STATUS_CODES.has(statusFilter)) setStatusFilter('');
                     }}
                     className={`px-3 py-2.5 -mb-px text-sm font-semibold border-b-2 ${
                       tab === id ? 'border-brand-500 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -546,20 +466,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                 >
                   Filters
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-md"
-                  onClick={() => setShowVipJourney(true)}
-                >
-                  <Sparkles className="w-3.5 h-3.5 me-1.5 text-amber-300" />
-                  VIP 9-Step Journey
-                </Button>
                 <Button variant="primary" size="sm" leadingIcon={Plus} disabled={creating} onClick={() => void handleCreate()}>
                   {creating ? 'Creating…' : 'New Inquiry'}
-                </Button>
-                <Button variant="secondary" size="sm" leadingIcon={Download} onClick={handleExport}>
-                  Export
                 </Button>
               </div>
             </div>
@@ -579,10 +487,10 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
             {kpiCards.map((card) => {
               const Icon = card.icon;
               const selected =
-                (card.key === 'draft' && statusFilter === 'DRAFT') ||
-                (card.key === 'submitted' && statusFilter === 'SUBMITTED') ||
-                (card.key === 'quoted' && tab === 'quotations') ||
-                (card.key === 'inProgress' && statusFilter === 'ENGINEERING_REVIEW') ||
+                (card.key === 'draft' && statusFilter === 'OPEN') ||
+                (card.key === 'submitted' && statusFilter === 'NOT_SUBMITTED') ||
+                (card.key === 'canceled' && statusFilter === 'CANCELED') ||
+                (card.key === 'approved' && statusFilter === 'ACCEPTED') ||
                 (card.key === 'total' && tab === 'inquiries' && !statusFilter);
               return (
                 <button
@@ -694,7 +602,10 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                                   className="font-mono font-semibold text-brand-700 hover:underline"
                                   onClick={() => setExpandedId((id) => (id === row.id ? null : row.id))}
                                 >
-                                  {row.inquiryNumber}
+                                  {row.inquiryNumber}{' '}
+                                  <span className="ms-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                                    {row.versionLabel}
+                                  </span>
                                 </button>
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-slate-600">{row.createdDate}</td>
@@ -748,7 +659,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                             className="font-mono font-semibold text-brand-700"
                             onClick={() => openInquiry(row.id)}
                           >
-                            {row.inquiryNumber}
+                            {row.inquiryNumber} {row.versionLabel}
                           </button>
                         </label>
                         <Badge tone={row.statusTone}>{row.statusLabel}</Badge>
@@ -827,11 +738,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                           </td>
                           <td className="px-3 py-3">
                             <div className="flex justify-end gap-1">
-                              <IconButton label="View quotation" onClick={() => openInquiry(row.inquiryId)}>
+                              <IconButton label="View quotation" onClick={() => openInquiry(row.inquiryId, 'quotation')}>
                                 <Eye className="h-4 w-4" />
-                              </IconButton>
-                              <IconButton label="Download quotation" onClick={() => void downloadQuotationPdf(row.inquiryId)}>
-                                <Download className="h-4 w-4" />
                               </IconButton>
                             </div>
                           </td>
@@ -852,11 +760,8 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                         {row.inquiryNumber} · {row.totalLabel}
                       </p>
                       <div className="flex gap-2 pt-1">
-                        <Button variant="secondary" size="sm" onClick={() => openInquiry(row.inquiryId)}>
+                        <Button variant="secondary" size="sm" onClick={() => openInquiry(row.inquiryId, 'quotation')}>
                           View
-                        </Button>
-                        <Button variant="tertiary" size="sm" onClick={() => void downloadQuotationPdf(row.inquiryId)}>
-                          Download
                         </Button>
                       </div>
                     </li>
@@ -936,8 +841,6 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
       >
         {filterControls}
       </Drawer>
-        </>
-      )}
     </div>
   );
 };
@@ -979,7 +882,7 @@ function RowActions({
   onToggleMenu: () => void;
   onAction: (action: CustomerInquiryRowAction) => void;
 }) {
-  const extra = actions.filter((action) => action !== 'view');
+  const extra = actions.filter((action) => action !== 'view' && action !== 'download_pdf');
   return (
     <div className="relative flex justify-end gap-0.5" ref={menuRef}>
       <IconButton label="View inquiry" onClick={onView}>
@@ -992,6 +895,11 @@ function RowActions({
           </IconButton>
           {open && (
             <div className="absolute end-0 top-9 z-20 min-w-[11rem] rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+              {extra.includes('edit') && (
+                <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('edit')}>
+                  Edit
+                </button>
+              )}
               {extra.includes('continue') && (
                 <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('continue')}>
                   Continue Inquiry
@@ -1000,11 +908,6 @@ function RowActions({
               {extra.includes('view_quotation') && (
                 <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('view_quotation')}>
                   View Quotation
-                </button>
-              )}
-              {extra.includes('download_pdf') && (
-                <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('download_pdf')}>
-                  Download PDF
                 </button>
               )}
             </div>
@@ -1024,7 +927,7 @@ function InquiryExpandPanel({
 }) {
   const timeline = customerInquiryTimelineState(inquiry.status);
   const lines = inquiry.lines || [];
-  const canEdit = inquiry.status === 'DRAFT';
+  const canEdit = portalInquiryEditable(inquiry);
   const destination = customerInquiryDestination(inquiry);
   const quotation = inquiry.quotations?.[0];
 
@@ -1033,9 +936,10 @@ function InquiryExpandPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <FileText className="h-4 w-4 text-brand-600 shrink-0" />
-          <p className="font-mono font-bold text-brand-800">{inquiry.inquiryNumber}</p>
-          <Badge tone={customerFacingInquiryStatusTone(inquiry.status)}>
-            {customerFacingInquiryStatusLabel(inquiry.status)}
+          <p className="font-mono font-bold text-brand-800">{displayInquiryNumber(inquiry)}</p>
+          <Badge tone="neutral">{portalVersionLabel(inquiry.versionNo)}</Badge>
+          <Badge tone={customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata)}>
+            {customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
           </Badge>
         </div>
         <div className="flex items-center gap-2">

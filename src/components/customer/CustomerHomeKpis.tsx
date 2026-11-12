@@ -67,8 +67,8 @@ const CARDS: Array<{
 
 export function CustomerHomeKpis({ values, loading, onNavigateTab }: CustomerHomeKpisProps) {
   return (
-    <section aria-label="Account summary" className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-      {CARDS.map((card) => {
+    <section aria-label="Account summary" className="grid grid-cols-2 xl:grid-cols-2 gap-4">
+      {CARDS.filter((card) => card.tab !== 'sales_orders').map((card) => {
         const Icon = card.icon;
         const value = loading ? '—' : values[card.valueKey];
         return (

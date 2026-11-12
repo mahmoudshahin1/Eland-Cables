@@ -35,6 +35,8 @@ export interface V2QuotationDto {
   commercialPricingStatus: string;
   technicalOfferStatus: string;
   commercialOfferStatus: string;
+  commercialApprovalStatus?: string | null;
+  fulfillmentType?: 'DIRECT_ORDER' | 'SALES_AGREEMENT' | null;
   sellingPrice?: number | null;
   quotationApprovedAt?: string | null;
   quotationReturnReason?: string | null;

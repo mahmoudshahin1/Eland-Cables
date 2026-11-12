@@ -344,7 +344,7 @@ export const InquiryLineEditorModal: React.FC<InquiryLineEditorModalProps> = ({
 
           {step === 'drum' && (
             <div className="space-y-3">
-              <label className="block font-semibold text-slate-700 mb-1">Drum Required</label>
+              <label className="block font-semibold text-slate-700 mb-1">Drum Schedule</label>
               <div className="flex gap-2">
                 <input
                   disabled={!isEditable}

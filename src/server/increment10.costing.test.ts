@@ -256,16 +256,17 @@ describe('Increment 10 — Costing Engine Calculation Foundation', () => {
     assert.equal(res.errorCode, 'RAW_MATERIAL_NOT_FOUND');
   });
 
-  // Test 5: Missing raw material price blocks costing
-  it('Test 5: Unpriced raw material blocks costing with PRICE_NOT_CONFIGURED (Gate 4)', async () => {
-    await assert.rejects(
-      () =>
-        executeCostingRun(
-          { materialNumber: testMat, costingDate: '2026-08-20', quantity: 1, lengthMeters: 1000, currency: 'USD' },
-          actorCosting
-        ),
-      (err: any) => err.code === 'PRICE_NOT_CONFIGURED'
+  // Test 5: A missing raw-material price contributes 0. The cable is not rejected and the master price stays blank.
+  it('Test 5: Unpriced raw material is excluded from the total and does not block costing', async () => {
+    const run = await executeCostingRun(
+      { materialNumber: testMat, costingDate: '2026-08-20', quantity: 1, lengthMeters: 1000, currency: 'USD' },
+      actorCosting
     );
+    assert.equal(Number(run.materialCost), 0);
+    const prices = await getPrisma()!.rawMaterialPrice.findMany({
+      where: { rawMaterialCode: { in: [testRm1, testRm2] } },
+    });
+    assert.equal(prices.length, 0);
   });
 
   // Test 6: Expired price blocks costing

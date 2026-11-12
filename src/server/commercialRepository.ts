@@ -159,7 +159,13 @@ export async function createInquiry(
   const prisma = requirePrisma();
   const stamp = new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 8);
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  const inquiryNumber = `INQ-${stamp}-${rand}`;
+  let inquiryNumber = `INQ-${stamp}-${rand}`;
+  try {
+    const { allocatePortalInquiryNumber } = await import('./inquiryPortalLifecycleRepository');
+    inquiryNumber = await allocatePortalInquiryNumber(actor);
+  } catch {
+    inquiryNumber = `INQ-${stamp}-${rand}`;
+  }
 
   let customerId: string;
   let customerMasterId: string | null = null;
@@ -216,8 +222,12 @@ export async function createInquiry(
       if (!customerName) customerName = customer.name.trim() || customer.legalName?.trim() || null;
       const primary = customer.contacts.find((c) => c.isPrimary && c.active) || customer.contacts[0];
       masterContact = primary?.name || null;
+      const contactPhone = primary?.phone || primary?.mobile;
+      if (contactPhone) commercialMetadata.contactPhone = contactPhone;
     }
   }
+  commercialMetadata.displayInquiryNumber = inquiryNumber;
+  commercialMetadata.portalLifecycle = 'OPEN';
   if (!customerName) customerName = actor.userType === 'customer' ? actor.name || 'Customer' : 'Energya Client';
   const incoterms = defaultNewInquiryIncoterm({
     explicitIncoterm: input.incoterms,
@@ -302,7 +312,63 @@ export async function createInquiry(
   return inquiry;
 }
 
-export async function listInquiries(filter?: {
+const PORTAL_LIFECYCLE_FILTERS = new Set(['OPEN', 'NOT_SUBMITTED', 'CANCELED', 'ACCEPTED']);
+
+function jsonLifecycleEquals(value: string): Prisma.CommercialInquiryWhereInput {
+  return { commercialMetadata: { path: ['portalLifecycle'], equals: value } };
+}
+
+function jsonLifecycleMissing(): Prisma.CommercialInquiryWhereInput {
+  return {
+    OR: [
+      { commercialMetadata: { equals: Prisma.DbNull } },
+      { commercialMetadata: { equals: Prisma.JsonNull } },
+      { commercialMetadata: { path: ['portalLifecycle'], equals: Prisma.AnyNull } },
+    ],
+  };
+}
+
+function portalLifecycleWhere(status: string): Prisma.CommercialInquiryWhereInput {
+  if (status === 'OPEN') {
+    return {
+      OR: [jsonLifecycleEquals('OPEN'), { AND: [{ status: 'DRAFT' }, jsonLifecycleMissing()] }],
+    };
+  }
+  if (status === 'CANCELED') {
+    return {
+      OR: [jsonLifecycleEquals('CANCELED'), { AND: [{ status: 'CANCELLED' }, jsonLifecycleMissing()] }],
+    };
+  }
+  if (status === 'ACCEPTED') {
+    return {
+      OR: [jsonLifecycleEquals('ACCEPTED'), { AND: [{ status: 'CLOSED' }, jsonLifecycleMissing()] }],
+    };
+  }
+  return {
+    OR: [
+      jsonLifecycleEquals('NOT_SUBMITTED'),
+      {
+        AND: [
+          {
+            status: {
+              in: [
+                'SUBMITTED',
+                'UNDER_REVIEW',
+                'ENGINEERING_REVIEW',
+                'ENGINEERING_BLOCKED',
+                'READY_FOR_COMMERCIAL',
+                'QUOTED',
+              ],
+            },
+          },
+          jsonLifecycleMissing(),
+        ],
+      },
+    ],
+  };
+}
+
+export type InquiryListFilter = {
   customerId?: string;
   customerIds?: string[];
   customerMasterIds?: string[];
@@ -315,8 +381,9 @@ export async function listInquiries(filter?: {
   pageSize?: number;
   sortBy?: 'inquiryDate' | 'updatedAt' | 'customerName' | 'status';
   sortDir?: 'asc' | 'desc';
-}) {
-  const prisma = requirePrisma();
+};
+
+function inquiryListWhere(filter?: InquiryListFilter): Prisma.CommercialInquiryWhereInput {
   const andList: Prisma.CommercialInquiryWhereInput[] = [];
 
   if (filter?.customerIds?.length || filter?.customerMasterIds?.length) {
@@ -327,7 +394,13 @@ export async function listInquiries(filter?: {
   } else if (filter?.customerId) {
     andList.push({ customerId: filter.customerId });
   }
-  if (filter?.status && filter.status !== 'ALL') andList.push({ status: filter.status as InquiryStatus });
+  if (filter?.status && filter.status !== 'ALL') {
+    andList.push(
+      PORTAL_LIFECYCLE_FILTERS.has(filter.status)
+        ? portalLifecycleWhere(filter.status)
+        : { status: filter.status as InquiryStatus }
+    );
+  }
   if (filter?.isCurrent !== undefined) andList.push({ isCurrent: filter.isCurrent });
   if (filter?.dateFrom) {
     const from = new Date(filter.dateFrom);
@@ -351,7 +424,12 @@ export async function listInquiries(filter?: {
     });
   }
 
-  const where: Prisma.CommercialInquiryWhereInput = andList.length ? { AND: andList } : {};
+  return andList.length ? { AND: andList } : {};
+}
+
+export async function listInquiries(filter?: InquiryListFilter) {
+  const prisma = requirePrisma();
+  const where = inquiryListWhere(filter);
   const page = Math.max(1, filter?.page || 1);
   const pageSize = Math.min(100, Math.max(1, filter?.pageSize || 25));
   const sortBy = filter?.sortBy || 'updatedAt';
@@ -372,6 +450,20 @@ export async function listInquiries(filter?: {
   ]);
 
   return { total, page, pageSize, inquiries: rows };
+}
+
+/** Card totals. Same where-clause as listInquiries, so a card equals the list for that filter. */
+export async function countInquiryPortalStatuses(filter?: InquiryListFilter) {
+  const prisma = requirePrisma();
+  const scope = { ...filter, status: undefined, page: undefined, pageSize: undefined };
+  const [total, draft, submitted, canceled, approved] = await Promise.all([
+    prisma.commercialInquiry.count({ where: inquiryListWhere(scope) }),
+    prisma.commercialInquiry.count({ where: inquiryListWhere({ ...scope, status: 'OPEN' }) }),
+    prisma.commercialInquiry.count({ where: inquiryListWhere({ ...scope, status: 'NOT_SUBMITTED' }) }),
+    prisma.commercialInquiry.count({ where: inquiryListWhere({ ...scope, status: 'CANCELED' }) }),
+    prisma.commercialInquiry.count({ where: inquiryListWhere({ ...scope, status: 'ACCEPTED' }) }),
+  ]);
+  return { total, draft, submitted, canceled, approved };
 }
 
 export async function getInquiryById(id: string) {
@@ -900,6 +992,9 @@ export async function cancelInquiry(inquiryId: string, actor: RequestActor) {
     });
   }
 
+  const { archiveInquirySnapshot } = await import('./inquiryPortalLifecycleRepository');
+  await archiveInquirySnapshot(inquiry.id);
+
   const quotations = await prisma.commercialQuotation.findMany({
     where: { inquiryId: inquiry.id },
     select: { id: true },
@@ -934,6 +1029,13 @@ export async function cancelInquiry(inquiryId: string, actor: RequestActor) {
     newValue: { status: 'CANCELLED' },
     message: `Cancelled commercial inquiry ${inquiry.inquiryNumber}`,
   });
+
+  try {
+    const { markInquiryCanceledMetadata } = await import('./inquiryPortalLifecycleRepository');
+    await markInquiryCanceledMetadata(inquiry.id);
+  } catch {
+    // The status write already succeeded. The display label still maps CANCELLED to Canceled.
+  }
 
   return updated;
 }
@@ -1759,8 +1861,11 @@ export async function listQuotations(filter?: {
   customerIds?: string[];
   customerMasterIds?: string[];
   status?: string;
+  portalStatus?: string;
   isCurrent?: boolean;
   q?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }) {
   const prisma = requirePrisma();
   const andList: Prisma.CommercialQuotationWhereInput[] = [];
@@ -1768,13 +1873,33 @@ export async function listQuotations(filter?: {
   if (filter?.isCurrent !== undefined) andList.push({ isCurrent: filter.isCurrent });
   if (filter?.customerIds?.length || filter?.customerMasterIds?.length) {
     const or: Prisma.CommercialQuotationWhereInput[] = [];
-    if (filter.customerIds?.length) or.push({ customerId: { in: filter.customerIds } });
-    if (filter.customerMasterIds?.length) or.push({ customerMasterId: { in: filter.customerMasterIds } });
+    if (filter.customerIds?.length) {
+      or.push({ customerId: { in: filter.customerIds } });
+      or.push({ inquiry: { customerId: { in: filter.customerIds } } });
+    }
+    if (filter.customerMasterIds?.length) {
+      or.push({ customerMasterId: { in: filter.customerMasterIds } });
+      or.push({ inquiry: { customerMasterId: { in: filter.customerMasterIds } } });
+    }
     andList.push({ OR: or });
   } else if (filter?.customerId) {
     andList.push({ customerId: filter.customerId });
   }
   if (filter?.status && filter.status !== 'ALL') andList.push({ status: filter.status as QuotationStatus });
+  if (filter?.portalStatus && PORTAL_LIFECYCLE_FILTERS.has(filter.portalStatus)) {
+    andList.push({ inquiry: portalLifecycleWhere(filter.portalStatus) });
+  }
+  if (filter?.dateFrom) {
+    const from = new Date(filter.dateFrom);
+    if (!Number.isNaN(from.getTime())) andList.push({ inquiry: { inquiryDate: { gte: from } } });
+  }
+  if (filter?.dateTo) {
+    const to = new Date(filter.dateTo);
+    if (!Number.isNaN(to.getTime())) {
+      to.setHours(23, 59, 59, 999);
+      andList.push({ inquiry: { inquiryDate: { lte: to } } });
+    }
+  }
   if (filter?.q) {
     andList.push({
       OR: [

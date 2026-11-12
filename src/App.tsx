@@ -32,7 +32,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
 import { AccessRestricted } from './components/common/AccessRestricted';
 import { MobileBottomNav } from './components/ui/MobileBottomNav';
-import { LayoutDashboard, Calculator, Menu as MenuIcon, FileCheck, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Calculator, Menu as MenuIcon, FileCheck } from 'lucide-react';
 
 import { CustomerDashboard } from './components/customer/CustomerDashboard';
 import { CustomerInquiryDetail } from './components/customer/CustomerInquiryDetail';
@@ -45,7 +45,6 @@ import { TdsDocumentLibrary } from './components/customer/TdsDocumentLibrary';
 import { SupportCenter } from './components/customer/SupportCenter';
 import { CustomerProductsPage } from './components/customer/CustomerProductsPage';
 import { CustomerJourney } from './components/customer/CustomerJourney';
-import { SalesOrders } from './components/common/SalesOrders';
 import { CommercialFulfillmentWorkspace } from './components/fulfillment/CommercialFulfillmentWorkspace';
 
 import { InternalDashboard } from './components/internal/InternalDashboard';
@@ -137,7 +136,9 @@ function CustomerPortalPages({
         />
       )}
       {customerTab === 'sales_orders' && (
-        <SalesOrders defaultStatusFilter={pendingOrderStatus || 'All'} />
+        <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-700">
+          Sales orders are managed internally. Use Inquiries and Quotations to follow your request.
+        </div>
       )}
       {(customerTab === 'statement' || customerTab === 'invoices') && <CustomerStatement />}
       {customerTab === 'shipment_tracking' && <ShipmentTracker />}
@@ -286,13 +287,12 @@ function CustomerBottomNav({
       icon: FileCheck,
       onClick: () => go('price_estimation', { status: 'QUOTED' }),
     },
-    { id: 'sales_orders', label: 'Orders', icon: ShoppingCart, onClick: () => go('sales_orders') },
     { id: 'menu', label: 'More', icon: MenuIcon, onClick: onOpenMenu },
   ];
   const activeId =
     quoted && activeTab === 'price_estimation'
       ? 'quotations'
-      : activeTab === 'dashboard' || activeTab === 'price_estimation' || activeTab === 'sales_orders'
+      : activeTab === 'dashboard' || activeTab === 'price_estimation'
         ? activeTab
         : 'menu';
   return <MobileBottomNav items={items} activeId={activeId} />;

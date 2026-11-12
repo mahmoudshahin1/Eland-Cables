@@ -41,6 +41,7 @@ export interface InquiryHeaderFormState {
   deliveryTerms: string;
   deliveryDestination: string;
   destinationPortCode: string;
+  destinationCountryCode: string;
   incoterms: string;
   paymentTerms: string;
   notes: string;
@@ -139,6 +140,7 @@ export function buildHeaderFormFromInquiry(inquiry: CommercialInquiryDto): Inqui
     deliveryTerms: inquiry.deliveryTerms || inquiry.incoterms || '',
     deliveryDestination: meta(inquiry, 'deliveryDestination', ''),
     destinationPortCode: meta(inquiry, 'destinationPortCode', ''),
+    destinationCountryCode: meta(inquiry, 'destinationCountryCode', ''),
     incoterms: inquiry.incoterms || '',
     paymentTerms: inquiry.paymentTerms || '',
     notes: inquiry.notes || '',
@@ -149,8 +151,8 @@ export function buildHeaderFormFromInquiry(inquiry: CommercialInquiryDto): Inqui
       | 'PRICE'
       | 'TECHNICAL'
       | '',
-    metalPriceDate: toDateInput(meta(inquiry, 'metalPriceDate', '')),
-    priceBasis: meta(inquiry, 'priceBasis', ''),
+    metalPriceDate: toDateInput(meta(inquiry, 'metalPriceDate', '')) || todayDateInput(),
+    priceBasis: meta(inquiry, 'priceBasis', '') || 'LME',
     requiredQuotationDate:
       toDateInput(meta(inquiry, 'requiredQuotationDate', '')) || todayDateInput(),
     deliveryAddress: meta(inquiry, 'deliveryAddress', ''),
@@ -289,6 +291,7 @@ export function buildUpdatePayloadFromForm(form: InquiryHeaderFormState): Update
     incoterms: form.incoterms,
     deliveryDestination: form.deliveryDestination.trim() || null,
     destinationPortCode: form.destinationPortCode.trim() || null,
+    destinationCountryCode: form.destinationCountryCode.trim() || null,
     copperPriceRate: parseFiniteNumber(form.copperPriceRate),
     copperPriceUom: 'USD/MT',
     copperPriceSource: form.copperPriceSource || undefined,

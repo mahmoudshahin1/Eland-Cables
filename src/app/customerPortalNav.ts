@@ -27,7 +27,6 @@ export const CUSTOMER_HOME_NAV_ITEMS: CustomerHomeNavItem[] = [
   { id: 'products', label: 'Products', tab: 'products' },
   { id: 'my_inquiries', label: 'My Inquiries', tab: 'price_estimation' },
   { id: 'quotations', label: 'Quotations', tab: 'price_estimation', navState: { status: 'QUOTED' } },
-  { id: 'orders', label: 'Orders', tab: 'sales_orders' },
   { id: 'documents', label: 'Documents', tab: 'tds_library' },
   { id: 'support', label: 'Help & Support', tab: 'support' },
 ];
@@ -37,7 +36,6 @@ export const CUSTOMER_PORTAL_VISIBLE_TABS = new Set<CustomerPortalTab>([
   'dashboard',
   'products',
   'price_estimation',
-  'sales_orders',
   'tds_library',
   'support',
 ]);

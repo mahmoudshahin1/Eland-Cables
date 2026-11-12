@@ -2,6 +2,7 @@ import { HttpError, httpClient } from '../api/httpClient';
 import type { CreateInquiryInput, UpdateInquiryInput, UpdateInquiryLineInput, AddInquiryLineInput } from '../domain/commercialDomain';
 import { InquiryLineAttachmentSummary, LINE_ATTACHMENT_KIND_TECHNICAL_OFFER } from '../domain/inquiryLineAttachments';
 import { parseInquiryDrumSchedule } from '../domain/inquiryDrumSchedule';
+import { portalLifecycleFromInquiry, portalLifecycleLabel } from '../domain/inquiryPortalLifecycle';
 
 export type InquiryLineAttachmentDto = InquiryLineAttachmentSummary;
 
@@ -74,10 +75,19 @@ export interface CommercialInquiryDto {
   supersedesInquiryId?: string | null;
   inquiryGroupKey?: string | null;
   commercialMetadata?: Record<string, unknown> | null;
+  customerContact?: { phone?: string | null } | null;
   createdAt?: string;
   updatedAt?: string;
   lines?: CommercialInquiryLineDto[];
-  quotations?: { id?: string; quotationNumber?: string; versionNo?: number; status?: string; costingCalculationId?: string | null }[];
+  quotations?: {
+    id?: string;
+    quotationNumber?: string;
+    versionNo?: number;
+    status?: string;
+    commercialApprovalStatus?: string | null;
+    fulfillmentType?: string | null;
+    costingCalculationId?: string | null;
+  }[];
   commercialProductsTotal?: number | null;
   commercialValueState?: 'UNPRICED' | 'PRICED' | 'RECALCULATION_REQUIRED';
   attachments?: InquiryAttachmentDto[];
@@ -109,6 +119,7 @@ export interface InquiryListQuery {
   sortBy?: 'inquiryDate' | 'updatedAt' | 'customerName' | 'status';
   sortDir?: 'asc' | 'desc';
   isCurrent?: boolean;
+  includeVersions?: boolean;
   customerId?: string;
 }
 
@@ -126,6 +137,7 @@ export async function fetchCommercialInquiries(
   if (query.sortBy) params.set('sortBy', query.sortBy);
   if (query.sortDir) params.set('sortDir', query.sortDir);
   if (query.isCurrent === false) params.set('isCurrent', 'false');
+  if (query.includeVersions) params.set('includeVersions', 'true');
   if (query.customerId) params.set('customerId', query.customerId);
   return httpClient.get<InquiryListResponse>(`/api/inquiries?${params.toString()}`, { token });
 }
@@ -171,6 +183,7 @@ export interface CommercialQuotationListDto {
     projectName?: string | null;
     customerReference?: string | null;
     status?: string;
+    commercialMetadata?: unknown;
   } | null;
   lines?: Array<{
     id?: string;
@@ -183,14 +196,37 @@ export interface CommercialQuotationListDto {
   }>;
 }
 
+export async function fetchInquiryStatusCounts(
+  token: string,
+  query: { includeVersions?: boolean; q?: string; dateFrom?: string; dateTo?: string } = {}
+): Promise<{ total: number; draft: number; submitted: number; canceled: number; approved: number }> {
+  const params = new URLSearchParams();
+  if (query.includeVersions) params.set('includeVersions', 'true');
+  if (query.q) params.set('q', query.q);
+  if (query.dateFrom) params.set('dateFrom', query.dateFrom);
+  if (query.dateTo) params.set('dateTo', query.dateTo);
+  const qs = params.toString();
+  return httpClient.get(`/api/inquiries/status-counts${qs ? `?${qs}` : ''}`, { token });
+}
+
 export async function fetchCommercialQuotations(
   token: string,
-  query: { q?: string; status?: string; isCurrent?: boolean } = {}
+  query: {
+    q?: string;
+    status?: string;
+    portalStatus?: string;
+    isCurrent?: boolean;
+    dateFrom?: string;
+    dateTo?: string;
+  } = {}
 ): Promise<{ quotations: CommercialQuotationListDto[] }> {
   const params = new URLSearchParams();
   if (query.q) params.set('q', query.q);
   if (query.status) params.set('status', query.status);
+  if (query.portalStatus) params.set('portalStatus', query.portalStatus);
   if (query.isCurrent !== undefined) params.set('isCurrent', String(query.isCurrent));
+  if (query.dateFrom) params.set('dateFrom', query.dateFrom);
+  if (query.dateTo) params.set('dateTo', query.dateTo);
   const qs = params.toString();
   return httpClient.get<{ quotations: CommercialQuotationListDto[] }>(`/api/quotations${qs ? `?${qs}` : ''}`, {
     token,
@@ -276,6 +312,28 @@ export async function cancelCommercialInquiry(token: string, inquiryId: string):
   const data = await httpClient.post<{ inquiry: CommercialInquiryDto }>(
     `/api/inquiries/${encodeURIComponent(inquiryId)}/cancel`,
     undefined,
+    { token }
+  );
+  return data.inquiry;
+}
+
+export async function copyCommercialInquiry(token: string, inquiryId: string): Promise<CommercialInquiryDto> {
+  const data = await httpClient.post<{ inquiry: CommercialInquiryDto }>(
+    `/api/inquiries/${encodeURIComponent(inquiryId)}/copy`,
+    undefined,
+    { token }
+  );
+  return data.inquiry;
+}
+
+export async function approveCommercialInquiry(
+  token: string,
+  inquiryId: string,
+  fulfillmentType: 'DIRECT_ORDER' | 'SALES_AGREEMENT' = 'DIRECT_ORDER'
+): Promise<CommercialInquiryDto> {
+  const data = await httpClient.post<{ inquiry: CommercialInquiryDto }>(
+    `/api/inquiries/${encodeURIComponent(inquiryId)}/approve`,
+    { fulfillmentType },
     { token }
   );
   return data.inquiry;
@@ -493,23 +551,8 @@ export async function fetchInquiryActivity(
   return data.events;
 }
 
-export function formatInquiryStatus(status: string): string {
-  switch ((status || '').toUpperCase()) {
-    case 'DRAFT':
-      return 'Open';
-    case 'SUBMITTED':
-      return 'Submitted';
-    case 'UNDER_REVIEW':
-      return 'Under Review';
-    case 'QUOTED':
-      return 'Quotation Generated';
-    case 'CANCELLED':
-      return 'Canceled';
-    case 'CLOSED':
-      return 'Closed';
-    default:
-      return status;
-  }
+export function formatInquiryStatus(status: string, metadata?: unknown): string {
+  return portalLifecycleLabel(portalLifecycleFromInquiry({ status, commercialMetadata: metadata }));
 }
 
 export function inquiryDisplayRef(inquiry: CommercialInquiryDto): string {

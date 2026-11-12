@@ -29,16 +29,19 @@ describe('inquiryWorkspaceTabs', () => {
     ]);
   });
 
-  it('exposes the same customer portal workspace including Container Study', () => {
+  it('hides costing from the customer portal and keeps Container Study', () => {
     assert.deepEqual(CUSTOMER_PORTAL_TABS, CANONICAL_INTERNAL_TABS);
     const tabs = resolveInquiryWorkspaceTabs({
       isCustomer: true,
-      canViewCosting: false,
+      canViewCosting: true,
       canViewExtendedInternal: false,
       counts: { lineCount: 2, documentCount: 1, quotationCount: 0 },
     });
-    assert.equal(tabs.length, 9);
-    assert.deepEqual(tabs.map((t) => t.id), CANONICAL_INTERNAL_TABS);
+    assert.equal(tabs.some((t) => t.id === 'costing'), false);
+    assert.deepEqual(
+      tabs.map((t) => t.id),
+      CANONICAL_INTERNAL_TABS.filter((tab) => tab !== 'costing')
+    );
     assert.equal(tabs.find((t) => t.id === 'container_study')?.label, 'Container Study');
   });
 

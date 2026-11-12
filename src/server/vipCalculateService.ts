@@ -40,6 +40,11 @@ import { loadImportedCableCalculationEvidence } from './importedCableCalculation
 import { executeCostingForInquiryLine } from './costingOrchestrationService';
 import { buildCostingRequestFromInquiryLine } from '../services/costingRequestService';
 import { approvedCatalogCableCanCalculate } from '../domain/importedCableCalculationAuthority';
+import { projectCalculateResultForActor as projectPortalCalculateResult } from '../domain/calculateResultProjection';
+import {
+  finishPortalCalculate,
+  preparePortalCalculateTarget,
+} from './inquiryPortalLifecycleRepository';
 
 function requirePrisma() {
   const prisma = getPrisma();
@@ -88,6 +93,15 @@ export interface VipCalculateResult {
   } | null;
   decision5Status: string;
   idempotent: boolean;
+  unpricedMaterials?: Array<{ rawMaterialCode: string; message: string; lineNumber?: number }>;
+  partial?: boolean;
+}
+
+export function projectCalculateResultForActor(
+  result: VipCalculateResult,
+  actor: RequestActor
+): VipCalculateResult {
+  return projectPortalCalculateResult(result, actor);
 }
 
 async function loadVipLineReadinessInputs(inquiryId: string, actor: RequestActor): Promise<{
@@ -179,7 +193,7 @@ async function ensureVipConfigurationChannel(inquiryId: string, actor: RequestAc
   });
 }
 
-export async function calculateInquiry(
+async function calculateInquiryOnTarget(
   inquiryId: string,
   actor: RequestActor,
   options?: { recalculate?: boolean }
@@ -319,6 +333,7 @@ export async function calculateInquiry(
   let quotationCreated = false;
   let gates = [...readiness.gates];
   const lineOutcomes: VipCalculateLineOutcome[] = [];
+  const unpricedMaterials: Array<{ rawMaterialCode: string; message: string; lineNumber?: number }> = [];
   let anyCostingFailed = false;
   const prisma = requirePrisma();
 
@@ -440,6 +455,9 @@ export async function calculateInquiry(
             });
           } else {
             gates = appendCostingGateResults(gates, line.lineNumber, []);
+            for (const item of pathA.unpricedMaterials || []) {
+              unpricedMaterials.push({ ...item, lineNumber: line.lineNumber });
+            }
             lineOutcomes.push({
               lineId: line.id,
               lineNumber: line.lineNumber,
@@ -694,6 +712,8 @@ export async function calculateInquiry(
     optionalComponents,
     optionalWarnings,
     lines: lineOutcomes,
+    unpricedMaterials: unpricedMaterials.length ? unpricedMaterials : undefined,
+    partial: unpricedMaterials.length > 0,
     quotation: {
       id: pricedQuotation.id,
       quotationNumber: pricedQuotation.quotationNumber,
@@ -705,4 +725,47 @@ export async function calculateInquiry(
     decision5Status: DECISION5_STATUS,
     idempotent: !quotationCreated && !options?.recalculate,
   };
+}
+
+export async function calculateInquiry(
+  inquiryId: string,
+  actor: RequestActor,
+  options?: { recalculate?: boolean }
+): Promise<VipCalculateResult> {
+  const target = await preparePortalCalculateTarget(inquiryId, actor);
+  try {
+    const result = await calculateInquiryOnTarget(target.inquiryId, actor, options);
+    const settled = await finishPortalCalculate({
+      inquiryId: target.inquiryId,
+      supersededInquiryId: target.supersededInquiryId,
+      fingerprint: target.fingerprint,
+      acceptedAt: target.acceptedAt,
+      completed: result.status === 'COMPLETED',
+    });
+    if (result.status === 'COMPLETED' && actor.id) {
+      try {
+        const { createUserNotification } = await import('./userNotificationService');
+        await createUserNotification({
+          userAccountId: actor.id,
+          title: `Quotation ${result.quotation?.quotationNumber || ''} is ready`.trim(),
+          message: `A quotation was generated for ${settled.inquiryNumber}.`,
+          eventCode: 'QUOTATION_GENERATED',
+          entityType: 'CommercialInquiry',
+          entityId: settled.inquiryId,
+        });
+      } catch {
+        // A notification must not roll back a completed calculation.
+      }
+    }
+    return { ...result, inquiryId: settled.inquiryId, inquiryNumber: settled.inquiryNumber };
+  } catch (err) {
+    await finishPortalCalculate({
+      inquiryId: target.inquiryId,
+      supersededInquiryId: target.supersededInquiryId,
+      fingerprint: target.fingerprint,
+      acceptedAt: target.acceptedAt,
+      completed: false,
+    }).catch(() => undefined);
+    throw err;
+  }
 }

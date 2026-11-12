@@ -38,7 +38,6 @@ import {
 import { buildApprovedMasterSelectState, CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE } from '../../domain/inquiryContainerStudyPresentation';
 import {
   deliveryCombinationKey,
-  formatDeliveryCombinationLabel,
   matchCustomerDestinationPort,
 } from '../../domain/customerDeliveryCombination';
 import { requiredMetalsForLines } from '../../domain/inquiryRequiredMetals';
@@ -160,7 +159,32 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   }, [deliveryCombinations, form.deliveryDestination, form.destinationPortCode]);
   const destinationConfigured = Boolean(selectedDeliveryKey);
   const selectedDeliveryCombo = deliveryCombinations.find((row) => deliveryCombinationKey(row) === selectedDeliveryKey);
-  const destinationCountryLabel = selectedDeliveryCombo?.countryLabel || '';
+  const selectedCountryCode = form.destinationCountryCode || selectedDeliveryCombo?.countryCode || '';
+  const countryOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const row of deliveryCombinations) {
+      if (!seen.has(row.countryCode)) seen.set(row.countryCode, row.countryLabel);
+    }
+    return [...seen.entries()].map(([countryCode, countryLabel]) => ({ countryCode, countryLabel }));
+  }, [deliveryCombinations]);
+  const portOptions = useMemo(() => {
+    const seen = new Map<string, { code: string; name: string; countryCode: string }>();
+    for (const row of deliveryCombinations) {
+      if (selectedCountryCode && row.countryCode !== selectedCountryCode) continue;
+      if (!seen.has(row.destinationPortCode)) {
+        seen.set(row.destinationPortCode, {
+          code: row.destinationPortCode,
+          name: row.destinationPortName,
+          countryCode: row.countryCode,
+        });
+      }
+    }
+    return [...seen.values()];
+  }, [deliveryCombinations, selectedCountryCode]);
+  const destinationCountryLabel =
+    countryOptions.find((row) => row.countryCode === selectedCountryCode)?.countryLabel ||
+    selectedDeliveryCombo?.countryLabel ||
+    '';
   const deliveryFocused = Boolean(showReturnToContainerStudy);
   const defaultedDeliveryFor = useRef<string | null>(null);
   const requiredMetals = useMemo(
@@ -270,7 +294,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
     if (deliveryCombinations.length === 0) return;
     const preferred = deliveryCombinations.find((row) => row.isDefault) || deliveryCombinations[0];
     defaultedDeliveryFor.current = inquiry.id;
-    onChange(applySelectedDeliveryCombination(preferred));
+    onChange({
+      ...applySelectedDeliveryCombination(preferred),
+      destinationCountryCode: preferred.countryCode,
+    });
   }, [
     deliveryCombinations,
     form.deliveryDestination,
@@ -730,51 +757,66 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
             )}
 
             {show('deliveryDestination') && (
-              <HeaderField label="Destination Port">
-                {isEditable && deliveryCombinations.length > 0 ? (
-                  <select
-                    value={selectedDeliveryKey}
-                    onChange={(e) => {
-                      const key = e.target.value;
-                      const combo = deliveryCombinations.find((row) => deliveryCombinationKey(row) === key);
-                      onChange(applySelectedDeliveryCombination(combo));
-                    }}
-                    className={`${inputClass} font-semibold text-slate-900`}
-                    data-destination-port-master-select="true"
-                    data-customer-master-destination={destinationConfigured ? 'configured' : 'not-configured'}
-                  >
-                    <option value="">Select approved delivery option</option>
-                    {deliveryCombinations.map((row) => (
-                      <option key={deliveryCombinationKey(row)} value={deliveryCombinationKey(row)}>
-                        {formatDeliveryCombinationLabel(row)}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div
-                    className={readOnlyClass}
-                    data-destination-port-master-select="true"
-                    data-customer-master-destination={destinationConfigured ? 'configured' : 'not-configured'}
-                  >
-                    {destinationConfigured
-                      ? formatDeliveryCombinationLabel(
-                          deliveryCombinations.find((row) => deliveryCombinationKey(row) === selectedDeliveryKey)!
-                        )
-                      : CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE}
-                  </div>
-                )}
-                {deliveryCombinations.length === 0 ? (
-                  <p className="text-[11px] text-amber-800">
-                    Destination Port comes from Customer Master. It is not selected from Incoterm combinations and does
-                    not block physical Container Study packing.
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-slate-500">
-                    Approved Customer Master delivery options. Saving a selected option stores that combination as the
-                    inquiry destination.
-                  </p>
-                )}
-              </HeaderField>
+              <>
+                <HeaderField label="Country">
+                  {isEditable && countryOptions.length > 0 ? (
+                    <select
+                      value={selectedCountryCode}
+                      onChange={(e) =>
+                        onChange({
+                          destinationCountryCode: e.target.value,
+                          destinationPortCode: '',
+                          deliveryDestination: '',
+                        })
+                      }
+                      className={`${inputClass} font-semibold text-slate-900`}
+                      data-destination-country-select="true"
+                    >
+                      <option value="">Select country</option>
+                      {countryOptions.map((row) => (
+                        <option key={row.countryCode} value={row.countryCode}>
+                          {row.countryLabel}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className={readOnlyClass}>{destinationCountryLabel || '—'}</div>
+                  )}
+                </HeaderField>
+                <HeaderField label="Destination Port">
+                  {isEditable && portOptions.length > 0 ? (
+                    <select
+                      value={form.destinationPortCode}
+                      onChange={(e) => {
+                        const port = portOptions.find((row) => row.code === e.target.value);
+                        onChange({
+                          destinationPortCode: port?.code || '',
+                          destinationCountryCode: port?.countryCode || selectedCountryCode,
+                          deliveryDestination: port?.name || '',
+                        });
+                      }}
+                      className={`${inputClass} font-semibold text-slate-900`}
+                      data-destination-port-master-select="true"
+                      data-customer-master-destination={destinationConfigured ? 'configured' : 'not-configured'}
+                    >
+                      <option value="">Select destination port</option>
+                      {portOptions.map((row) => (
+                        <option key={row.code} value={row.code}>
+                          {row.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div
+                      className={readOnlyClass}
+                      data-destination-port-master-select="true"
+                      data-customer-master-destination={destinationConfigured ? 'configured' : 'not-configured'}
+                    >
+                      {form.destinationPortCode || form.deliveryDestination || CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE}
+                    </div>
+                  )}
+                </HeaderField>
+              </>
             )}
 
             {show('requestedDeliveryDate') && (
@@ -924,7 +966,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   if (isCustomer) {
     return (
       <div className="space-y-3">
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
+        <div id="inquiry-header" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
           <button
             type="button"
             onClick={() => setHeaderExpanded((open) => !open)}
@@ -982,7 +1024,13 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     <div className={readOnlyClass}>{customerProfile?.email || '—'}</div>
                   </HeaderField>
                   <HeaderField label="Phone">
-                    <div className={readOnlyClass}>{customerProfile?.phone || '—'}</div>
+                    <div className={readOnlyClass}>
+                      {customerProfile?.phone ||
+                        (typeof inquiry.commercialMetadata?.contactPhone === 'string'
+                          ? inquiry.commercialMetadata.contactPhone
+                          : '') ||
+                        '—'}
+                    </div>
                   </HeaderField>
                   <Link
                     to={CUSTOMER_PROFILE_PATH}
@@ -1344,37 +1392,64 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     </HeaderField>
                   )}
                   {show('deliveryDestination') && (
-                    <HeaderField label="Destination Port">
-                      {isEditable && deliveryCombinations.length > 0 ? (
-                        <select
-                          value={selectedDeliveryKey}
-                          onChange={(e) => {
-                            const key = e.target.value;
-                            const combo = deliveryCombinations.find((row) => deliveryCombinationKey(row) === key);
-                            onChange(applySelectedDeliveryCombination(combo));
-                          }}
-                          className={inputClass}
-                          data-destination-port-master-select="true"
-                        >
-                          <option value="">Select approved delivery option</option>
-                          {deliveryCombinations.map((row) => (
-                            <option key={deliveryCombinationKey(row)} value={deliveryCombinationKey(row)}>
-                              {formatDeliveryCombinationLabel(row)}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <div className={readOnlyClass} data-destination-port-master-select="true">
-                          {destinationConfigured
-                            ? formatDeliveryCombinationLabel(selectedDeliveryCombo!)
-                            : CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE}
-                        </div>
-                      )}
-                    </HeaderField>
+                    <>
+                      <HeaderField label="Country">
+                        {isEditable && countryOptions.length > 0 ? (
+                          <select
+                            value={selectedCountryCode}
+                            onChange={(e) =>
+                              onChange({
+                                destinationCountryCode: e.target.value,
+                                destinationPortCode: '',
+                                deliveryDestination: '',
+                              })
+                            }
+                            className={inputClass}
+                            data-destination-country-select="true"
+                          >
+                            <option value="">Select country</option>
+                            {countryOptions.map((row) => (
+                              <option key={row.countryCode} value={row.countryCode}>
+                                {row.countryLabel}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className={readOnlyClass}>{destinationCountryLabel || '—'}</div>
+                        )}
+                      </HeaderField>
+                      <HeaderField label="Destination Port">
+                        {isEditable && portOptions.length > 0 ? (
+                          <select
+                            value={form.destinationPortCode}
+                            onChange={(e) => {
+                              const port = portOptions.find((row) => row.code === e.target.value);
+                              onChange({
+                                destinationPortCode: port?.code || '',
+                                destinationCountryCode: port?.countryCode || selectedCountryCode,
+                                deliveryDestination: port?.name || '',
+                              });
+                            }}
+                            className={inputClass}
+                            data-destination-port-master-select="true"
+                          >
+                            <option value="">Select destination port</option>
+                            {portOptions.map((row) => (
+                              <option key={row.code} value={row.code}>
+                                {row.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className={readOnlyClass} data-destination-port-master-select="true">
+                            {form.destinationPortCode ||
+                              form.deliveryDestination ||
+                              CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE}
+                          </div>
+                        )}
+                      </HeaderField>
+                    </>
                   )}
-                  <HeaderField label="Destination Country">
-                    <div className={readOnlyClass}>{destinationCountryLabel || '—'}</div>
-                  </HeaderField>
                   {show('incoterms') && (
                     <HeaderField label="Incoterm">
                       {isEditable ? (

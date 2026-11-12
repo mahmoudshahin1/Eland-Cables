@@ -46,7 +46,7 @@ export const CommercialOfferDocumentsPanel: React.FC<CommercialOfferDocumentsPan
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <h3 className="font-bold text-slate-800">Commercial Offer</h3>
         <p className="mt-1 text-[11px] text-slate-500">
-          The official commercial offer PDF is available after Energya issues the quotation.
+          Print and PDF download are temporarily unavailable. Technical documents stay in this tab.
         </p>
       </div>
     );

@@ -104,6 +104,20 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `energya-backend/src/app.module.ts` | إزالة import وتسجيل `InquiriesModule` | نطاق Phase 4. ملفات `energya-backend/src/inquiries/` لم تُحذف. |
 | `energya-backend/src/master-data/cables/cables.module.ts` و`scripts/parity/nestRoutes.mjs` | إزالة `CustomerCatalogController` من `controllers` وحذف سطر `3-early` | قرار المستخدم: `GET /api/v2/cables/products` و`/products/facets` خارج Phase 2a. الملفات بقيت. البروكسي يقرأ `nestRoutes.mjs` فلا يحوّل هذين المسارين إلى Nest. |
 | `.env.example` | إفراغ كل القيم والإبقاء على الأسماء والتعليقات | القيم كانت placeholders. `JWT_SECRET` المكتوب كان بطول يقبله `AuthModule` (32 حرفًا أو أكثر). لا يُرفع سر حتى لو كان مؤقتًا. ملف `.env` نفسه لم يُمس. |
+| `src/domain/costingEngine.ts` و`src/server/costingOrchestrationService.ts` و`src/server/vipCalculateService.ts` و`src/server/v2InquiryConfigurationRoutes.ts` | فرق مقصود عن Gate 4: الخامة التي ليس لها سعر معتمد تُحتسب بصفر داخل حساب الاستفسار فقط، وباقي الخامات تُسعَّر طبيعيًا. لا يُكتب صفر في جدول أسعار الخامات. التحذير `unpricedMaterials` وعلم `partial` يرجعان للداخلي فقط ويُحذفان من رد العميل. | قرار B2B: الحساب لا يتوقف عند `PRICE_NOT_CONFIGURED`، والعميل لا يرى تكلفة الخامة الناقصة. Decision 5 / Option B يبقى: معدن LME/Base فقط. |
+| `src/server/inquiryPortalLifecycleRepository.ts` و`src/server/commercialRoutes.ts` و`src/server/commercialRepository.ts` | أربع حالات عرض: Open وNot Submitted وCanceled وAccepted على `commercialMetadata.portalLifecycle` بدون تغيير enum `InquiryStatus`. رقم جديد `INQ-YY-###`. النسخ صف جديد بنفس رقم العرض. Approve ينشئ أو يحدّث Sales Order خلال 7 أيام إذا لم يُرسل للإنتاج. | لا migration هدام. الأرقام القديمة تبقى صالحة. |
+| `src/server/commercialProjection.ts` و`src/server/commercialRoutes.ts` و`src/server/inquiryPortalLifecycleRepository.ts` | رد العميل يُبقي `portalLifecycle` ورقم العرض والهاتف، و`POST /api/inquiries/:id/approve` يقبل `fulfillmentType` (`DIRECT_ORDER` أو `SALES_AGREEMENT`) ويحوّل عرض السعر الحالي إلى `ACCEPTED`. | قائمة السماح كانت تحذف حالة العرض فيرجع الشارة Draft ويبقى Approve مقفولًا. الموافقة الثانية لنفس النسخة تُرفض. النسخة السابقة تبقى بحالتها. |
+| `src/auth/tokenStorage.ts` و`src/context/AuthContext.tsx` | جلسة التبويب المكرر تُحفظ في `localStorage` مع قفل تحديث مشترك. | `sessionStorage` كان يفصل التبويب المنسوخ ويلغي الجلسة. |
+| `src/server/numberSequenceService.ts` | تخصيص الرقم يتخطى القيمة الموجودة في الجدول ويقفل صف `NumberSequence` ثم يحفظ `nextSerial = serial + 1`. | عداد `QUO_COMMERCIAL` كان 19 بينما `QUO26-00019` و`QUO26-00020` موجودان بعد نسخ عروض من قاعدة أخرى، ففشل إنشاء عرض السعر بقيد `(quotationNumber, versionNo)`. |
+
+---
+
+## 7. فروقات مقصودة — بوابة B2B (Intentional differences)
+
+- **سعر خامة غير مُكوَّن:** المساهمة صفر داخل الحساب فقط. الخامات الأخرى تُسعَّر. التحذير داخلي. جدول الأسعار الرئيسي لا يُخزَّن فيه صفر. هذا يختلف عن إيقاف Gate 4 برمز `PRICE_NOT_CONFIGURED`.
+- **تبويب Costing وPDF والطباعة ورحلة VIP:** مخفية عن عميل B2B. المستندات الفنية تبقى في Documents.
+- **حالات العرض الأربع** لا تستبدل enum قاعدة البيانات. الإلغاء يكتب `CANCELLED` فورًا. القبول يخزّن `ACCEPTED` في metadata. Direct Sales Order ينشئ أو يحدّث Sales Order، وSales Agreement ينشئ Agreement. واجهة Sales Order مخفية عن العميل. أسماء العرض للعميل: Draft وSubmitted وCanceled وApproved. كروت العد تستخدم نفس فلتر القائمة عبر `GET /api/inquiries/status-counts`. كل تغيير حالة يحتفظ بنسخة من الحالة السابقة كما كانت، بدون تحويلها إلى Canceled. `POST /api/inquiries/:id/approve` يأخذ `fulfillmentType`.
+- **دراسة الحاوية:** نسبة الاستغلال تستخدم الطول (5.9 م مقابل 12.03 م) والحجم. التأكيد لا يفتح تبويب Costing.
 
 ---
 

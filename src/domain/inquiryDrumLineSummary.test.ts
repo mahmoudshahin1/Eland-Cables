@@ -5,6 +5,7 @@ import {
   buildInquiryDrumLineSummary,
   formatInquiryDrumLineSummaryDrums,
   formatInquiryDrumLineSummaryEntry,
+  formatInquiryDrumScheduleExpression,
 } from './inquiryDrumLineSummary';
 
 const drumMaster: DrumMasterRecord[] = [
@@ -67,6 +68,21 @@ describe('inquiryDrumLineSummary', () => {
     assert.equal(summary.drumCount, 4);
     assert.equal(summary.totalLengthM, 2000);
     assert.deepEqual(summary.drumEntries, [{ drumCode: 'EWD220', description: 'Wooden Reel 220' }]);
+  });
+
+  it('formats a drum schedule as drums times length per drum code', () => {
+    assert.equal(
+      formatInquiryDrumScheduleExpression({
+        drumSchedule: {
+          cableTolerancePercent: 1,
+          rows: [
+            { drumCode: 'EWD2600-K26', noOfDrums: 1, cuttingLengthM: 1000, drumTolerancePercent: 5 },
+            { drumCode: 'EWD2200-39', noOfDrums: 2, cuttingLengthM: 800, drumTolerancePercent: 5 },
+          ],
+        },
+      }),
+      '1 × 1,000m (EWD2600-K26) + 2 × 800m (EWD2200-39)'
+    );
   });
 
   it('formats drum code and description for display', () => {

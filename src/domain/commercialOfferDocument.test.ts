@@ -24,7 +24,7 @@ import {
 } from './commercialOfferDocument';
 import { buildQuotationIssuedEmail, runEmailWithoutRollback } from './quotationIssuedEmail';
 import { shouldSubmitViaV2Inquiry } from './v2InquiryWorkflow';
-import { projectInquiryForActor } from '../server/commercialProjection';
+import { projectInquiryForActor, projectQuotationListForActor } from '../server/commercialProjection';
 
 const COST_COLUMN_IDS = ['unitCost', 'totalCost', 'margin', 'marginPercent', 'Unit Cost', 'Total Cost', 'Margin'];
 
@@ -212,17 +212,9 @@ describe('issued commercial offer document', () => {
     assert.equal(presentText(empty.customer.contactPerson), 'Not Set');
   });
 
-  it('exposes print and export actions for draft and issued documents', () => {
-    const draft = commercialOfferDocumentActions({ issued: false, isCustomer: false });
-    assert.deepEqual(
-      draft.map((row) => row.label),
-      ['Print Commercial Offer', 'Export Commercial Offer PDF']
-    );
-    const issued = commercialOfferDocumentActions({ issued: true, isCustomer: true });
-    assert.deepEqual(
-      issued.map((row) => row.label),
-      ['Print Final Commercial Offer', 'Export Final Commercial Offer PDF']
-    );
+  it('hides print and PDF download until the quotation module is finalized', () => {
+    assert.deepEqual(commercialOfferDocumentActions({ issued: false, isCustomer: false }), []);
+    assert.deepEqual(commercialOfferDocumentActions({ issued: true, isCustomer: true }), []);
     assert.equal(commercialOfferDocumentActions({ issued: false, isCustomer: true }).length, 0);
   });
 });
@@ -282,6 +274,48 @@ describe('customer commercial projection', () => {
     assert.equal('costingCalculationId' in line, false);
     assert.equal(line.commercialUnitPrice, 15);
     assert.equal(line.commercialLineTotal, 30);
+  });
+
+  it('keeps the portal lifecycle for a customer and still hides cost fields', () => {
+    const projected = projectInquiryForActor(
+      {
+        commercialMetadata: {
+          portalLifecycle: 'NOT_SUBMITTED',
+          displayInquiryNumber: 'INQ-26-002',
+          contactPhone: '+20 100',
+          calculatedLineFingerprint: 'secret-fingerprint',
+          portalSnapshot: true,
+        },
+        lines: [{ materialCost: 10, margin: 2, commercialUnitPrice: 15 }],
+      },
+      { userType: 'customer' }
+    );
+    const metadata = projected.commercialMetadata as Record<string, unknown>;
+    assert.equal(metadata.portalLifecycle, 'NOT_SUBMITTED');
+    assert.equal(metadata.displayInquiryNumber, 'INQ-26-002');
+    assert.equal(metadata.contactPhone, '+20 100');
+    assert.equal('calculatedLineFingerprint' in metadata, false);
+    assert.equal('portalSnapshot' in metadata, false);
+    const line = projected.lines?.[0] as Record<string, unknown>;
+    assert.equal('materialCost' in line, false);
+    assert.equal('margin' in line, false);
+
+    const quotations = projectQuotationListForActor(
+      [
+        {
+          inquiry: {
+            status: 'DRAFT',
+            commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', calculatedLineFingerprint: 'secret-fingerprint' },
+            lines: [{ materialCost: 4 }],
+          },
+        },
+      ],
+      { userType: 'customer' }
+    );
+    const inquiry = quotations[0]?.inquiry as { commercialMetadata?: Record<string, unknown>; lines?: Array<Record<string, unknown>> };
+    assert.equal(inquiry.commercialMetadata?.portalLifecycle, 'NOT_SUBMITTED');
+    assert.equal('calculatedLineFingerprint' in (inquiry.commercialMetadata || {}), false);
+    assert.equal('materialCost' in (inquiry.lines?.[0] || {}), false);
   });
 });
 

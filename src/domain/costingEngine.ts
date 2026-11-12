@@ -74,6 +74,11 @@ export interface MaterialCostLineDetail {
   fxRateSource?: string;
 }
 
+export interface UnpricedMaterialNotice {
+  rawMaterialCode: string;
+  message: string;
+}
+
 export interface CostingEngineResult {
   success: boolean;
   costingStatus: CostingRunStatus;
@@ -95,6 +100,10 @@ export interface CostingEngineResult {
   errorCode?: string;
   fxSnapshot?: FxSnapshotEntry[];
   resultCurrency?: string;
+  /** Missing approved prices contribute 0 inside this calculation only. Master prices stay blank. */
+  unpricedMaterials?: UnpricedMaterialNotice[];
+  /** True when the total excludes one or more unpriced raw materials. Internal/admin only. */
+  partial?: boolean;
 }
 
 export interface CostingContext {
@@ -197,8 +206,12 @@ export function evaluateCostingGates(
   costingDate: Date,
   currency: string,
   context: CostingContext
-): { ready: boolean; blockingReasons: string[]; errorCode?: string } {
+): { ready: boolean; blockingReasons: string[]; errorCode?: string; unpricedMaterials: UnpricedMaterialNotice[] } {
   const blockingReasons: string[] = [];
+  const unpricedMaterials: UnpricedMaterialNotice[] = [];
+  const noteUnpriced = (rawMaterialCode: string, message: string) => {
+    unpricedMaterials.push({ rawMaterialCode, message });
+  };
 
   // GATE 1 — ENGINEERING
   if (!context.engineeringMapping || context.engineeringMapping.status !== 'APPROVED') {
@@ -250,7 +263,11 @@ export function evaluateCostingGates(
         approvedPrices: context.approvedPrices,
       });
       if (!resolved.ok) {
-        blockingReasons.push(`Gate 4 Failed: ${line.rawMaterialCode} — ${resolved.message} (${resolved.code}).`);
+        if (resolved.code === 'PRICE_NOT_CONFIGURED') {
+          noteUnpriced(line.rawMaterialCode, resolved.message);
+        } else {
+          blockingReasons.push(`Gate 4 Failed: ${line.rawMaterialCode} — ${resolved.message} (${resolved.code}).`);
+        }
       } else if (
         resolved.appliedCurrency &&
         normalizeCostingCurrency(resolved.appliedCurrency) !== normalizeCostingCurrency(currency)
@@ -281,7 +298,11 @@ export function evaluateCostingGates(
     );
 
     if (priceVal.code !== 'PRICE_VALID') {
-      blockingReasons.push(`Gate 4 Failed: ${line.rawMaterialCode} — ${priceVal.message} (${priceVal.code}).`);
+      if (priceVal.code === 'PRICE_NOT_CONFIGURED') {
+        noteUnpriced(line.rawMaterialCode, priceVal.message);
+      } else {
+        blockingReasons.push(`Gate 4 Failed: ${line.rawMaterialCode} — ${priceVal.message} (${priceVal.code}).`);
+      }
     } else if (priceVal.currency && normalizeCostingCurrency(priceVal.currency) !== normalizeCostingCurrency(currency)) {
       const fxCtx: FxConversionContext = {
         targetCurrency: currency,
@@ -312,10 +333,10 @@ export function evaluateCostingGates(
     else if (blockingReasons.some((r) => r.includes('INQUIRY_METAL_UOM_INVALID'))) errorCode = 'INQUIRY_METAL_UOM_INVALID';
     else if (blockingReasons.some((r) => r.includes('FX_NOT_CONFIGURED'))) errorCode = 'FX_NOT_CONFIGURED';
 
-    return { ready: false, blockingReasons, errorCode };
+    return { ready: false, blockingReasons, errorCode, unpricedMaterials };
   }
 
-  return { ready: true, blockingReasons: [] };
+  return { ready: true, blockingReasons: [], unpricedMaterials };
 }
 
 /**
@@ -418,6 +439,7 @@ export function calculateCableManufacturingCost(
     : context.sourceBomLines;
 
   const costingLines: MaterialCostLineDetail[] = [];
+  const unpricedMaterials: UnpricedMaterialNotice[] = [...(gateCheck.unpricedMaterials || [])];
   let totalMaterialCost = 0;
   const fxSnapshot: FxSnapshotEntry[] = [];
   const fxCtx: FxConversionContext = {
@@ -464,6 +486,33 @@ export function calculateCableManufacturingCost(
     });
 
     if (!priceRes.ok || priceRes.appliedPrice == null) {
+      if (priceRes.code === 'PRICE_NOT_CONFIGURED') {
+        const lengthKm = val.lengthMeters / 1000;
+        costingLines.push({
+          componentType: 'MATERIAL',
+          rawMaterialCode: line.rawMaterialCode,
+          rawMaterialDesc: rm.description,
+          consumptionPerKm: line.consumption,
+          totalConsumption: line.consumption * lengthKm * val.quantity,
+          consumptionUom: line.uom,
+          price: 0,
+          priceCurrency: val.currency,
+          priceUom: line.uom,
+          priceBasis: 'PER_KG',
+          priceRevision: 1,
+          pricingSource: 'RAW_MATERIAL_MASTER',
+          metalType: rm.metalType || 'NONE',
+          lineCost: 0,
+          calculationNotes: 'Price not configured. Excluded from the total. Master price remains blank.',
+        });
+        if (!unpricedMaterials.some((item) => item.rawMaterialCode === line.rawMaterialCode)) {
+          unpricedMaterials.push({
+            rawMaterialCode: line.rawMaterialCode,
+            message: priceRes.message || 'Price not configured',
+          });
+        }
+        continue;
+      }
       return {
         success: false,
         costingStatus: 'BLOCKED',
@@ -635,5 +684,7 @@ export function calculateCableManufacturingCost(
     blockingReasons: [],
     fxSnapshot: fxSnapshot.length ? fxSnapshot : undefined,
     resultCurrency: val.currency,
+    unpricedMaterials: unpricedMaterials.length ? unpricedMaterials : undefined,
+    partial: unpricedMaterials.length > 0,
   };
 }
