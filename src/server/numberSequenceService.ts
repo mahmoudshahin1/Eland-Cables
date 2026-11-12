@@ -36,6 +36,75 @@ export function formatSequenceValue(
     .replace(/\{(#+)\}/g, (_m, hashes: string) => String(serial).padStart(hashes.length, '0'));
 }
 
+export const SEQUENCE_COLLISION_STEP_CAP = 10_000;
+
+/**
+ * Returns the first formatted serial that `isTaken` says is free, starting at nextSerial.
+ * Stops after SEQUENCE_COLLISION_STEP_CAP checks so a full table cannot hang allocation.
+ */
+export async function resolveUniqueSequenceValue(
+  seq: { format: string; prefix: string; nextSerial: number },
+  isTaken: (candidate: string) => Promise<boolean>,
+  now = new Date()
+): Promise<{ value: string; serial: number }> {
+  let serial = seq.nextSerial;
+  for (let steps = 0; steps < SEQUENCE_COLLISION_STEP_CAP; steps += 1) {
+    const value = formatSequenceValue(seq.format, seq.prefix, serial, now);
+    if (!(await isTaken(value))) return { value, serial };
+    serial += 1;
+  }
+  throw new Error(
+    `Number sequence could not find a free value after ${SEQUENCE_COLLISION_STEP_CAP} steps starting at ${seq.nextSerial}.`
+  );
+}
+
+async function sequenceValueIsTaken(
+  tx: Prisma.TransactionClient,
+  key: string,
+  candidate: string
+): Promise<boolean> {
+  switch (key) {
+    case 'QUO_COMMERCIAL': {
+      const found = await tx.commercialQuotation.findFirst({
+        where: { quotationNumber: candidate },
+        select: { id: true },
+      });
+      return Boolean(found);
+    }
+    case 'INQ_COMMERCIAL':
+    case 'INQ_PORTAL': {
+      const found = await tx.commercialInquiry.findFirst({
+        where: { inquiryNumber: candidate },
+        select: { id: true },
+      });
+      return Boolean(found);
+    }
+    case 'CONTAINER_STUDY': {
+      const found = await tx.containerStudy.findFirst({
+        where: { studyNumber: candidate },
+        select: { id: true },
+      });
+      return Boolean(found);
+    }
+    case 'SO_PORTAL': {
+      const found = await tx.epcSalesOrder.findFirst({
+        where: { salesOrderNumber: candidate },
+        select: { id: true },
+      });
+      return Boolean(found);
+    }
+    case 'CUSTOMER_SERVICE_CASE': {
+      const found = await tx.customerServiceCase.findFirst({
+        where: { caseNumber: candidate },
+        select: { id: true },
+      });
+      return Boolean(found);
+    }
+    default:
+      return false;
+  }
+}
+
 export async function listNumberSequences(filter?: { moduleId?: string; active?: boolean }) {
   const prisma = requirePrisma();
   return prisma.numberSequence.findMany({
@@ -140,20 +209,31 @@ export async function allocateNextNumber(
 
   const prisma = requirePrisma();
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const seq = await tx.numberSequence.findUnique({ where: { code: key } });
+    const locked = await tx.$queryRaw<
+      Array<{ code: string; prefix: string; format: string; nextSerial: number; active: boolean }>
+    >`
+      SELECT code, prefix, format, "nextSerial", active
+      FROM "NumberSequence"
+      WHERE code = ${key}
+      FOR UPDATE
+    `;
+    const seq = locked[0];
     if (!seq) {
       throw new Error(`Number sequence '${key}' not found.`);
     }
     if (!seq.active) {
       throw new Error(`Number sequence '${key}' is inactive.`);
     }
-    const serial = seq.nextSerial;
-    const value = formatSequenceValue(seq.format, seq.prefix, serial, now);
+    const resolved = await resolveUniqueSequenceValue(
+      { format: seq.format, prefix: seq.prefix, nextSerial: Number(seq.nextSerial) },
+      (candidate) => sequenceValueIsTaken(tx, key, candidate),
+      now
+    );
     await tx.numberSequence.update({
       where: { code: key },
-      data: { nextSerial: serial + 1 },
+      data: { nextSerial: resolved.serial + 1 },
     });
-    return { value, code: seq.code, serial, source: 'PLATFORM' as const };
+    return { value: resolved.value, code: seq.code, serial: resolved.serial, source: 'PLATFORM' as const };
   });
 
   await appendServerAudit({

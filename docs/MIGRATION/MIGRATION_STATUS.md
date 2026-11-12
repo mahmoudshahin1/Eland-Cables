@@ -108,6 +108,7 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `src/server/inquiryPortalLifecycleRepository.ts` و`src/server/commercialRoutes.ts` و`src/server/commercialRepository.ts` | أربع حالات عرض: Open وNot Submitted وCanceled وAccepted على `commercialMetadata.portalLifecycle` بدون تغيير enum `InquiryStatus`. رقم جديد `INQ-YY-###`. النسخ صف جديد بنفس رقم العرض. Approve ينشئ أو يحدّث Sales Order خلال 7 أيام إذا لم يُرسل للإنتاج. | لا migration هدام. الأرقام القديمة تبقى صالحة. |
 | `src/server/commercialProjection.ts` و`src/server/commercialRoutes.ts` و`src/server/inquiryPortalLifecycleRepository.ts` | رد العميل يُبقي `portalLifecycle` ورقم العرض والهاتف، و`POST /api/inquiries/:id/approve` يقبل `fulfillmentType` (`DIRECT_ORDER` أو `SALES_AGREEMENT`) ويحوّل عرض السعر الحالي إلى `ACCEPTED`. | قائمة السماح كانت تحذف حالة العرض فيرجع الشارة Draft ويبقى Approve مقفولًا. الموافقة الثانية لنفس النسخة تُرفض. النسخة السابقة تبقى بحالتها. |
 | `src/auth/tokenStorage.ts` و`src/context/AuthContext.tsx` | جلسة التبويب المكرر تُحفظ في `localStorage` مع قفل تحديث مشترك. | `sessionStorage` كان يفصل التبويب المنسوخ ويلغي الجلسة. |
+| `src/server/numberSequenceService.ts` | تخصيص الرقم يتخطى القيمة الموجودة في الجدول ويقفل صف `NumberSequence` ثم يحفظ `nextSerial = serial + 1`. | عداد `QUO_COMMERCIAL` كان 19 بينما `QUO26-00019` و`QUO26-00020` موجودان بعد نسخ عروض من قاعدة أخرى، ففشل إنشاء عرض السعر بقيد `(quotationNumber, versionNo)`. |
 
 ---
 

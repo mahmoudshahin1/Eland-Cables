@@ -38,6 +38,7 @@ src/server/customerServiceCase.test.ts
 src/auth/tokenStorage.test.ts
 src/domain/costingFormulaAssignment.test.ts
 src/domain/costingDocumentSequence.test.ts
+src/server/numberSequenceCollision.test.ts
 src/domain/inquiryLineValue.test.ts
 src/domain/inquiryLineAttachments.test.ts
 src/domain/rawMaterialClassification.test.ts
