@@ -109,15 +109,20 @@ Source of Truth Schema: `/prisma/schema.prisma`
 | `src/server/commercialProjection.ts` و`src/server/commercialRoutes.ts` و`src/server/inquiryPortalLifecycleRepository.ts` | رد العميل يُبقي `portalLifecycle` ورقم العرض والهاتف، و`POST /api/inquiries/:id/approve` يقبل `fulfillmentType` (`DIRECT_ORDER` أو `SALES_AGREEMENT`) ويحوّل عرض السعر الحالي إلى `ACCEPTED`. | قائمة السماح كانت تحذف حالة العرض فيرجع الشارة Draft ويبقى Approve مقفولًا. الموافقة الثانية لنفس النسخة تُرفض. النسخة السابقة تبقى بحالتها. |
 | `src/auth/tokenStorage.ts` و`src/context/AuthContext.tsx` | جلسة التبويب المكرر تُحفظ في `localStorage` مع قفل تحديث مشترك. | `sessionStorage` كان يفصل التبويب المنسوخ ويلغي الجلسة. |
 | `src/server/numberSequenceService.ts` | تخصيص الرقم يتخطى القيمة الموجودة في الجدول ويقفل صف `NumberSequence` ثم يحفظ `nextSerial = serial + 1`. | عداد `QUO_COMMERCIAL` كان 19 بينما `QUO26-00019` و`QUO26-00020` موجودان بعد نسخ عروض من قاعدة أخرى، ففشل إنشاء عرض السعر بقيد `(quotationNumber, versionNo)`. |
+| `src/components/common/DrumSelectionWorkflowPanel.tsx` و`src/server/commercialRepository.ts` `confirmInquiryDrumSchedule` و`updateInquiryLine` | خطة البراميل المؤكدة تُعاد كتابتها في نفس الصف ما دام الاستفسار قابلاً للتعديل. `readOnly` يقفل الأزرار فقط عندما `portalInquiryEditable` يرجع false. | زر Add Drum Line كان يتعطل لأن الخطة تُؤكد تلقائياً ثم يُعاد فتحها بحالة CONFIRMED. الإغلاق والإلغاء وخارج نافذة 7 أيام يبقيان 409. |
+| `src/server/inquiryPortalLifecycleRepository.ts` و`src/domain/inquiryPortalLifecycle.ts` و`src/domain/inquiryVersionDiff.ts` | تغيير الحالة لا ينسخ صفاً ولا يرفع `versionNo`. النسخة الجديدة تُنشأ عند Calculate فقط إذا تغيّرت البصمة، والنسخة السابقة تُلغى بسبب `SUPERSEDED`. الإلغاء اليدوي يكتب `cancelReason: USER`. | النسخ عند كل حالة كانت تضاعف عدادات Draft وSubmitted. الفرق يُحفظ في `commercialMetadata` بدون أعمدة جديدة. |
+| `src/server/inquiryExportService.ts` | تصدير الاستفسار ورقة واحدة `Inquiry`: الملخص ثم الخطوط ثم جدول البراميل ثم الإجمالي ودراسة الحاوية والتسليم. | الأوراق المنفصلة كانت تكرر نفس الاستفسار. حقول التكلفة تبقى للداخلي فقط. |
+| `src/domain/commercialOfferTemplate.ts` `commercialOfferDocumentActions` | أزرار Print وDownload PDF ترجع للعرض المسودة والصادر. | كانت الدالة ترجع قائمة فارغة فبقيت الطباعة والتنزيل معطّلين. |
 
 ---
 
 ## 7. فروقات مقصودة — بوابة B2B (Intentional differences)
 
 - **سعر خامة غير مُكوَّن:** المساهمة صفر داخل الحساب فقط. الخامات الأخرى تُسعَّر. التحذير داخلي. جدول الأسعار الرئيسي لا يُخزَّن فيه صفر. هذا يختلف عن إيقاف Gate 4 برمز `PRICE_NOT_CONFIGURED`.
-- **تبويب Costing وPDF والطباعة ورحلة VIP:** مخفية عن عميل B2B. المستندات الفنية تبقى في Documents.
-- **حالات العرض الأربع** لا تستبدل enum قاعدة البيانات. الإلغاء يكتب `CANCELLED` فورًا. القبول يخزّن `ACCEPTED` في metadata. Direct Sales Order ينشئ أو يحدّث Sales Order، وSales Agreement ينشئ Agreement. واجهة Sales Order مخفية عن العميل. أسماء العرض للعميل: Draft وSubmitted وCanceled وApproved. كروت العد تستخدم نفس فلتر القائمة عبر `GET /api/inquiries/status-counts`. كل تغيير حالة يحتفظ بنسخة من الحالة السابقة كما كانت، بدون تحويلها إلى Canceled. `POST /api/inquiries/:id/approve` يأخذ `fulfillmentType`.
-- **دراسة الحاوية:** نسبة الاستغلال تستخدم الطول (5.9 م مقابل 12.03 م) والحجم. التأكيد لا يفتح تبويب Costing.
+- **تبويب Costing:** يبقى للداخلي. العميل يرى عرض السعر، والطباعة وتنزيل PDF يعملان من Commercial Offer. المستندات الفنية تبقى في Documents.
+- **حالات العرض الأربع** لا تستبدل enum قاعدة البيانات. الإلغاء يكتب `CANCELLED` فورًا مع `cancelReason: USER`. القبول يخزّن `ACCEPTED` في metadata على نفس الصف وبدون رفع `versionNo`. Direct Sales Order ينشئ أو يحدّث Sales Order، وSales Agreement ينشئ Agreement. واجهة Sales Order مخفية عن العميل. أسماء العرض للعميل: Draft وSubmitted وCanceled وApproved. كروت العد تستخدم نفس فلتر القائمة عبر `GET /api/inquiries/status-counts`. تغيير الحالة (أول Calculate، Approve، Cancel) يعدّل الصف الحالي. نسخة جديدة تُنشأ فقط عند Calculate إذا تغيّرت بصمة الخطوط والهيدر، وتُلغى النسخة السابقة فوراً بسبب `SUPERSEDED`. حساب فاشل على النسخة الجديدة يترك الأصل كما هو. `POST /api/inquiries/:id/approve` يأخذ `fulfillmentType`.
+- **دراسة الحاوية:** نسبة الاستغلال تستخدم الطول (5.9 م مقابل 12.03 م) والحجم. Confirm يحدّث ملخص التخصيص في نفس الشاشة ولا يفتح تبويب Costing.
+- **خطة البراميل:** طالما الاستفسار قابل للتعديل (Draft أو Submitted أو Approved داخل 7 أيام) يمكن إضافة سطر برميل وإعادة تأكيد الخطة في نفس الصف. الطول والكمية يتزامنان مع مجموع البراميل.
 
 ---
 

@@ -80,6 +80,9 @@ export const InquiryLineEditorModal: React.FC<InquiryLineEditorModalProps> = ({
   initialStep = 'cable',
 }) => {
   const [step, setStep] = useState<InquiryLineEditorStep>(initialStep);
+  React.useEffect(() => {
+    setStep(initialStep);
+  }, [line.id, initialStep]);
   const [optimizingDrum, setOptimizingDrum] = useState(false);
   const [optimizeFeedback, setOptimizeFeedback] = useState<string | null>(null);
 
@@ -298,7 +301,7 @@ export const InquiryLineEditorModal: React.FC<InquiryLineEditorModalProps> = ({
                   disabled={!isEditable}
                   value={form.requestedQuantity}
                   onChange={(e) => onChange({ requestedQuantity: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 disabled:bg-slate-50"
+                  className="w-full max-w-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 disabled:bg-slate-50"
                 />
               </div>
               <div>

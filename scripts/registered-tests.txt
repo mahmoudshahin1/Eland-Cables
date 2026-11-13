@@ -205,5 +205,7 @@ src/services/v2InquiryConfigurationApiService.test.ts
 src/api/httpClient.test.ts
 src/server/reportRuntime.persistence.test.ts
 src/domain/drumPlanConfirmReadiness.test.ts
+src/domain/inquiryVersionDiff.test.ts
+src/server/drumScheduleReconfirm.test.ts
 scripts/migrateLocalToSupabaseLib.test.ts
 scripts/migrateLocalToSupabaseAuth.test.ts

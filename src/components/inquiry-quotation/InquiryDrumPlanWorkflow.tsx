@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CommercialInquiryLineDto } from '../../services/commercialInquiryApiService';
 import { parseInquiryDrumSchedule } from '../../domain/inquiryDrumSchedule';
 import { DrumSelectionWorkflowPanel } from '../common/DrumSelectionWorkflowPanel';
@@ -68,6 +68,7 @@ interface InquiryDrumPlanWorkflowProps {
   cableDiameterMm?: number;
   approxWeightKgKm?: number;
   onConfirmed?: () => void;
+  readOnly?: boolean;
 }
 
 export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = ({
@@ -78,21 +79,18 @@ export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = (
   cableDiameterMm = 0,
   approxWeightKgKm = 0,
   onConfirmed,
+  readOnly = false,
 }) => {
   const [rows, setRows] = useState<DrumScheduleRow[]>(() => scheduleToRows(line));
   const [cableTolerancePercent, setCableTolerancePercent] = useState(() =>
     resolveLineCableTolerancePercent(line)
   );
 
-  const scheduleKey = useMemo(
-    () => `${line.id}:${JSON.stringify(line.drumSchedule || null)}:${line.drumType || ''}`,
-    [line.id, line.drumSchedule, line.drumType]
-  );
-
   useEffect(() => {
     setRows(scheduleToRows(line));
     setCableTolerancePercent(resolveLineCableTolerancePercent(line));
-  }, [scheduleKey, line]);
+    // Reset only when the line changes. A save of this same line must not wipe a row the user just added.
+  }, [line.id]);
 
   const storedSchedule = parseInquiryDrumSchedule(line.drumSchedule);
 
@@ -107,6 +105,9 @@ export const InquiryDrumPlanWorkflow: React.FC<InquiryDrumPlanWorkflowProps> = (
       inquiryId={inquiryId}
       lineId={line.id}
       initialLifecycleStatus={storedSchedule?.lifecycleStatus || null}
+      readOnly={readOnly}
+      compact
+      savedRows={scheduleToRows(line)}
       rows={rows}
       cableTolerancePercent={cableTolerancePercent}
       onCableToleranceChange={setCableTolerancePercent}

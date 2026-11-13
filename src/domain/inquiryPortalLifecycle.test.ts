@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   displayInquiryNumber,
+  inquiryCalculationFingerprint,
   inquiryLineFingerprint,
+  legacyInquiryLineFingerprint,
   portalCanApprove,
+  portalCanceledSubtitle,
   portalLifecycleFromInquiry,
   portalLifecycleLabel,
   portalVersionLabel,
@@ -74,6 +77,47 @@ describe('portal inquiry lifecycle', () => {
       }),
       true
     );
+  });
+
+  it('does not fork when only the drum-plan confirm timestamp changed', () => {
+    const lines = [
+      {
+        materialNumber: 'C1',
+        requestedLengthMeters: 2900,
+        drumSchedule: {
+          lifecycleStatus: 'CONFIRMED',
+          versionNo: 4,
+          confirmedAt: '2026-11-01T00:00:00.000Z',
+          rows: [{ drumCode: 'EWD900-0', noOfDrums: 5, cuttingLengthM: 500, drumTolerancePercent: 5 }],
+        },
+      },
+    ];
+    const stored = legacyInquiryLineFingerprint(lines);
+    const changedStamp = legacyInquiryLineFingerprint([
+      {
+        ...lines[0],
+        drumSchedule: { ...lines[0].drumSchedule, confirmedAt: '2026-11-13T00:00:00.000Z', versionNo: 9 },
+      },
+    ]);
+    assert.notEqual(stored, changedStamp);
+    assert.equal(inquiryLineFingerprint(lines), inquiryLineFingerprint([
+      {
+        ...lines[0],
+        drumSchedule: { ...lines[0].drumSchedule, confirmedAt: '2026-11-13T00:00:00.000Z', versionNo: 9 },
+      },
+    ]));
+    const current = inquiryCalculationFingerprint({ lines, incoterms: 'FOB', currency: 'USD' });
+    assert.equal(
+      shouldForkCalculatedInquiry({
+        status: 'DRAFT',
+        commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', calculatedLineFingerprint: stored },
+        lineFingerprint: current,
+        legacyLineFingerprint: stored,
+      }),
+      false
+    );
+    assert.equal(portalCanceledSubtitle({ cancelReason: 'SUPERSEDED', supersededByVersion: 2 }), 'Superseded by V2');
+    assert.equal(portalCanceledSubtitle({ cancelReason: 'USER' }), 'By User');
   });
 
   it('enables approval only after a calculated quotation with a positive total', () => {

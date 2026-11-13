@@ -56,7 +56,6 @@ import { suggestDrumPlan, validateCuttingLength } from '../../domain/drumPlanSer
 import { canEditLineTechnicalAttachments } from '../../domain/inquiryLineAttachments';
 import { SystemNotification } from '../../types';
 import { useDrumMasterList } from '../common/DrumMasterSelect';
-import { InquiryDrumsTable } from './InquiryDrumsTable';
 import { InquiryHeaderForm } from './InquiryHeaderForm';
 import { InquiryFieldVisibilityPanel } from './InquiryFieldVisibilityPanel';
 import { InquirySummaryBar } from './InquirySummaryBar';
@@ -75,7 +74,8 @@ import {
 } from './inquiryWorkspaceTabs';
 import { isV2InquiryMetadata } from '../../domain/v2InquiryWorkflow';
 import { canCalculateInquiry, canSubmitInquiry } from '../../domain/inquiryProcessCommands';
-import { portalCanApprove, portalInquiryEditable, portalLifecycleFromInquiry } from '../../domain/inquiryPortalLifecycle';
+import { portalCanApprove, portalCanceledSubtitle, portalInquiryEditable, portalLifecycleFromInquiry, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
+import { formatVersionChangeLines, type VersionChangeItem } from '../../domain/inquiryVersionDiff';
 import { customerInquiryDetailPath } from '../../app/shellRoutes';
 import { fetchV2Quotation, v2QuotationPdfUrl, type V2QuotationDto } from '../../services/v2QuotationApiService';
 import { CustomerQuotationView } from '../customer/CustomerQuotationView';
@@ -328,6 +328,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [costingLineId, setCostingLineId] = useState<string | null>(null);
   const [costingBreakdown, setCostingBreakdown] = useState<LineCostingResult | null>(null);
   const [costingLoading, setCostingLoading] = useState(false);
+  const calculateLock = useRef(false);
   const [costingError, setCostingError] = useState<string | null>(null);
   const [activityEvents, setActivityEvents] = useState<InquiryActivityEvent[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
@@ -897,9 +898,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     if (currentIndex >= 0 && currentIndex < tabSequence.length - 1) {
       const nextTab = tabSequence[currentIndex + 1];
       setTab(nextTab);
-      if (nextTab === 'drum_plan' || nextTab === 'cutting') {
-        openCuttingAndDrumsModal();
-      }
     } else {
       setTab('quotation');
     }
@@ -1140,16 +1138,15 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   };
 
   const runCalculateInquiry = async () => {
-    if (!jwtToken || !inquiry) return;
-    if (isEditable) {
-      const saved = await saveHeader();
-      if (!saved) return;
-    }
+    if (!jwtToken || !inquiry || calculateLock.current) return;
+    calculateLock.current = true;
     setCostingLoading(true);
     setCostingError(null);
-    setInquiryCalcResults(null);
-    setVipCalcResult(null);
     try {
+      if (isEditable) {
+        const saved = await saveHeader();
+        if (!saved) return;
+      }
       if (canCalculateInquiry(inquiry)) {
         const result = await calculateVipInquiry(jwtToken, inquiry.id, { recalculate: true });
         setVipCalcResult(result);
@@ -1204,6 +1201,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       setCostingError(err instanceof Error ? err.message : 'Calculate failed');
       notify(err instanceof Error ? err.message : 'Calculate failed');
     } finally {
+      calculateLock.current = false;
       setCostingLoading(false);
     }
   };
@@ -1544,7 +1542,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
               <span className="font-mono">{inquiry.inquiryNumber}</span>
               <span>•</span>
-              <StatusBadge status={inquiry.status} label={formatInquiryStatus(inquiry.status)} />
+              <span title={portalCanceledSubtitle(inquiry.commercialMetadata) ? `Canceled · ${portalCanceledSubtitle(inquiry.commercialMetadata)}` : undefined}>
+                <StatusBadge
+                  status={inquiry.status}
+                  label={formatInquiryStatus(inquiry.status, inquiry.commercialMetadata)}
+                />
+              </span>
+              {portalCanceledSubtitle(inquiry.commercialMetadata) && (
+                <span className="text-[11px] text-slate-500">
+                  Canceled · {portalCanceledSubtitle(inquiry.commercialMetadata)}
+                </span>
+              )}
               <span>•</span>
               <span className="font-semibold text-slate-700">{inquiry.customerName}</span>
             </div>
@@ -1636,7 +1644,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </div>
             ) : null}
 
-            {!isCustomer && vipCalcResult?.unpricedMaterials && vipCalcResult.unpricedMaterials.length > 0 && (
+            {!isCustomer && !costingLoading && vipCalcResult?.unpricedMaterials && vipCalcResult.unpricedMaterials.length > 0 && (
               <div className="w-full mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
                 <div className="flex items-center gap-1.5 font-bold mb-2">
                   <AlertTriangle className="h-3.5 w-3.5" />
@@ -1872,6 +1880,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       />}
 
       {/* Workspace Tabs Navigation Bar */}
+      {portalLifecycleFromInquiry(inquiry) === 'CANCELED' && (
+        <CanceledVersionBanner inquiry={inquiry} />
+      )}
+
       <div id="inquiry-workspace" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-1 px-4 border-b border-slate-200 overflow-x-auto no-scrollbar scroll-smooth">
           {(isCustomer ? customerInquiryPresentationTabs(tabsListResolved).filter((t) => !t.overflow) : tabsListResolved).map((t) => {
@@ -1887,9 +1899,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     ? workspaceTabForPresentation(t.id as Parameters<typeof workspaceTabForPresentation>[0])
                     : (t.id as typeof tab);
                   setTab(nextTab);
-                  if (nextTab === 'drum_plan' || nextTab === 'cutting' || t.id === 'cutting_drums') {
-                    openCuttingAndDrumsModal();
-                  }
                 }}
                 className={`inline-flex items-center gap-2 px-3.5 py-3 text-[13px] font-semibold border-b-2 whitespace-nowrap transition-colors ${
                   isCustomer
@@ -1933,7 +1942,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <div className="p-4 rounded-xl border border-slate-200 bg-white">
                 <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-wider">Inquiry Status</p>
                 <div className="mt-1.5">
-                  <StatusBadge status={inquiry.status} label={formatInquiryStatus(inquiry.status)} />
+                  <StatusBadge status={inquiry.status} label={formatInquiryStatus(inquiry.status, inquiry.commercialMetadata)} />
                 </div>
                 <p className="text-slate-400 text-[11px] mt-2 font-mono">Version V{inquiry.versionNo || 1}</p>
               </div>
@@ -1974,10 +1983,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setTab('cutting');
-                  openCuttingAndDrumsModal();
-                }}
+                onClick={() => setTab('cutting')}
                 className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-colors"
               >
                 <p className="font-bold text-slate-800">Cutting Schedule</p>
@@ -1985,10 +1991,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setTab('drum_plan');
-                  openCuttingAndDrumsModal();
-                }}
+                onClick={() => setTab('drum_plan')}
                 className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-colors"
               >
                 <p className="font-bold text-slate-800">Drums</p>
@@ -2072,16 +2075,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     Add from Template
                   </button>
                 )}
-                {isCustomer && (
-                  <button
-                    type="button"
-                    onClick={() => notify('Excel line import is not available on this inquiry yet. Use Add Cable Line or Export Excel.')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:bg-slate-50"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    Import from Excel
-                  </button>
-                )}
                 {jwtToken && inquiry ? (
                   <button
                     type="button"
@@ -2108,38 +2101,6 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     >
                       <Pencil className="h-3.5 w-3.5 text-slate-500" />
                       <span>Edit Line</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openCableSearchForLine(selectedLineId)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/50 text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors"
-                    >
-                      <Search className="h-3.5 w-3.5" />
-                      <span>
-                        {filteredLines.find((l) => l.id === selectedLineId)?.materialNumber
-                          ? 'Replace cable'
-                          : 'Open Cable Search'}
-                      </span>
-                    </button>
-                    {filteredLines.find((l) => l.id === selectedLineId)?.materialNumber && (
-                      <button
-                        type="button"
-                        onClick={() => void clearLineCable(selectedLineId)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-800 font-bold text-xs hover:bg-amber-50 transition-colors"
-                      >
-                        <span>Clear selected cable</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const line = filteredLines.find((l) => l.id === selectedLineId);
-                        if (line) setScheduleLine(line);
-                      }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/50 text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors"
-                    >
-                      <Ruler className="h-3.5 w-3.5 text-blue-600" />
-                      <span>Cutting Plan</span>
                     </button>
                     <button
                       type="button"
@@ -2473,6 +2434,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 quotation={v2Quotation}
                 jwtToken={jwtToken}
                 preferredContainerType={preferredContainerType}
+                freightTotal={commercialTotals.freightTotal}
               />
             ) : (
               <CommercialOfferDocumentsPanel
@@ -2639,6 +2601,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 quotation={v2Quotation}
                 jwtToken={jwtToken}
                 preferredContainerType={preferredContainerType}
+                freightTotal={commercialTotals.freightTotal}
               />
             )}
 
@@ -2741,7 +2704,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                       <span className="font-bold text-slate-900 font-mono">
                         V{version.versionNo}
                       </span>
-                      <StatusBadge status={version.status} label={formatInquiryStatus(version.status)} />
+                      <StatusBadge status={version.status} label={formatInquiryStatus(version.status, version.commercialMetadata)} />
                       {version.isCurrent && (
                         <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold">
                           Current
@@ -2779,7 +2742,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     <option value="">Version A</option>
                     {versions.map((v) => (
                       <option key={v.id} value={v.id}>
-                        V{v.versionNo} — {formatInquiryStatus(v.status)}
+                        V{v.versionNo} — {formatInquiryStatus(v.status, v.commercialMetadata)}
                       </option>
                     ))}
                   </select>
@@ -2791,7 +2754,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                     <option value="">Version B</option>
                     {versions.map((v) => (
                       <option key={v.id} value={v.id}>
-                        V{v.versionNo} — {formatInquiryStatus(v.status)}
+                        V{v.versionNo} — {formatInquiryStatus(v.status, v.commercialMetadata)}
                       </option>
                     ))}
                   </select>
@@ -2856,7 +2819,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                       <p className="font-bold text-slate-800">
                         {event.action} · {event.entity}
                       </p>
-                      <p className="text-slate-600">{event.message || event.entityId}</p>
+                      <p className="text-slate-600 whitespace-pre-line">{event.message || event.entityId}</p>
                       <p className="text-slate-400 text-[11px] mt-0.5">{event.actorName || 'System'}</p>
                     </div>
                     <div className="text-right text-slate-400 whitespace-nowrap text-[11px]">
@@ -3101,10 +3064,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           </div>
         )}
 
-        {/* Preserved Tab: Drum Plan (customer Cutting & Drums includes packing + one V2 bridge) */}
-        {cuttingDrumsWorkspace.showPackingTable && (
+        {(cuttingDrumsWorkspace.showPackingTable || cuttingDrumsWorkspace.showCuttingWorkbench) && (
           <div className="p-4 sm:p-5 space-y-4 text-xs">
-            {shouldMountInquiryV2BridgeInPacking(cuttingDrumsWorkspace) &&
+            {(shouldMountInquiryV2BridgeInPacking(cuttingDrumsWorkspace) ||
+              shouldMountInquiryV2BridgeInCutting(cuttingDrumsWorkspace)) &&
               v2CuttingDrumsBridgeTab &&
               inquiry && (
               <InquiryV2TabBridge
@@ -3114,76 +3077,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onChanged={() => void load()}
               />
             )}
-
-            {isEditable && (inquiry.lines || []).length > 0 && (
-              <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
-                    <Ruler className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-slate-900">
-                      Cutting Length & Drum Selection
-                    </p>
-                    <p className="text-[11px] text-slate-600 mt-0.5">
-                      Configure reel sizes, cutting lengths, and drum tolerances based on your selected cable specs.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => openCuttingAndDrumsModal()}
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm flex items-center gap-2 shrink-0 transition-colors cursor-pointer"
-                >
-                  <Sparkles className="h-4 w-4 text-amber-200" />
-                  <span>Open Cutting Length & Drum Selection</span>
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm">Drum Packing & Selection Schedules</h3>
-                <p className="text-slate-500 text-[11px] mt-0.5">
-                  Drum packing summary per cable line — code, quantity, and total length.
-                </p>
-              </div>
+            <div className="flex justify-end">
               <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-bold text-xs">
-                Total Drums: {summary?.totalQty || 0} drums
-              </div>
-            </div>
-
-            <InquiryDrumsTable
-              lines={inquiry.lines || []}
-              drumMaster={drumMaster}
-              isEditable={isEditable}
-              onConfigureDrums={(line) => setScheduleLine(line)}
-            />
-          </div>
-        )}
-
-        {/* Tab 5: Cutting Schedule Workbench (internal Cutting tab, or customer combined workspace) */}
-        {cuttingDrumsWorkspace.showCuttingWorkbench && (
-          <div className="p-4 sm:p-5 space-y-4 text-xs">
-            {shouldMountInquiryV2BridgeInCutting(cuttingDrumsWorkspace) &&
-              v2CuttingDrumsBridgeTab &&
-              inquiry && (
-              <InquiryV2TabBridge
-                inquiryId={inquiry.id}
-                tab={v2CuttingDrumsBridgeTab}
-                lineId={selectedLineId}
-                onChanged={() => void load()}
-              />
-            )}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm">Cutting & Multi-Drum Schedule Workbench</h3>
-                <p className="text-slate-500 text-[11px] mt-0.5">
-                  Configure drum cutting lengths, multi-drum allocations, and manufacturing tolerances per cable line.
-                </p>
-              </div>
-              <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-bold text-xs">
-                Total Inquiry Length: {summary?.totalLength.toLocaleString() || 0} m ({summary?.totalQty || 0} drums)
+                Total Length: {summary?.totalLength.toLocaleString() || 0} m · {summary?.totalQty || 0} drums
               </div>
             </div>
 
@@ -3229,7 +3125,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                               className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 shrink-0"
                             >
                               <Ruler className="h-3.5 w-3.5" />
-                              <span>Configure Schedule</span>
+                              <span>Edit</span>
                             </button>
                           )}
                         </div>
@@ -3244,7 +3140,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                                 <th className="p-2">Drum Code</th>
                                 <th className="p-2 text-center">Drums</th>
                                 <th className="p-2 text-right">Cut Length (m)</th>
-                                <th className="p-2 text-right">Nominal Subtotal (m)</th>
+                                <th className="p-2 text-right">Total (m)</th>
                                 <th className="p-2 text-center">Drum Tol.</th>
                               </tr>
                             </thead>
@@ -3258,7 +3154,12 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                                   <td className="p-2 text-right font-mono font-bold text-blue-700">
                                     {(r.noOfDrums * r.cuttingLengthM).toLocaleString()} m
                                   </td>
-                                  <td className="p-2 text-center">±{r.drumTolerancePercent}%</td>
+                                  <td className="p-2 text-center">
+                                    {(r.drumTolerancePositivePercent ?? r.drumTolerancePercent) ===
+                                    (r.drumToleranceNegativePercent ?? r.drumTolerancePercent)
+                                      ? `±${r.drumTolerancePositivePercent ?? r.drumTolerancePercent}%`
+                                      : `+${r.drumTolerancePositivePercent ?? r.drumTolerancePercent}% / -${r.drumToleranceNegativePercent ?? r.drumTolerancePercent}%`}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -3291,6 +3192,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                   selectedContainerType={preferredContainerType}
                   onSelectContainerType={(t) => {
                     setPreferredContainerType(t);
+                    setContainerStudyRefreshKey((n) => n + 1);
                     if (jwtToken) {
                       void updateCommercialInquiry(jwtToken, inquiry.id, {
                         commercialMetadata: {
@@ -3413,6 +3315,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       {/* Line Edit Modal */}
       {editingLine && inquiry && (
         <InquiryLineEditorModal
+          key={editingLine.id}
           line={editingLine}
           inquiry={inquiry}
           form={lineEditForm}
@@ -3524,13 +3427,16 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       {scheduleLine && inquiry && (
         <InquiryCuttingDrumSelectionModal
           isOpen={Boolean(scheduleLine)}
-          onClose={() => setScheduleLine(null)}
+          onClose={() => {
+            setScheduleLine(null);
+            void load();
+          }}
           inquiryId={inquiry.id}
           line={inquiry.lines.find((l) => l.id === scheduleLine.id) || scheduleLine}
           drums={drumMaster}
           jwtToken={jwtToken}
+          readOnly={!portalInquiryEditable(inquiry)}
           onConfirmed={() => {
-            notify('Drum plan confirmed.');
             void load();
           }}
         />
@@ -3538,3 +3444,28 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     </div>
   );
 };
+
+function CanceledVersionBanner({ inquiry }: { inquiry: CommercialInquiryDto }) {
+  const meta = inquiry.commercialMetadata || {};
+  const subtitle = portalCanceledSubtitle(meta);
+  const when = typeof meta.supersededAt === 'string' ? meta.supersededAt : typeof meta.canceledAt === 'string' ? meta.canceledAt : '';
+  const parsed = when ? new Date(when) : null;
+  const dateLabel = parsed && !Number.isNaN(parsed.getTime()) ? ` on ${parsed.toLocaleString()}` : '';
+  const summary = Array.isArray(meta.supersededChangeSummary) ? (meta.supersededChangeSummary as VersionChangeItem[]) : [];
+  const lines = formatVersionChangeLines(summary);
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950">
+      <p className="font-semibold">
+        Version {portalVersionLabel(inquiry.versionNo)} was canceled
+        {subtitle ? ` (${subtitle}${dateLabel})` : ''}.
+      </p>
+      {lines.length > 0 && (
+        <ul className="mt-1 list-disc pl-4 space-y-0.5">
+          {lines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

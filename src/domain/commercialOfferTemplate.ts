@@ -168,8 +168,11 @@ export function commercialOfferDocumentActions(input: {
   isCustomer: boolean;
   isVip?: boolean;
 }): Array<{ id: string; label: string; draft: boolean }> {
-  void input.issued;
   void input.isCustomer;
   void input.isVip;
-  return [];
+  const draft = !input.issued;
+  return [
+    { id: draft ? 'print-draft' : 'print', label: draft ? 'Print draft' : 'Print', draft },
+    { id: draft ? 'download-draft' : 'download', label: draft ? 'Download PDF' : 'Download PDF', draft },
+  ];
 }

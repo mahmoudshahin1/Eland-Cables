@@ -76,19 +76,66 @@ export function expandConfirmPhysicalDrums(rows: DrumPlanConfirmRowInput[]): Dru
   return out;
 }
 
+function rowContentKey(row: DrumPlanConfirmRowInput): string {
+  const code = String(row.drumCode || '').trim();
+  const drums = positiveInt(row.numberOfDrums ?? row.noOfDrums);
+  const cutting = positiveLength(row.cuttingLengthM);
+  const positive = Number(row.drumTolerancePositivePercent ?? row.drumTolerancePercent ?? 0);
+  const negative = Number(row.drumToleranceNegativePercent ?? row.drumTolerancePercent ?? 0);
+  return [
+    code,
+    drums,
+    cutting,
+    Number.isFinite(positive) ? positive : 0,
+    Number.isFinite(negative) ? negative : 0,
+  ].join('|');
+}
+
+function completePlanRows(rows: DrumPlanConfirmRowInput[]): DrumPlanConfirmRowInput[] {
+  return rows.filter(
+    (row) =>
+      positiveLength(row.cuttingLengthM) > 0 &&
+      positiveInt(row.numberOfDrums ?? row.noOfDrums) > 0 &&
+      String(row.drumCode || '').trim().length > 0
+  );
+}
+
+export function drumPlanRowsSignature(rows: DrumPlanConfirmRowInput[] | null | undefined): string {
+  return completePlanRows(rows || []).map(rowContentKey).join('||');
+}
+
+/** True when the saved complete rows differ from the current complete rows. Blank rows do not count. */
+export function drumPlanRowsContentChanged(
+  saved: DrumPlanConfirmRowInput[] | null | undefined,
+  next: DrumPlanConfirmRowInput[]
+): boolean {
+  if (!saved) return false;
+  const left = completePlanRows(saved).map(rowContentKey);
+  const right = completePlanRows(next).map(rowContentKey);
+  if (left.length !== right.length) return true;
+  return left.some((key, index) => key !== right[index]);
+}
+
 export function evaluateDrumPlanConfirmReadiness(input: {
   lifecycleStatus?: string | null;
   rows: DrumPlanConfirmRowInput[];
   unresolvedErrors?: string[];
   inquiryId?: string | null;
   lineId?: string | null;
+  /** When the inquiry is still editable, a confirmed plan can be saved again after the rows change. */
+  allowReconfirm?: boolean;
+  savedRows?: DrumPlanConfirmRowInput[] | null;
 }): DrumPlanConfirmReadiness {
   const physicalDrums = expandConfirmPhysicalDrums(input.rows);
   const physicalDrumCount = physicalDrums.length;
   const requirements = cuttingLengthRequirementsFromSchedule(input.rows);
   const confirmed = input.lifecycleStatus === 'CONFIRMED';
+  const reconfirm =
+    confirmed &&
+    input.allowReconfirm === true &&
+    drumPlanRowsContentChanged(input.savedRows, input.rows);
 
-  if (confirmed) {
+  if (confirmed && !reconfirm) {
     return {
       confirmed: true,
       canShowConfirm: false,
@@ -190,6 +237,8 @@ export function evaluateAutoConfirmDrumPlan(input: {
   inquiryId?: string | null;
   lineId?: string | null;
   technicalPlanValid: boolean | null;
+  allowReconfirm?: boolean;
+  savedRows?: DrumPlanConfirmRowInput[] | null;
 }): AutoConfirmDrumPlanDecision {
   const readiness = evaluateDrumPlanConfirmReadiness({
     lifecycleStatus: input.lifecycleStatus,
@@ -197,6 +246,8 @@ export function evaluateAutoConfirmDrumPlan(input: {
     unresolvedErrors: input.unresolvedErrors,
     inquiryId: input.inquiryId,
     lineId: input.lineId,
+    allowReconfirm: input.allowReconfirm,
+    savedRows: input.savedRows,
   });
   if (readiness.confirmed) {
     return { shouldAutoConfirm: false, confirmed: true, issues: [] };

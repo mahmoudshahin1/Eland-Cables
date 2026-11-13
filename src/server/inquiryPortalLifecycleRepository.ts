@@ -12,11 +12,19 @@ import { assertCanAccessInquiryOwnership } from './rbac';
 import { allocateNextNumber } from './numberSequenceService';
 import {
   displayInquiryNumber,
-  inquiryLineFingerprint,
+  inquiryCalculationFingerprint,
+  legacyInquiryLineFingerprint,
   portalLifecycleFromInquiry,
   shouldForkCalculatedInquiry,
   withPortalLifecycle,
 } from '../domain/inquiryPortalLifecycle';
+import {
+  buildInquiryVersionSnapshot,
+  diffInquiryVersions,
+  parseInquiryVersionSnapshot,
+  type VersionChangeItem,
+} from '../domain/inquiryVersionDiff';
+import { appendServerAudit } from './serverAudit';
 
 const EDIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -111,7 +119,8 @@ function inquiryInclude() {
 export async function preparePortalCalculateTarget(inquiryId: string, actor: RequestActor) {
   const current = await loadInquiry(inquiryId);
   assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
-  const fingerprint = inquiryLineFingerprint(current.lines);
+  const legacyFingerprint = legacyInquiryLineFingerprint(current.lines);
+  const fingerprint = inquiryCalculationFingerprint(current);
   const lifecycle = portalLifecycleFromInquiry(current);
   const acceptedAt =
     typeof metadataOf(current.commercialMetadata).acceptedAt === 'string'
@@ -128,7 +137,11 @@ export async function preparePortalCalculateTarget(inquiryId: string, actor: Req
     }
   }
 
-  if (!shouldForkCalculatedInquiry({ ...current, lineFingerprint: fingerprint })) {
+  if (!shouldForkCalculatedInquiry({
+    ...current,
+    lineFingerprint: fingerprint,
+    legacyLineFingerprint: legacyFingerprint,
+  })) {
     return {
       inquiryId: current.id,
       inquiryNumber: current.inquiryNumber,
@@ -214,7 +227,8 @@ export async function finishPortalCalculate(input: {
           status: 'CANCELLED',
           commercialMetadata: withPortalLifecycle(
             (await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } }))?.commercialMetadata,
-            'CANCELED'
+            'CANCELED',
+            { cancelReason: 'ABANDONED' }
           ) as Prisma.InputJsonValue,
         },
       });
@@ -228,27 +242,87 @@ export async function finishPortalCalculate(input: {
     return { inquiryId: originalId, inquiryNumber: original?.inquiryNumber || '' };
   }
 
-  if (input.supersededInquiryId) {
-    await prisma.commercialInquiry.update({
-      where: { id: input.supersededInquiryId },
-      data: { isCurrent: false },
-    });
-  }
-
-  let current = await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } });
+  let current = await prisma.commercialInquiry.findUnique({
+    where: { id: input.inquiryId },
+    include: { lines: { orderBy: { lineNumber: 'asc' } } },
+  });
   const keepAccepted = Boolean(input.acceptedAt);
   const nextLifecycle = keepAccepted ? 'ACCEPTED' : 'NOT_SUBMITTED';
-  if (!input.supersededInquiryId && current && portalLifecycleFromInquiry(current) !== nextLifecycle) {
-    await archiveInquirySnapshot(current.id);
-    current = await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } });
+  const quote = await prisma.commercialQuotation.findFirst({
+    where: { inquiryId: input.inquiryId, isCurrent: true },
+    select: { sellingPrice: true },
+  });
+  const calculatedAt = new Date().toISOString();
+  const after = buildInquiryVersionSnapshot({
+    incoterms: current?.incoterms,
+    currency: current?.currency,
+    paymentTerms: current?.paymentTerms,
+    deliveryTerms: current?.deliveryTerms,
+    commercialMetadata: current?.commercialMetadata,
+    totalValue: quote?.sellingPrice != null ? Number(quote.sellingPrice) : '',
+    lines: current?.lines || [],
+  });
+  const before = parseInquiryVersionSnapshot(metadataOf(current?.commercialMetadata).calculatedSnapshot);
+  let changes: VersionChangeItem[] = [];
+  if (input.supersededInquiryId) {
+    changes = diffInquiryVersions(before, after);
+    if (!changes.length) {
+      changes = [
+        {
+          kind: 'changed',
+          label: 'Inquiry',
+          from: 'Previous calculation',
+          to: 'Recalculated with edited data',
+        },
+      ];
+    }
   }
   const metadata = withPortalLifecycle(current?.commercialMetadata, nextLifecycle, {
     calculatedLineFingerprint: input.fingerprint,
+    calculatedAt,
+    calculatedSnapshot: after,
+    ...(changes.length ? { versionChangeSummary: changes } : {}),
     ...(keepAccepted ? { acceptedAt: input.acceptedAt } : {}),
   });
   await prisma.commercialInquiry.update({
     where: { id: input.inquiryId },
     data: { isCurrent: true, commercialMetadata: metadata as Prisma.InputJsonValue },
+  });
+
+  if (input.supersededInquiryId && current) {
+    const previous = await prisma.commercialInquiry.findUnique({ where: { id: input.supersededInquiryId } });
+    await prisma.commercialInquiry.update({
+      where: { id: input.supersededInquiryId },
+      data: {
+        isCurrent: false,
+        status: 'CANCELLED',
+        commercialMetadata: withPortalLifecycle(previous?.commercialMetadata, 'CANCELED', {
+          cancelReason: 'SUPERSEDED',
+          supersededByVersion: current.versionNo,
+          supersededByInquiryId: current.id,
+          supersededAt: calculatedAt,
+          supersededChangeSummary: changes,
+        }) as Prisma.InputJsonValue,
+      },
+    });
+    await appendServerAudit({
+      actorName: 'System',
+      entity: 'CommercialInquiry',
+      entityId: previous?.inquiryNumber || input.supersededInquiryId,
+      action: 'VERSION_SUPERSEDED',
+      message: `V${previous?.versionNo || 1} canceled: Superseded by V${current.versionNo}`,
+      newValue: { changes },
+    });
+  }
+
+  await appendServerAudit({
+    actorName: 'System',
+    entity: 'CommercialInquiry',
+    entityId: current?.inquiryNumber || input.inquiryId,
+    action: input.supersededInquiryId ? 'VERSION_CREATED' : 'STATUS_CHANGE',
+    message: input.supersededInquiryId
+      ? `Created V${current?.versionNo || ''} (${keepAccepted ? 'Approved' : 'Submitted'})`
+      : `Calculated V${current?.versionNo || 1} (${keepAccepted ? 'Approved' : 'Submitted'})`,
   });
 
   if (keepAccepted && input.supersededInquiryId) {
@@ -498,9 +572,8 @@ export async function acceptPortalInquiry(
     data: { status: 'ACCEPTED', fulfillmentType },
   });
 
-  await archiveInquirySnapshot(current.id);
-  const live = await prisma.commercialInquiry.findUnique({ where: { id: current.id } });
-  const metadata = withPortalLifecycle(live?.commercialMetadata, 'ACCEPTED', {
+  const live = current;
+  const metadata = withPortalLifecycle(live.commercialMetadata, 'ACCEPTED', {
     acceptedAt,
     requestedFulfillmentType: fulfillmentType,
     sourceQuotationId: quotation.id,
@@ -508,7 +581,7 @@ export async function acceptPortalInquiry(
     sourceQuotationVersion: quotation.versionNo,
     ...(releasedAgreementId ? { releasedAgreementId } : {}),
   });
-  return prisma.commercialInquiry.update({
+  const approved = await prisma.commercialInquiry.update({
     where: { id: current.id },
     data: {
       commercialMetadata: metadata as Prisma.InputJsonValue,
@@ -516,6 +589,15 @@ export async function acceptPortalInquiry(
     },
     include: inquiryInclude(),
   });
+  await appendServerAudit({
+    actorId: actor.id,
+    actorName: actor.name || actor.email,
+    entity: 'CommercialInquiry',
+    entityId: current.inquiryNumber,
+    action: 'STATUS_CHANGE',
+    message: `Approved V${current.versionNo || 1} (Converted to Order)`,
+  });
+  return approved;
 }
 
 async function allocateSalesOrderNumber(actor: RequestActor) {
@@ -625,14 +707,32 @@ export async function backfillPortalLifecycles() {
   return { scanned: rows.length, updated };
 }
 
-export async function markInquiryCanceledMetadata(inquiryId: string) {
+export async function markInquiryCanceledMetadata(
+  inquiryId: string,
+  actor?: { name?: string | null; email?: string | null }
+) {
   const prisma = requirePrisma();
   const inquiry = await prisma.commercialInquiry.findUnique({ where: { id: inquiryId } });
   if (!inquiry) return;
+  const existing = metadataOf(inquiry.commercialMetadata);
+  if (existing.cancelReason === 'SUPERSEDED') return;
+  const canceledAt = new Date().toISOString();
   await prisma.commercialInquiry.update({
     where: { id: inquiry.id },
     data: {
-      commercialMetadata: withPortalLifecycle(inquiry.commercialMetadata, 'CANCELED') as Prisma.InputJsonValue,
+      commercialMetadata: withPortalLifecycle(inquiry.commercialMetadata, 'CANCELED', {
+        cancelReason: 'USER',
+        canceledAt,
+        canceledBy: actor?.name || actor?.email || null,
+      }) as Prisma.InputJsonValue,
     },
+  });
+  await appendServerAudit({
+    actorId: null,
+    actorName: actor?.name || actor?.email || 'User',
+    entity: 'CommercialInquiry',
+    entityId: inquiry.inquiryNumber,
+    action: 'CANCELED',
+    message: `Canceled V${inquiry.versionNo || 1} by user`,
   });
 }
