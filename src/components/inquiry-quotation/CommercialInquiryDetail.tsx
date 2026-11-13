@@ -74,7 +74,7 @@ import {
 } from './inquiryWorkspaceTabs';
 import { isV2InquiryMetadata } from '../../domain/v2InquiryWorkflow';
 import { canCalculateInquiry, canSubmitInquiry } from '../../domain/inquiryProcessCommands';
-import { portalCanApprove, portalCanceledSubtitle, portalInquiryEditable, portalLifecycleFromInquiry, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
+import { portalCanApprove, portalCanCreateRevision, portalCanceledSubtitle, portalInquiryEditable, portalLifecycleFromInquiry, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
 import { formatVersionChangeLines, type VersionChangeItem } from '../../domain/inquiryVersionDiff';
 import { customerInquiryDetailPath } from '../../app/shellRoutes';
 import { fetchV2Quotation, v2QuotationPdfUrl, type V2QuotationDto } from '../../services/v2QuotationApiService';
@@ -95,6 +95,8 @@ import {
   CommercialInquiryLineDto,
   copyCommercialInquiry,
   createCommercialInquiryVersion,
+  createPortalInquiryRevision,
+  discardPortalInquiryRevision,
   deleteCommercialInquiryLine,
   duplicateCommercialInquiryLine,
   fetchCommercialInquiry,
@@ -301,6 +303,9 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+  const [revisionDialogOpen, setRevisionDialogOpen] = useState(false);
+  const [revisionReason, setRevisionReason] = useState('');
+  const [revisionBusy, setRevisionBusy] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const [lineSearch, setLineSearch] = useState('');
   const [showTrackingDetails, setShowTrackingDetails] = useState(false);
@@ -363,7 +368,10 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedFormJsonRef = useRef<string>('');
   const [preferredContainerType, setPreferredContainerType] = useState<ContainerType>('40HQ');
-  const isEditable = inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW';
+  const isEditable =
+    (inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW') &&
+    portalLifecycleFromInquiry(inquiry || {}) !== 'ACCEPTED' &&
+    portalLifecycleFromInquiry(inquiry || {}) !== 'CANCELED';
 
   const notify = (msg: string) => {
     setToast(msg);
@@ -645,7 +653,28 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     canShowInquiryCalculate(inquiry?.status, inquiry?.lines?.length || 0) &&
     (inquiry ? canCalculateInquiry(inquiry) : false);
   // isVipV2Inquiry is defined above for tabsList
-  const canNewVersion = inquiry?.status === 'SUBMITTED' && inquiry.isCurrent !== false;
+  const canNewVersion =
+    inquiry?.status === 'SUBMITTED' && inquiry.isCurrent !== false && !canCalculateInquiry(inquiry);
+  const revisionDecision = inquiry
+    ? portalCanCreateRevision({
+        status: inquiry.status,
+        commercialMetadata: inquiry.commercialMetadata,
+        isCurrent: inquiry.isCurrent !== false,
+        vip: canCalculateInquiry(inquiry),
+      })
+    : { ok: false as const, reason: 'Create a revision from an approved inquiry.' };
+  const canCreateRevision = revisionDecision.ok;
+  const portalLifecycle = inquiry ? portalLifecycleFromInquiry(inquiry) : 'OPEN';
+  const isDraftRevision = Boolean(
+    inquiry &&
+      (inquiry.versionNo || 1) > 1 &&
+      inquiry.supersedesInquiryId &&
+      (portalLifecycle === 'OPEN' || portalLifecycle === 'NOT_SUBMITTED')
+  );
+  const revisionMeta =
+    inquiry?.commercialMetadata && typeof inquiry.commercialMetadata === 'object'
+      ? (inquiry.commercialMetadata as Record<string, unknown>)
+      : {};
   const canCancel = inquiry && inquiry.status !== 'CANCELLED' && inquiry.status !== 'CLOSED';
   const headerIsDirty = useMemo(() => {
     if (!inquiry || !headerForm) return false;
@@ -775,6 +804,45 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       notifyInquiryChanged(updated);
     } catch (err) {
       notify(err instanceof Error ? err.message : 'New version failed');
+    }
+  };
+
+  const handleCreateRevision = async () => {
+    if (!jwtToken || !inquiry) return;
+    const reason = revisionReason.trim();
+    if (!reason) {
+      notify('A revision reason is required.');
+      return;
+    }
+    setRevisionBusy(true);
+    try {
+      const created = await createPortalInquiryRevision(jwtToken, inquiry.id, reason);
+      setRevisionDialogOpen(false);
+      setRevisionReason('');
+      notify(`Opened revision V${created.versionNo}.`);
+      notifyInquiryChanged(created);
+      if (isCustomer) navigate(customerInquiryDetailPath(created.id));
+      else setInquiry(created);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Revision failed');
+    } finally {
+      setRevisionBusy(false);
+    }
+  };
+
+  const handleDiscardRevision = async () => {
+    if (!jwtToken || !inquiry) return;
+    setRevisionBusy(true);
+    try {
+      const restored = await discardPortalInquiryRevision(jwtToken, inquiry.id);
+      notify(`Discarded revision. ${restored.inquiryNumber} is current again.`);
+      notifyInquiryChanged(restored);
+      if (isCustomer) navigate(customerInquiryDetailPath(restored.id));
+      else setInquiry(restored);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Discard failed');
+    } finally {
+      setRevisionBusy(false);
     }
   };
 
@@ -1460,6 +1528,53 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         </div>
       )}
 
+      {isCustomer && inquiry && portalLifecycle === 'ACCEPTED' && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          {typeof revisionMeta.supersededByVersion === 'number' || typeof revisionMeta.supersededByVersion === 'string'
+            ? `Superseded by V${revisionMeta.supersededByVersion}.`
+            : canCreateRevision && typeof revisionMeta.revisionDeadlineAt === 'string'
+              ? `Revision available until ${new Date(String(revisionMeta.revisionDeadlineAt)).toLocaleString()}.`
+              : typeof revisionMeta.revisionDeadlineAt === 'string'
+                ? `Revision window closed on ${new Date(String(revisionMeta.revisionDeadlineAt)).toLocaleString()}.`
+                : 'This inquiry is approved and locked.'}
+        </div>
+      )}
+      {isCustomer && isDraftRevision && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
+          {`Revision of V${Math.max(1, (inquiry?.versionNo || 2) - 1)}${revisionMeta.revisionReason ? ` · Reason: ${String(revisionMeta.revisionReason)}` : ''}`}
+        </div>
+      )}
+      {revisionDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl">
+            <h2 className="text-base font-bold text-slate-900">Create revision</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              The approved inquiry stays locked. Describe why this revision is needed.
+            </p>
+            <textarea
+              className="mt-3 w-full rounded-xl border border-slate-200 p-3 text-sm"
+              rows={3}
+              value={revisionReason}
+              onChange={(event) => setRevisionReason(event.target.value)}
+              placeholder="Reason"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" className="rounded-xl px-3 py-2 text-xs font-bold text-slate-600" onClick={() => setRevisionDialogOpen(false)}>
+                Close
+              </button>
+              <button
+                type="button"
+                className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                disabled={revisionBusy || !revisionReason.trim()}
+                onClick={() => void handleCreateRevision()}
+              >
+                Create Revision
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isCustomer && (
         <div className="space-y-3">
           <CustomerInquiryDetailHero
@@ -1483,9 +1598,14 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 canApprove={canApproveInquiry}
                 canCancel={Boolean(canCancel)}
                 canCopy={Boolean(inquiry)}
+                canCreateRevision={canCreateRevision}
+                canDiscardRevision={isDraftRevision}
+                calculateLabel={portalLifecycle === 'NOT_SUBMITTED' ? 'Recalculate' : 'Calculate'}
                 savingHeader={savingHeader}
                 costingLoading={costingLoading}
                 hasLines={(inquiry.lines || []).length > 0}
+                onCreateRevision={() => setRevisionDialogOpen(true)}
+                onDiscardRevision={() => void handleDiscardRevision()}
                 onEdit={() => {
                   document.getElementById('inquiry-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
@@ -1712,6 +1832,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>Submit</span>
+              </button>
+            )}
+
+            {!isCustomer && canCreateRevision && (
+              <button
+                type="button"
+                onClick={() => setRevisionDialogOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Revision</span>
               </button>
             )}
 

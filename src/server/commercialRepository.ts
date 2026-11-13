@@ -28,7 +28,7 @@ import { notifyInquirySubmitted as notifyInquirySubmittedLegacy } from './notifi
 import { notifyStandardWorkflowEvent } from './standardWorkflowNotifications';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import { RequestActor } from './auth';
-import { portalInquiryEditable } from '../domain/inquiryPortalLifecycle';
+import { portalInquiryEditable, portalLifecycleFromInquiry } from '../domain/inquiryPortalLifecycle';
 import { lookupCustomerMasterId, resolveCustomerMasterIdForActor, assertCustomerBusinessScope } from './customerScope';
 import { applyMarketMetalSourceOnUpdate, applySystemMarketMetalDefaultsOnCreate } from '../domain/marketMetalPriceDefaults';
 import { requiredMetalsForStoredInquiry, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
@@ -859,6 +859,11 @@ async function loadMutableInquiry(inquiryId: string, actor: RequestActor) {
   }
   if (!inquiry.isCurrent) {
     const err = new Error(`Inquiry ${inquiry.inquiryNumber} is not the current version.`);
+    (err as Error & { code: string }).code = 'INVALID_STATE';
+    throw err;
+  }
+  if (portalLifecycleFromInquiry(inquiry) === 'ACCEPTED') {
+    const err = new Error(`Inquiry ${inquiry.inquiryNumber} is approved and cannot be edited. Create a revision instead.`);
     (err as Error & { code: string }).code = 'INVALID_STATE';
     throw err;
   }

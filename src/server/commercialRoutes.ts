@@ -748,6 +748,44 @@ inquiriesRouter.post('/:id/submit', async (req, res) => {
   }
 });
 
+inquiriesRouter.post('/:id/revisions', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  try {
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason : '';
+    const { createPortalRevision } = await import('./inquiryPortalLifecycleRepository');
+    const inquiry = await createPortalRevision(req.params.id, reason, actor);
+    res.status(201).json({
+      inquiry: projectInquiryForActor(inquiry, actor),
+      message: `Revision V${inquiry.versionNo} created.`,
+    });
+  } catch (err: any) {
+    if (err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message });
+    if (err.code === 'VALIDATION_FAILED') return res.status(400).json({ error: err.message, code: err.code });
+    if (err.code === 'UNAUTHORIZED') return res.status(403).json({ error: err.message, code: err.code });
+    if (err.code === 'INVALID_STATE') return res.status(409).json({ error: err.message, code: err.code });
+    res.status(500).json({ error: err.message, code: err.code });
+  }
+});
+
+inquiriesRouter.post('/:id/discard-revision', async (req, res) => {
+  const actor = await requireInquiryAuth(req, res);
+  if (!actor) return;
+  try {
+    const { discardPortalRevision } = await import('./inquiryPortalLifecycleRepository');
+    const inquiry = await discardPortalRevision(req.params.id, actor);
+    res.json({
+      inquiry: projectInquiryForActor(inquiry, actor),
+      message: 'Revision discarded. The previous approved inquiry is current again.',
+    });
+  } catch (err: any) {
+    if (err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message });
+    if (err.code === 'UNAUTHORIZED') return res.status(403).json({ error: err.message, code: err.code });
+    if (err.code === 'INVALID_STATE') return res.status(409).json({ error: err.message, code: err.code });
+    res.status(500).json({ error: err.message, code: err.code });
+  }
+});
+
 inquiriesRouter.post('/:id/new-version', async (req, res) => {
   const actor = await requireInquiryAuth(req, res);
   if (!actor) return;

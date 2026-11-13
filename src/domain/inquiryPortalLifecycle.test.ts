@@ -1,16 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  commercialMetadataForCopy,
   displayInquiryNumber,
   inquiryCalculationFingerprint,
   inquiryLineFingerprint,
+  inquiryRevisionWindowDays,
   legacyInquiryLineFingerprint,
   portalCanApprove,
+  portalCanCreateRevision,
   portalCanceledSubtitle,
+  portalInquiryEditable,
   portalLifecycleFromInquiry,
   portalLifecycleLabel,
+  portalRevisionWindowOpen,
   portalVersionLabel,
-  shouldForkCalculatedInquiry,
+  revisionDeadlineAtFrom,
 } from './inquiryPortalLifecycle';
 import { projectCalculateResultForActor } from './calculateResultProjection';
 
@@ -42,44 +47,63 @@ describe('portal inquiry lifecycle', () => {
     assert.equal(portalVersionLabel(2), 'V2');
   });
 
-  it('forks only after a calculation when the cable lines changed', () => {
-    const before = inquiryLineFingerprint([{ materialNumber: 'C1', requestedLengthMeters: 1000 }]);
-    const after = inquiryLineFingerprint([{ materialNumber: 'C1', requestedLengthMeters: 1800 }]);
+  it('keeps an approved inquiry locked and opens a revision only inside the window', () => {
+    const acceptedAt = '2026-11-01T00:00:00.000Z';
+    const deadline = revisionDeadlineAtFrom(acceptedAt, 7);
+    const inside = new Date(acceptedAt).getTime() + 7 * 24 * 60 * 60 * 1000;
+    const outside = inside + 1;
+    const approved = {
+      status: 'DRAFT',
+      isCurrent: true,
+      commercialMetadata: { portalLifecycle: 'ACCEPTED', acceptedAt, revisionDeadlineAt: deadline },
+    };
+    assert.equal(portalInquiryEditable(approved), false);
+    assert.equal(portalInquiryEditable({ status: 'DRAFT', commercialMetadata: { portalLifecycle: 'OPEN' } }), true);
+    assert.equal(portalRevisionWindowOpen({ ...approved, now: inside }), true);
+    assert.equal(portalRevisionWindowOpen({ ...approved, now: outside }), false);
+    assert.equal(portalCanCreateRevision({ ...approved, vip: true, now: inside }).ok, true);
+    const closed = portalCanCreateRevision({ ...approved, vip: true, now: outside });
+    assert.equal(closed.ok, false);
+    assert.equal(portalCanCreateRevision({ ...approved, vip: true, now: inside, salesOrderSent: true }).ok, false);
     assert.equal(
-      shouldForkCalculatedInquiry({
-        status: 'DRAFT',
-        commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', calculatedLineFingerprint: before },
-        lineFingerprint: before,
-      }),
+      portalCanCreateRevision({
+        ...approved,
+        vip: true,
+        now: inside,
+        commercialMetadata: { ...approved.commercialMetadata, productionStatus: 'RELEASED_TO_PRODUCTION' },
+      }).ok,
       false
     );
-    assert.equal(
-      shouldForkCalculatedInquiry({
-        status: 'DRAFT',
-        commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', calculatedLineFingerprint: before },
-        lineFingerprint: after,
-      }),
-      true
-    );
-    assert.equal(
-      shouldForkCalculatedInquiry({
-        status: 'DRAFT',
-        commercialMetadata: { portalLifecycle: 'OPEN' },
-        lineFingerprint: after,
-      }),
-      false
-    );
-    assert.equal(
-      shouldForkCalculatedInquiry({
-        status: 'DRAFT',
-        commercialMetadata: { portalLifecycle: 'ACCEPTED', calculatedLineFingerprint: before },
-        lineFingerprint: after,
-      }),
-      true
-    );
+    assert.equal(inquiryRevisionWindowDays() >= 1, true);
   });
 
-  it('does not fork when only the drum-plan confirm timestamp changed', () => {
+  it('copies manual metal overrides and drops approval, snapshots and market prices', () => {
+    const copied = commercialMetadataForCopy({
+      projectName: 'Port',
+      copperPriceRate: 9000,
+      copperPriceSource: 'INQUIRY_OVERRIDE',
+      aluminiumPriceRate: 2500,
+      aluminiumPriceSource: 'SYSTEM_DEFAULT',
+      metalPriceDate: '2026-11-01',
+      acceptedAt: '2026-11-01T00:00:00.000Z',
+      calculatedSnapshot: { total: 1 },
+      sourceQuotationNumber: 'QUO-1',
+      releasedAgreementId: 'agr-1',
+      cancelReason: 'USER',
+    });
+    assert.equal(copied.copperPriceRate, 9000);
+    assert.equal(copied.copperPriceSource, 'INQUIRY_OVERRIDE');
+    assert.equal('aluminiumPriceRate' in copied, false);
+    assert.equal('metalPriceDate' in copied, false);
+    assert.equal('acceptedAt' in copied, false);
+    assert.equal('calculatedSnapshot' in copied, false);
+    assert.equal('sourceQuotationNumber' in copied, false);
+    assert.equal('releasedAgreementId' in copied, false);
+    assert.equal('cancelReason' in copied, false);
+    assert.equal(copied.projectName, 'Port');
+  });
+
+  it('does not treat a drum confirm timestamp as a commercial change', () => {
     const lines = [
       {
         materialNumber: 'C1',
@@ -107,15 +131,7 @@ describe('portal inquiry lifecycle', () => {
       },
     ]));
     const current = inquiryCalculationFingerprint({ lines, incoterms: 'FOB', currency: 'USD' });
-    assert.equal(
-      shouldForkCalculatedInquiry({
-        status: 'DRAFT',
-        commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', calculatedLineFingerprint: stored },
-        lineFingerprint: current,
-        legacyLineFingerprint: stored,
-      }),
-      false
-    );
+    assert.notEqual(current, stored);
     assert.equal(portalCanceledSubtitle({ cancelReason: 'SUPERSEDED', supersededByVersion: 2 }), 'Superseded by V2');
     assert.equal(portalCanceledSubtitle({ cancelReason: 'USER' }), 'By User');
   });

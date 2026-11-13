@@ -81,6 +81,9 @@ export function CustomerInquiryPrimaryActions({
   canApprove,
   canCancel,
   canCopy,
+  canCreateRevision,
+  canDiscardRevision,
+  calculateLabel,
   savingHeader,
   costingLoading,
   hasLines,
@@ -90,6 +93,8 @@ export function CustomerInquiryPrimaryActions({
   onApprove,
   onCancel,
   onCopy,
+  onCreateRevision,
+  onDiscardRevision,
 }: {
   canEdit: boolean;
   canSave: boolean;
@@ -97,6 +102,9 @@ export function CustomerInquiryPrimaryActions({
   canApprove: boolean;
   canCancel: boolean;
   canCopy: boolean;
+  canCreateRevision?: boolean;
+  canDiscardRevision?: boolean;
+  calculateLabel?: string;
   savingHeader: boolean;
   costingLoading: boolean;
   hasLines: boolean;
@@ -106,13 +114,22 @@ export function CustomerInquiryPrimaryActions({
   onApprove: () => void;
   onCancel: () => void;
   onCopy: () => void;
+  onCreateRevision?: () => void;
+  onDiscardRevision?: () => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2" role="toolbar" aria-label="Inquiry actions">
-      <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
-        <Pencil className="h-3.5 w-3.5 text-slate-500" />
-        Edit
-      </button>
+      {canCreateRevision ? (
+        <button type="button" className={inquiryToolButtonClass} onClick={onCreateRevision}>
+          <Pencil className="h-3.5 w-3.5 text-slate-500" />
+          Create Revision
+        </button>
+      ) : (
+        <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
+          <Pencil className="h-3.5 w-3.5 text-slate-500" />
+          Edit
+        </button>
+      )}
       <button type="button" className={inquiryToolButtonClass} onClick={onSave} disabled={!canSave || savingHeader}>
         <Save className="h-3.5 w-3.5 text-slate-500" />
         {savingHeader ? 'Saving…' : 'Save'}
@@ -124,7 +141,7 @@ export function CustomerInquiryPrimaryActions({
         disabled={!canCalculate || costingLoading || !hasLines}
       >
         <Calculator className="h-3.5 w-3.5 text-slate-500" />
-        {costingLoading ? 'Processing…' : 'Calculate'}
+        {costingLoading ? 'Processing…' : calculateLabel || 'Calculate'}
       </button>
       <button type="button" className={inquiryToolButtonClass} onClick={onApprove} disabled={!canApprove}>
         Approve
@@ -133,6 +150,11 @@ export function CustomerInquiryPrimaryActions({
         <XCircle className="h-3.5 w-3.5 text-slate-500" />
         Cancel
       </button>
+      {canDiscardRevision ? (
+        <button type="button" className={inquiryToolButtonClass} onClick={onDiscardRevision}>
+          Discard Revision
+        </button>
+      ) : null}
       <button type="button" className={inquiryToolButtonClass} onClick={onCopy} disabled={!canCopy}>
         <Copy className="h-3.5 w-3.5 text-slate-500" />
         Copy
