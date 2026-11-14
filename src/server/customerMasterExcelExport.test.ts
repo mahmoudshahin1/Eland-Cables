@@ -337,27 +337,22 @@ describe('Customer Master + Excel export', () => {
     });
     assert.equal(internal.status, 200);
     const wb = XLSX.read(internal.buffer, { type: 'buffer' });
-    assert.deepEqual(wb.SheetNames, [
-      'Inquiry_Header',
-      'Inquiry_Lines',
-      'Drum_Schedule',
-      'Commercial_Totals',
-      'Container_Study',
-      'Delivery',
-    ]);
-    const lines = XLSX.utils.sheet_to_json(wb.Sheets.Inquiry_Lines, { header: 1 }) as unknown[][];
-    assert.equal(lines.length - 1, 1);
+    assert.deepEqual(wb.SheetNames, ['Inquiry']);
+    const lines = XLSX.utils.sheet_to_json(wb.Sheets.Inquiry, { header: 1 }) as unknown[][];
     const dumped = JSON.stringify(lines);
     assert.match(dumped, /1500 × 2; 1000 × 1; 2000 × 1/);
     assert.equal(/6000 × 4/.test(dumped), false);
-    assert.ok((lines[0] as string[]).includes('Costing Status'));
+    assert.match(dumped, /Costing Status/);
+    assert.match(dumped, /Inquiry Summary/);
+    assert.match(dumped, /Cable Lines/);
+    assert.match(dumped, /Drum Schedule/);
 
     const customerExport = await bin(base, `/api/inquiries/${inquiryId}/export`, {
       headers: { Authorization: `Bearer ${tokenA}` },
     });
     assert.equal(customerExport.status, 200);
     const cwb = XLSX.read(customerExport.buffer, { type: 'buffer' });
-    const clines = XLSX.utils.sheet_to_json(cwb.Sheets.Inquiry_Lines, { header: 1 }) as string[][];
+    const clines = XLSX.utils.sheet_to_json(cwb.Sheets.Inquiry, { header: 1 }) as string[][];
     assert.equal(clines[0].includes('Costing Status'), false);
     assert.equal(JSON.stringify(clines).toLowerCase().includes('materialcost'), false);
     assert.equal(JSON.stringify(clines).toLowerCase().includes('password'), false);

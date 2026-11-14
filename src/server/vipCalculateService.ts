@@ -35,7 +35,7 @@ import { emitDomainEvent } from '../domain/domainEventBus';
 import { DECISION5_STATUS } from '../domain/v2CostingRequestService';
 import { isQuotationIssued } from '../domain/v2QuotationService';
 import { snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
-import { shouldSkipVipLineCosting } from '../domain/vipLineCostingRefresh';
+import { shouldSkipVipLineCosting, vipQuotationDraftWasCreated } from '../domain/vipLineCostingRefresh';
 import { loadImportedCableCalculationEvidence } from './importedCableCalculationEvidence';
 import { executeCostingForInquiryLine } from './costingOrchestrationService';
 import { buildCostingRequestFromInquiryLine } from '../services/costingRequestService';
@@ -553,10 +553,14 @@ async function calculateInquiryOnTarget(
     };
   }
 
-  if (!existingQuotation || isQuotationIssued(existingQuotation)) {
-    const draftQuotation = await createV2QuotationDraftForVipCalculate(inquiry.id, actor);
-    quotationCreated = true;
+  const draftQuotation = await createV2QuotationDraftForVipCalculate(inquiry.id, actor);
+  quotationCreated = vipQuotationDraftWasCreated({
+    existingId: existingQuotation?.id,
+    existingIssued: Boolean(existingQuotation && isQuotationIssued(existingQuotation)),
+    returnedId: draftQuotation.id,
+  });
 
+  if (quotationCreated) {
     await appendServerAudit({
       actorId: actor.id,
       actorName: actor.name || actor.email,

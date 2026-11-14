@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
+  copyCommercialInquiry,
   createCommercialInquiry,
   fetchCommercialInquiries,
   fetchCommercialQuotations,
@@ -13,8 +14,9 @@ import {
   customerInquiryDetailPath,
   CUSTOMER_HOME_PATH,
 } from '../../app/shellRoutes';
-import { displayInquiryNumber, portalInquiryEditable, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
+import { displayInquiryNumber, portalCanceledSubtitle, portalInquiryEditable, portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
 import { Badge, Button, Card, Drawer, Input, Select } from '../ui';
+import type { BadgeTone } from '../ui/Badge';
 import { CustomerPageHero } from './CustomerPageHero';
 import {
   AlertCircle,
@@ -335,6 +337,13 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
 
   const runAction = (action: CustomerInquiryRowAction, inquiryId: string) => {
     setMenuId(null);
+    if (action === 'copy') {
+      if (!jwtToken) return;
+      void copyCommercialInquiry(jwtToken, inquiryId)
+        .then((copied) => navigate(customerInquiryDetailPath(copied.id)))
+        .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Copy failed'));
+      return;
+    }
     if (action === 'view' || action === 'edit' || action === 'continue' || action === 'view_quotation' || action === 'download_pdf') {
       openInquiry(inquiryId);
     }
@@ -616,7 +625,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                               <td className="px-3 py-3">{row.application}</td>
                               <td className="px-3 py-3 whitespace-nowrap">{row.quantityLabel}</td>
                               <td className="px-3 py-3">
-                                <Badge tone={row.statusTone}>{row.statusLabel}</Badge>
+                                <InquiryStatusBadge label={row.statusLabel} tone={row.statusTone} detail={row.statusDetail} />
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-slate-500">{row.lastUpdated}</td>
                               <td className="px-3 py-3">
@@ -633,7 +642,11 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                             {expandedId === row.id && inquiry ? (
                               <tr>
                                 <td colSpan={10} className="bg-slate-50/70 p-0">
-                                  <InquiryExpandPanel inquiry={inquiry} onOpen={() => openInquiry(inquiry.id)} />
+                                  <InquiryExpandPanel
+                                    inquiry={inquiry}
+                                    onOpen={() => openInquiry(inquiry.id)}
+                                    onCopy={() => runAction('copy', inquiry.id)}
+                                  />
                                 </td>
                               </tr>
                             ) : null}
@@ -662,7 +675,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                             {row.inquiryNumber} {row.versionLabel}
                           </button>
                         </label>
-                        <Badge tone={row.statusTone}>{row.statusLabel}</Badge>
+                        <InquiryStatusBadge label={row.statusLabel} tone={row.statusTone} detail={row.statusDetail} />
                       </div>
                       <p className="text-sm text-slate-800 truncate">{row.projectName}</p>
                       <p className="text-xs text-slate-500">
@@ -905,6 +918,11 @@ function RowActions({
                   Continue Inquiry
                 </button>
               )}
+              {extra.includes('copy') && (
+                <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('copy')}>
+                  Copy as new draft
+                </button>
+              )}
               {extra.includes('view_quotation') && (
                 <button type="button" className="w-full text-start px-3 py-2 text-xs hover:bg-slate-50" onClick={() => onAction('view_quotation')}>
                   View Quotation
@@ -921,9 +939,11 @@ function RowActions({
 function InquiryExpandPanel({
   inquiry,
   onOpen,
+  onCopy,
 }: {
   inquiry: CommercialInquiryDto;
   onOpen: () => void;
+  onCopy: () => void;
 }) {
   const timeline = customerInquiryTimelineState(inquiry.status);
   const lines = inquiry.lines || [];
@@ -938,11 +958,16 @@ function InquiryExpandPanel({
           <FileText className="h-4 w-4 text-brand-600 shrink-0" />
           <p className="font-mono font-bold text-brand-800">{displayInquiryNumber(inquiry)}</p>
           <Badge tone="neutral">{portalVersionLabel(inquiry.versionNo)}</Badge>
-          <Badge tone={customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata)}>
-            {customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
-          </Badge>
+          <InquiryStatusBadge
+            label={customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
+            tone={customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata)}
+            detail={portalCanceledSubtitle(inquiry.commercialMetadata)}
+          />
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={onCopy}>
+            Copy
+          </Button>
           {canEdit && (
             <Button variant="secondary" size="sm" onClick={onOpen}>
               Edit
@@ -1021,6 +1046,23 @@ function InquiryExpandPanel({
         )}
       </div>
     </div>
+  );
+}
+
+function InquiryStatusBadge({
+  label,
+  tone,
+  detail,
+}: {
+  label: string;
+  tone: BadgeTone;
+  detail?: string | null;
+}) {
+  return (
+    <span className="inline-flex flex-col items-start gap-0.5" title={detail ? `${label} · ${detail}` : undefined}>
+      <Badge tone={tone}>{label}</Badge>
+      {detail ? <span className="text-[10px] leading-tight text-slate-500">{detail}</span> : null}
+    </span>
   );
 }
 

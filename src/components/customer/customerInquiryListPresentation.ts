@@ -2,6 +2,7 @@ import type { BadgeTone } from '../ui';
 import {
   displayInquiryNumber,
   portalInquiryEditable,
+  portalCanceledSubtitle,
   portalLifecycleFromInquiry,
   portalLifecycleLabel,
   portalVersionLabel,
@@ -17,7 +18,7 @@ export type CustomerInquiryWorkspaceTab = 'inquiries' | 'quotations';
 
 export type CustomerInquiryKpiBucket = 'draft' | 'inProgress' | 'submitted' | 'quoted' | 'other';
 
-export type CustomerInquiryRowAction = 'view' | 'edit' | 'continue' | 'view_quotation' | 'download_pdf';
+export type CustomerInquiryRowAction = 'view' | 'copy' | 'edit' | 'continue' | 'view_quotation' | 'download_pdf';
 
 /** Customer status filter. Values are portal lifecycle codes, not the Prisma enum. */
 export const CUSTOMER_INQUIRY_STATUS_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
@@ -194,7 +195,7 @@ export function inquiryHasCustomerQuotation(inquiry: CommercialInquiryDto): bool
 }
 
 export function customerInquiryRowActions(inquiry: CommercialInquiryDto): CustomerInquiryRowAction[] {
-  const actions: CustomerInquiryRowAction[] = ['view'];
+  const actions: CustomerInquiryRowAction[] = ['view', 'copy'];
   if (portalInquiryEditable(inquiry)) {
     actions.push('continue');
     actions.push('edit');
@@ -249,6 +250,7 @@ export type CustomerInquiryListRow = {
   quantityLabel: string;
   status: string;
   statusLabel: string;
+  statusDetail: string | null;
   statusTone: BadgeTone;
   lastUpdated: string;
   lineCount: number;
@@ -267,6 +269,7 @@ export function buildCustomerInquiryListRow(inquiry: CommercialInquiryDto): Cust
     quantityLabel: formatCustomerQuantityMeters(inquiryTotalQuantityMeters(inquiry)),
     status: inquiry.status,
     statusLabel: customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata),
+    statusDetail: portalCanceledSubtitle(inquiry.commercialMetadata),
     statusTone: customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata),
     lastUpdated: formatCustomerListDate(inquiry.updatedAt || inquiry.inquiryDate),
     lineCount: inquiry.lines?.length || 0,

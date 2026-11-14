@@ -268,7 +268,11 @@ export async function getV2CurrentQuotation(inquiryId: string, actor: RequestAct
 export async function createV2QuotationDraft(
   inquiryId: string,
   actor: RequestActor,
-  options?: { validityDays?: number; vipOrchestratorBypassRbac?: boolean }
+  options?: {
+    validityDays?: number;
+    vipOrchestratorBypassRbac?: boolean;
+    quotationIdentity?: { quotationNumber: string; versionNo: number; supersedesQuotationId: string };
+  }
 ) {
   if (!options?.vipOrchestratorBypassRbac) {
     assertCanManageQuotations(actor);
@@ -292,7 +296,9 @@ export async function createV2QuotationDraft(
   }
 
   const prisma = requirePrisma();
-  const allocated = await allocateNextNumber('QUO_COMMERCIAL', actor);
+  const allocated = options?.quotationIdentity
+    ? { value: options.quotationIdentity.quotationNumber }
+    : await allocateNextNumber('QUO_COMMERCIAL', actor);
   const validityDays = options?.validityDays ?? getDefaultQuotationValidityDays();
   const validUntil = calculateValidUntil(new Date(), validityDays);
 
@@ -398,8 +404,9 @@ export async function createV2QuotationDraft(
       customerMasterId: inquiry.customerMasterId,
       customerName: inquiry.customerName,
       contactPerson: inquiry.contactPerson,
-      versionNo: 1,
+      versionNo: options?.quotationIdentity?.versionNo ?? 1,
       isCurrent: true,
+      supersedesQuotationId: options?.quotationIdentity?.supersedesQuotationId,
       status: 'OPEN',
       workflowChannel: V2_QUOTATION_WORKFLOW_CHANNEL,
       currency: inquiry.currency,
@@ -1318,10 +1325,11 @@ export async function getV2QuotationById(quotationId: string, actor: RequestActo
   const prisma = requirePrisma();
   const quotation = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
+      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true, supersededByQuotationId: null }],
       workflowChannel: V2_QUOTATION_WORKFLOW_CHANNEL,
     },
     include: { lines: { include: { pricingSnapshot: true } }, inquiry: true },
+    orderBy: { versionNo: 'desc' },
   });
   if (!quotation) throwCode('Quotation not found.', 'NOT_FOUND');
   assertCanAccessInquiryOwnership(actor, quotation.customerId, quotation.customerMasterId);
@@ -1345,12 +1353,74 @@ export async function createV2QuotationDraftForVipCalculate(
   }
 
   const existing = await getV2CurrentQuotation(inquiry.id, actor);
+  if (existing?.status === 'ACCEPTED') {
+    throwCode('Approved quotation is immutable.', 'BUSINESS_RULE_REQUIRED');
+  }
   if (existing && !isQuotationIssued(existing)) {
-    await appendInquiryLinesMissingFromDraft(existing.id, inquiry, lines, actor);
+    await syncVipDraftLinesFromInquiry(existing.id, inquiry, lines, actor);
     return (await getV2CurrentQuotation(inquiry.id, actor)) ?? existing;
   }
 
+  if (inquiry.supersedesInquiryId) {
+    const previous = await requirePrisma().commercialQuotation.findFirst({
+      where: {
+        inquiryId: inquiry.supersedesInquiryId,
+        isCurrent: true,
+        supersededByQuotationId: null,
+      },
+      orderBy: { versionNo: 'desc' },
+    });
+    if (previous) {
+      return createV2QuotationDraft(inquiryId, actor, {
+        ...options,
+        vipOrchestratorBypassRbac: true,
+        quotationIdentity: {
+          quotationNumber: previous.quotationNumber,
+          versionNo: previous.versionNo + 1,
+          supersedesQuotationId: previous.id,
+        },
+      });
+    }
+  }
+
   return createV2QuotationDraft(inquiryId, actor, { ...options, vipOrchestratorBypassRbac: true });
+}
+
+async function syncVipDraftLinesFromInquiry(
+  quotationId: string,
+  inquiry: Awaited<ReturnType<typeof loadV2InquiryScoped>>,
+  readinessLines: V2LineReadinessInput[],
+  actor: RequestActor
+) {
+  await appendInquiryLinesMissingFromDraft(quotationId, inquiry, readinessLines, actor);
+  const prisma = requirePrisma();
+  const quotation = await prisma.commercialQuotation.findUnique({
+    where: { id: quotationId },
+    include: { lines: true },
+  });
+  if (!quotation) return;
+  const liveIds = new Set(inquiry.lines.map((line) => line.id));
+  const staleIds = quotation.lines
+    .filter((line) => line.inquiryLineId && !liveIds.has(line.inquiryLineId))
+    .map((line) => line.id);
+  if (staleIds.length) {
+    await prisma.commercialQuotationLine.deleteMany({ where: { id: { in: staleIds } } });
+  }
+  for (const line of quotation.lines) {
+    if (!line.inquiryLineId || !liveIds.has(line.inquiryLineId)) continue;
+    const source = inquiry.lines.find((row) => row.id === line.inquiryLineId);
+    if (!source) continue;
+    await prisma.commercialQuotationLine.update({
+      where: { id: line.id },
+      data: {
+        quantity: source.requestedQuantity,
+        lengthMeters: source.requestedLengthMeters,
+        cuttingLengthMeters: source.cuttingLengthMeters,
+        drumType: source.drumType,
+        drumQuantity: source.requestedQuantity,
+      },
+    });
+  }
 }
 
 /**
@@ -1434,6 +1504,10 @@ export async function persistV2QuotationPricingForVipCalculate(
   actor: RequestActor,
   options?: { requestedDiscountPercentage?: number; vipCalculateSnapshot?: VipCalculateSnapshot }
 ) {
+  const quotation = await getV2CurrentQuotation(inquiryId, actor);
+  if (quotation?.status === 'ACCEPTED') {
+    throwCode('Approved quotation is immutable.', 'BUSINESS_RULE_REQUIRED');
+  }
   return persistV2QuotationPricing(inquiryId, actor, {
     ...options,
     vipOrchestratorBypassRbac: true,

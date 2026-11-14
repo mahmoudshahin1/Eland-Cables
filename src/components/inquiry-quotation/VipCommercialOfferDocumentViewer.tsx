@@ -10,14 +10,16 @@ import {
   Award,
   ExternalLink,
   ChevronRight,
+  Download,
   Info,
+  Printer,
 } from 'lucide-react';
 import {
   resolveInquiryLineTotalLengthMeters,
   type CommercialInquiryDto,
   type CommercialInquiryLineDto,
 } from '../../services/commercialInquiryApiService';
-import type { V2QuotationDto } from '../../services/v2QuotationApiService';
+import { fetchV2QuotationDocument, type V2QuotationDto } from '../../services/v2QuotationApiService';
 import { DEFAULT_VIP_CABLES } from '../customer/vipCableCatalogData';
 import { resolveInquiryCommercialTotals } from '../../domain/inquiryGrandTotal';
 
@@ -52,6 +54,7 @@ interface VipCommercialOfferDocumentViewerProps {
   quotation?: V2QuotationDto | null;
   jwtToken: string | null;
   preferredContainerType?: string | null;
+  freightTotal?: number | null;
 }
 
 export interface CableTdsSpecs {
@@ -290,7 +293,9 @@ export function resolveCableTdsSpecs(
 export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocumentViewerProps> = ({
   inquiry,
   quotation,
+  jwtToken = null,
   preferredContainerType = '40HQ',
+  freightTotal = null,
 }) => {
   const [expandedDocuments, setExpandedDocuments] = useState({ commercialOffer: false, tds: false });
   const [selectedLineIndex, setSelectedLineIndex] = useState(0);
@@ -339,13 +344,14 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
   const offerDestination = inquiry.commercialMetadata?.deliveryDestination
     ? String(inquiry.commercialMetadata.deliveryDestination)
     : null;
+  const resolvedFreight = resolveInquiryCommercialTotals({
+    productsTotal: productsTotal,
+    containerType: preferredContainerType || '40HQ',
+    destination: offerDestination,
+    containerCount: 1,
+  }).freightTotal;
   const freightCost =
-    resolveInquiryCommercialTotals({
-      productsTotal: productsTotal,
-      containerType: preferredContainerType || '40HQ',
-      destination: offerDestination,
-      containerCount: 1,
-    }).freightTotal || 3300;
+    freightTotal != null && Number.isFinite(Number(freightTotal)) ? Number(freightTotal) : resolvedFreight || 0;
 
   // Resolve individual line calculations, MOQ km, weights, and realistic line selling prices
   const calculatedLines = useMemo(() => {
@@ -573,6 +579,33 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
     XLSX.writeFile(wb, `TDS_${matCode}_${safeStd}.xlsx`);
   };
 
+  const printCommercialOffer = (mode: 'print' | 'download') => {
+    setExpandedDocuments((current) => ({ ...current, commercialOffer: true }));
+    const fileName = `${quotation?.quotationNumber || inquiry.inquiryNumber || 'commercial-offer'}.pdf`;
+    if (mode === 'download' && jwtToken) {
+      void fetchV2QuotationDocument(jwtToken, inquiry.id, { draft: !quotation?.issuedAt })
+        .then((blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = objectUrl;
+          anchor.download = fileName;
+          anchor.click();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        })
+        .catch(() => {
+          document.body.dataset.vipPrintDocument = 'commercial_offer';
+          window.print();
+          delete document.body.dataset.vipPrintDocument;
+        });
+      return;
+    }
+    document.body.dataset.vipPrintDocument = 'commercial_offer';
+    window.setTimeout(() => {
+      window.print();
+      delete document.body.dataset.vipPrintDocument;
+    }, 80);
+  };
+
   return (
     <div className="space-y-4 vip-document-print-root">
       <style>{`
@@ -626,6 +659,24 @@ export const VipCommercialOfferDocumentViewer: React.FC<VipCommercialOfferDocume
             <span>Commercial Offer</span>
             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">Official</span>
           </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => printCommercialOffer('print')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              Print
+            </button>
+            <button
+              type="button"
+              onClick={() => printCommercialOffer('download')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download PDF
+            </button>
+          </div>
         </div>
         <div className={`vip-document-panel-content ${expandedDocuments.commercialOffer ? 'is-expanded' : 'is-collapsed'}`} aria-hidden={!expandedDocuments.commercialOffer} inert={!expandedDocuments.commercialOffer}>
 

@@ -28,6 +28,7 @@ import { notifyInquirySubmitted as notifyInquirySubmittedLegacy } from './notifi
 import { notifyStandardWorkflowEvent } from './standardWorkflowNotifications';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import { RequestActor } from './auth';
+import { portalInquiryEditable, portalLifecycleFromInquiry } from '../domain/inquiryPortalLifecycle';
 import { lookupCustomerMasterId, resolveCustomerMasterIdForActor, assertCustomerBusinessScope } from './customerScope';
 import { applyMarketMetalSourceOnUpdate, applySystemMarketMetalDefaultsOnCreate } from '../domain/marketMetalPriceDefaults';
 import { requiredMetalsForStoredInquiry, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
@@ -111,6 +112,37 @@ function requirePrisma() {
 function positiveNumber(value: unknown): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function metricsFromDrumSchedule(schedule: ReturnType<typeof parseInquiryDrumSchedule>): {
+  requestedQuantity: number | null;
+  requestedLengthMeters: number | null;
+  cuttingLengthMeters: number | null;
+  drumType: string | null;
+} {
+  const rows = schedule?.rows || [];
+  let drums = 0;
+  let length = 0;
+  const cuttings = new Set<number>();
+  let firstCutting: number | null = null;
+  let firstCode: string | null = null;
+  for (const row of rows) {
+    const count = Math.floor(Number(row.noOfDrums));
+    const cutting = Number(row.cuttingLengthM);
+    const code = String(row.drumCode || '').trim();
+    if (!(count > 0) || !(cutting > 0) || !code) continue;
+    drums += count;
+    length += count * cutting;
+    cuttings.add(cutting);
+    if (firstCutting == null) firstCutting = cutting;
+    if (!firstCode) firstCode = code;
+  }
+  return {
+    requestedQuantity: drums > 0 ? drums : null,
+    requestedLengthMeters: length > 0 ? length : null,
+    cuttingLengthMeters: cuttings.size > 0 ? firstCutting : null,
+    drumType: firstCode,
+  };
 }
 
 function resolveRequestedLengthMeters(
@@ -830,6 +862,11 @@ async function loadMutableInquiry(inquiryId: string, actor: RequestActor) {
     (err as Error & { code: string }).code = 'INVALID_STATE';
     throw err;
   }
+  if (portalLifecycleFromInquiry(inquiry) === 'ACCEPTED') {
+    const err = new Error(`Inquiry ${inquiry.inquiryNumber} is approved and cannot be edited. Create a revision instead.`);
+    (err as Error & { code: string }).code = 'INVALID_STATE';
+    throw err;
+  }
   if (inquiry.status !== 'DRAFT' && inquiry.status !== 'UNDER_REVIEW') {
     const err = new Error(`Inquiry ${inquiry.inquiryNumber} must be in DRAFT to edit header/lines.`);
     (err as Error & { code: string }).code = 'INVALID_STATE';
@@ -992,9 +1029,6 @@ export async function cancelInquiry(inquiryId: string, actor: RequestActor) {
     });
   }
 
-  const { archiveInquirySnapshot } = await import('./inquiryPortalLifecycleRepository');
-  await archiveInquirySnapshot(inquiry.id);
-
   const quotations = await prisma.commercialQuotation.findMany({
     where: { inquiryId: inquiry.id },
     select: { id: true },
@@ -1032,7 +1066,7 @@ export async function cancelInquiry(inquiryId: string, actor: RequestActor) {
 
   try {
     const { markInquiryCanceledMetadata } = await import('./inquiryPortalLifecycleRepository');
-    await markInquiryCanceledMetadata(inquiry.id);
+    await markInquiryCanceledMetadata(inquiry.id, actor);
   } catch {
     // The status write already succeeded. The display label still maps CANCELLED to Canceled.
   }
@@ -1186,10 +1220,10 @@ export async function updateInquiryLine(
     input.drumSchedule !== undefined
   ) {
     const nextSchedule = parseInquiryDrumSchedule(input.drumSchedule);
-    if (
+    const scheduleChanged =
       !inquiryDrumScheduleRowsEquivalent(existingSchedule?.rows, nextSchedule?.rows) ||
-      nextSchedule?.lifecycleStatus !== 'CONFIRMED'
-    ) {
+      nextSchedule?.lifecycleStatus !== 'CONFIRMED';
+    if (scheduleChanged && !portalInquiryEditable(inquiry)) {
       const err = new Error(
         'Confirmed drum plan cannot be edited in place. Create a new version to supersede it.'
       );
@@ -1208,8 +1242,10 @@ export async function updateInquiryLine(
     input.drumSchedule !== undefined;
   const nextMaterialNumber = nextInquiryLineMaterialNumber(input.materialNumber, line.materialNumber);
   const cableIdentityChanged = inquiryLineCableIdentityChanged(line.materialNumber, nextMaterialNumber);
-  const requestedQuantity = input.requestedQuantity ?? line.requestedQuantity;
-  const cuttingLengthMeters = input.cuttingLengthMeters ?? line.cuttingLengthMeters;
+  const scheduleMetrics =
+    input.drumSchedule !== undefined ? metricsFromDrumSchedule(parseInquiryDrumSchedule(input.drumSchedule)) : null;
+  const requestedQuantity = scheduleMetrics?.requestedQuantity ?? input.requestedQuantity ?? line.requestedQuantity;
+  const cuttingLengthMeters = scheduleMetrics?.cuttingLengthMeters ?? input.cuttingLengthMeters ?? line.cuttingLengthMeters;
   const requestedLengthMeters = resolveRequestedLengthMeters(
     {
       requestedQuantity,
@@ -1231,7 +1267,9 @@ export async function updateInquiryLine(
       quantityUom: input.quantityUom ?? line.quantityUom,
       requestedLengthMeters,
       cuttingLengthMeters,
-      drumType: cableIdentityChanged && input.drumType === undefined ? null : input.drumType ?? line.drumType,
+      drumType:
+        scheduleMetrics?.drumType ??
+        (cableIdentityChanged && input.drumType === undefined ? null : input.drumType ?? line.drumType),
       cableTolerancePercent:
         input.cableTolerancePercent !== undefined
           ? input.cableTolerancePercent
@@ -1350,10 +1388,11 @@ export async function confirmInquiryDrumSchedule(
     confirmedAt: stored?.confirmedAt,
   };
 
-  if (draftSchedule.lifecycleStatus === 'CONFIRMED') {
-    if (inquiryDrumScheduleRowsEquivalent(stored?.rows, incomingRows)) {
-      return { line, schedule: stored, inquiry };
-    }
+  const rowsUnchanged = inquiryDrumScheduleRowsEquivalent(stored?.rows, incomingRows);
+  if (stored?.lifecycleStatus === 'CONFIRMED' && rowsUnchanged) {
+    return { line, schedule: stored, inquiry };
+  }
+  if (!portalInquiryEditable(inquiry)) {
     const err = new Error('Confirmed drum plan cannot be edited in place. Create a new version to supersede it.');
     (err as Error & { code: string }).code = 'INVALID_STATE';
     throw err;
@@ -1380,15 +1419,29 @@ export async function confirmInquiryDrumSchedule(
   const confirmed = buildConfirmedVersionADrumSchedule({
     rows: incomingRows,
     cableTolerancePercent,
-    versionNo: (stored?.versionNo || 0) + 1,
+    versionNo:
+      stored?.lifecycleStatus === 'CONFIRMED' ? stored.versionNo || 1 : (stored?.versionNo || 0) + 1,
     confirmedAt: new Date().toISOString(),
   });
+  const metrics = metricsFromDrumSchedule(confirmed);
 
   const updated = await prisma.commercialInquiryLine.update({
     where: { id: line.id },
     data: {
       drumSchedule: confirmed as unknown as Prisma.InputJsonValue,
       cableTolerancePercent,
+      ...(metrics.requestedQuantity != null ? { requestedQuantity: metrics.requestedQuantity } : {}),
+      ...(metrics.requestedLengthMeters != null ? { requestedLengthMeters: metrics.requestedLengthMeters } : {}),
+      ...(metrics.cuttingLengthMeters != null ? { cuttingLengthMeters: metrics.cuttingLengthMeters } : {}),
+      ...(metrics.drumType ? { drumType: metrics.drumType } : {}),
+      ...(inquiry.status === 'DRAFT'
+        ? {
+            costingReadinessStatus: 'STALE',
+            materialCost: null,
+            costingCalculationId: null,
+            costingRunId: null,
+          }
+        : {}),
     },
   });
   await prisma.commercialInquiry.update({
@@ -2296,27 +2349,54 @@ export async function listInquiryActivity(inquiryId: string, actor: RequestActor
 
   assertCanAccessInquiryOwnership(actor, inquiry.customerId, inquiry.customerMasterId);
 
+  const groupKey = inquiry.inquiryGroupKey || inquiry.inquiryNumber;
+  const family = await prisma.commercialInquiry.findMany({
+    where: {
+      OR: [{ id: inquiry.id }, { inquiryGroupKey: groupKey }, { inquiryNumber: groupKey }],
+    },
+    select: {
+      id: true,
+      inquiryNumber: true,
+      versionNo: true,
+      createdAt: true,
+      updatedAt: true,
+      status: true,
+      commercialMetadata: true,
+    },
+    orderBy: [{ versionNo: 'asc' }, { createdAt: 'asc' }],
+  });
+  const familyIds = family.map((row) => row.id);
   const lineIds = (
     await prisma.commercialInquiryLine.findMany({
-      where: { inquiryId: inquiry.id },
+      where: { inquiryId: { in: familyIds } },
       select: { id: true },
     })
-  ).map((l) => l.id);
+  ).map((line) => line.id);
 
-  const events = await prisma.auditEvent.findMany({
+  const audits = await prisma.auditEvent.findMany({
     where: {
       OR: [
-        { entity: 'CommercialInquiry', entityId: inquiry.inquiryNumber },
-        { entity: 'CommercialInquiry', entityId: inquiry.id },
+        { entity: 'CommercialInquiry', entityId: { in: family.flatMap((row) => [row.id, row.inquiryNumber]) } },
         ...(lineIds.length ? [{ entity: 'CommercialInquiryLine', entityId: { in: lineIds } }] : []),
-        { entity: 'CostingCalculation', message: { contains: inquiry.inquiryNumber } },
       ],
     },
-    orderBy: { at: 'desc' },
-    take: 100,
+    orderBy: { at: 'asc' },
+    take: 200,
   });
-
-  return events;
+  const hiddenActions = new Set(['STATUS_CHANGE', 'VERSION_CREATED', 'VERSION_SUPERSEDED', 'CANCELED', 'CANCEL']);
+  const userEdits = audits.filter((event) => {
+    if (event.entity === 'CostingCalculation') return false;
+    if (hiddenActions.has(event.action)) return false;
+    if (/costing calculation/i.test(event.message || '')) return false;
+    return true;
+  });
+  const { buildInquiryVersionTimeline } = await import('../domain/inquiryVersionDiff');
+  const timeline = buildInquiryVersionTimeline(family);
+  return [...timeline, ...userEdits].sort((left, right) => {
+    const leftAt = left.at instanceof Date ? left.at.toISOString() : String(left.at);
+    const rightAt = right.at instanceof Date ? right.at.toISOString() : String(right.at);
+    return leftAt.localeCompare(rightAt);
+  });
 }
 
 const MAX_INQUIRY_ATTACHMENT_BYTES = 8 * 1024 * 1024;

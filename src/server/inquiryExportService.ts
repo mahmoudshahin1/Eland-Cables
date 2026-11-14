@@ -14,7 +14,7 @@ import {
 import { issue } from '../platform/errors/domainError';
 import { resolveInquiryCommercialTotals, resolveSubmittedProductsTotal } from '../domain/inquiryGrandTotal';
 import {
-  appendFrozenSheet,
+  appendAoaSheet,
   createWorkbook,
   excelDate,
   excelNumber,
@@ -119,44 +119,44 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
     ])
   );
 
-  const wb = createWorkbook();
-  appendFrozenSheet(
-    wb,
-    'Inquiry_Header',
-    [
-      'Inquiry Number',
-      'Customer',
-      'Customer Reference',
-      'Status',
-      'Currency',
-      'Incoterm',
-      'Payment Terms',
-      'Destination',
-      'Inquiry Date',
-      'Requested Delivery Date',
-    ],
-    [
-      [
-        projected.inquiryNumber as string,
-        projected.customerName as string,
-        (projected.customerReference as string) || null,
-        projected.status as string,
-        projected.currency as string,
-        (projected.incoterms as string) || null,
-        (projected.paymentTerms as string) || null,
-        destination,
-        excelDate(projected.inquiryDate as Date | string),
-        excelDate(projected.requestedDeliveryDate as Date | string | null),
-      ],
-    ]
-  );
-  appendFrozenSheet(wb, 'Inquiry_Lines', lineHeaders, lineRows);
-  appendFrozenSheet(
-    wb,
-    'Drum_Schedule',
+  const headerFields = [
+    'Inquiry Number',
+    'Customer',
+    'Customer Reference',
+    'Status',
+    'Currency',
+    'Incoterm',
+    'Payment Terms',
+    'Destination',
+    'Inquiry Date',
+    'Requested Delivery Date',
+  ];
+  const headerValues = [
+    projected.inquiryNumber as string,
+    projected.customerName as string,
+    (projected.customerReference as string) || null,
+    projected.status as string,
+    projected.currency as string,
+    (projected.incoterms as string) || null,
+    (projected.paymentTerms as string) || null,
+    destination,
+    excelDate(projected.inquiryDate as Date | string),
+    excelDate(projected.requestedDeliveryDate as Date | string | null),
+  ];
+  const sheetRows: Array<Array<string | number | boolean | Date | null>> = [
+    ['Inquiry Summary'],
+    headerFields,
+    headerValues,
+    [],
+    ['Cable Lines'],
+    lineHeaders,
+    ...lineRows,
+    [],
+    ['Drum Schedule'],
     ['Inquiry Number', 'Line Number', 'Drum Code', 'Number of Drums', 'Cutting Length M'],
-    scheduleRows
-  );
+    ...scheduleRows,
+  ];
+  const wb = createWorkbook();
   const productsTotal = resolveSubmittedProductsTotal({
     commercialProductsTotal: (projected as { commercialProductsTotal?: number | null }).commercialProductsTotal,
     lines: lines.map((line) => {
@@ -233,11 +233,11 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
     ]);
   });
 
-  appendFrozenSheet(
-    wb,
-    'Commercial_Totals',
+  sheetRows.push(
+    [],
+    ['Commercial Totals'],
     ['Inquiry Number', 'Currency', 'Products Subtotal', 'Sea Freight', 'Grand Total', 'Container Type', 'Destination'],
-    [[
+    [
       projected.inquiryNumber as string,
       projected.currency as string,
       excelNumber(totals.productsTotal),
@@ -245,11 +245,9 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
       excelNumber(totals.grandTotal),
       containerType,
       destination,
-    ]]
-  );
-  appendFrozenSheet(
-    wb,
-    'Container_Study',
+    ],
+    [],
+    ['Container Study'],
     [
       'Inquiry Number',
       'Study Number',
@@ -263,22 +261,19 @@ export async function exportInquiryExcel(inquiryId: string, actor: RequestActor)
       'Remaining Length mm',
       'Length Utilization %',
     ],
-    studyRows
-  );
-  appendFrozenSheet(
-    wb,
-    'Delivery',
+    ...studyRows,
+    [],
+    ['Delivery'],
     ['Inquiry Number', 'Customer', 'Country / Destination', 'Destination Port', 'Incoterm'],
     [
-      [
-        projected.inquiryNumber as string,
-        projected.customerName as string,
-        String(meta.deliveryDestination || '') || null,
-        String(meta.destinationPortCode || '') || null,
-        (projected.incoterms as string) || null,
-      ],
+      projected.inquiryNumber as string,
+      projected.customerName as string,
+      String(meta.deliveryDestination || '') || null,
+      String(meta.destinationPortCode || '') || null,
+      (projected.incoterms as string) || null,
     ]
   );
+  appendAoaSheet(wb, 'Inquiry', sheetRows);
 
   await writeAudit({
     actor,

@@ -239,8 +239,9 @@ export async function approveCommercialQuotation(
 
   const current = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
+      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true, supersededByQuotationId: null }],
     },
+    orderBy: { versionNo: 'desc' },
     include: { lines: true },
   });
   if (!current) throw issue('NOT_FOUND', `Quotation ${quotationId} not found.`);
@@ -389,8 +390,9 @@ export async function createCommitmentFromQuotation(
   const prisma = requirePrisma();
   const quotation = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
+      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true, supersededByQuotationId: null }],
     },
+    orderBy: { versionNo: 'desc' },
     include: { lines: true },
   });
   if (!quotation) throw issue('NOT_FOUND', `Quotation ${quotationId} not found.`);
@@ -1207,8 +1209,9 @@ export async function createSalesOrderFromApprovedQuotation(
   const prisma = requirePrisma();
   const quotation = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationRevisionId }, { quotationNumber: quotationRevisionId, isCurrent: true }],
+      OR: [{ id: quotationRevisionId }, { quotationNumber: quotationRevisionId, isCurrent: true, supersededByQuotationId: null }],
     },
+    orderBy: { versionNo: 'desc' },
     include: { lines: true },
   });
   if (!quotation) throw issue('NOT_FOUND', `Quotation ${quotationRevisionId} not found.`);
@@ -1251,8 +1254,9 @@ export async function createSalesAgreementFromApprovedQuotation(
   const prisma = requirePrisma();
   const quotation = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationRevisionId }, { quotationNumber: quotationRevisionId, isCurrent: true }],
+      OR: [{ id: quotationRevisionId }, { quotationNumber: quotationRevisionId, isCurrent: true, supersededByQuotationId: null }],
     },
+    orderBy: { versionNo: 'desc' },
   });
   if (!quotation) throw issue('NOT_FOUND', `Quotation ${quotationRevisionId} not found.`);
   assertCanAccessInquiryOwnership(actor, quotation.customerId, quotation.customerMasterId);
@@ -1309,8 +1313,9 @@ export async function approveAndReleaseQuotation(
   const prisma = requirePrisma();
   const current = await prisma.commercialQuotation.findFirst({
     where: {
-      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true }],
+      OR: [{ id: quotationId }, { quotationNumber: quotationId, isCurrent: true, supersededByQuotationId: null }],
     },
+    orderBy: { versionNo: 'desc' },
   });
   if (!current) throw issue('NOT_FOUND', `Quotation ${quotationId} not found.`);
   assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);

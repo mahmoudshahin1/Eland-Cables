@@ -14,6 +14,7 @@ interface InquirySummaryBarProps {
   recalculationRequired?: boolean;
   freightValue?: number | null;
   grandTotalValue?: number | null;
+  totalsPending?: boolean;
   incoterm?: string | null;
   containerType?: string | null;
 }
@@ -24,11 +25,13 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
   recalculationRequired = false,
   freightValue = null,
   grandTotalValue = null,
+  totalsPending = false,
   incoterm = 'DAP',
   containerType = '20STD',
 }) => {
-  const estimated =
-    recalculationRequired
+  const estimated = totalsPending
+    ? '—'
+    : recalculationRequired
       ? '— Recalculation Required'
       : commercialValue == null
         ? '—'
@@ -37,7 +40,7 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
             maximumFractionDigits: 2,
           })} ${summary.currency}`;
 
-  const hasFreight = freightValue != null && grandTotalValue != null;
+  const hasFreight = totalsPending || (freightValue != null && grandTotalValue != null);
 
   const cards: { label: string; value: string; helper?: string; isHighlight?: boolean }[] = [
     { label: 'Total Lines', value: String(summary.totalLines) },
@@ -46,17 +49,21 @@ export const InquirySummaryBar: React.FC<InquirySummaryBarProps> = ({
     {
       label: hasFreight ? 'Products Subtotal' : 'Estimated Value',
       value: estimated,
-      helper: hasFreight ? 'Ex-Works Cable Value' : undefined,
+      helper: totalsPending ? 'Recalculate to update totals' : hasFreight ? 'Ex-Works Cable Value' : undefined,
     },
     ...(hasFreight
       ? [
           {
             label: `Grand Total (${incoterm})`,
-            value: `${grandTotalValue.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })} ${summary.currency}`,
-            helper: `Incl. $${freightValue.toLocaleString()} Freight (${containerType})`,
+            value: totalsPending
+              ? '—'
+              : `${grandTotalValue!.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })} ${summary.currency}`,
+            helper: totalsPending
+              ? 'Recalculate to update totals'
+              : `Incl. $${freightValue!.toLocaleString()} Freight (${containerType})`,
             isHighlight: true,
           },
         ]

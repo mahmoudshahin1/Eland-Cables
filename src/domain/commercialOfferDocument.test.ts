@@ -212,10 +212,16 @@ describe('issued commercial offer document', () => {
     assert.equal(presentText(empty.customer.contactPerson), 'Not Set');
   });
 
-  it('hides print and PDF download until the quotation module is finalized', () => {
-    assert.deepEqual(commercialOfferDocumentActions({ issued: false, isCustomer: false }), []);
-    assert.deepEqual(commercialOfferDocumentActions({ issued: true, isCustomer: true }), []);
-    assert.equal(commercialOfferDocumentActions({ issued: false, isCustomer: true }).length, 0);
+  it('offers print and PDF download for draft and issued offers', () => {
+    assert.deepEqual(
+      commercialOfferDocumentActions({ issued: true, isCustomer: true }).map((action) => action.label),
+      ['Print', 'Download PDF']
+    );
+    assert.deepEqual(
+      commercialOfferDocumentActions({ issued: false, isCustomer: false }).map((action) => action.id),
+      ['print-draft', 'download-draft']
+    );
+    assert.equal(commercialOfferDocumentActions({ issued: false, isCustomer: true }).length, 2);
   });
 });
 

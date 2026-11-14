@@ -3,7 +3,7 @@ import { after, before, describe, it } from 'node:test';
 import dotenv from 'dotenv';
 import { portalLifecycleFromInquiry } from '../domain/inquiryPortalLifecycle';
 import { projectInquiryForActor } from './commercialProjection';
-import { acceptPortalInquiry, archiveInquirySnapshot } from './inquiryPortalLifecycleRepository';
+import { acceptPortalInquiry } from './inquiryPortalLifecycleRepository';
 import { countInquiryPortalStatuses, listInquiries, listQuotations } from './commercialRepository';
 import { checkDatabase, disconnectPrisma, getPrisma } from './db';
 
@@ -139,7 +139,7 @@ describe('inquiry portal status counts', () => {
     }
   });
 
-  it('keeps the previous status when the inquiry moves to the next one', async () => {
+  it('keeps the same version when the inquiry moves from Draft to Submitted', async () => {
     const prisma = getPrisma();
     assert.ok(prisma);
     const inquiry = await prisma.commercialInquiry.create({
@@ -155,7 +155,6 @@ describe('inquiry portal status counts', () => {
       },
     });
     ids.push(inquiry.id);
-    await archiveInquirySnapshot(inquiry.id);
     await prisma.commercialInquiry.update({
       where: { id: inquiry.id },
       data: { commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED', displayInquiryNumber: `INQ-${stamp}-LIVE` } },
@@ -166,10 +165,9 @@ describe('inquiry portal status counts', () => {
       page: 1,
       pageSize: 20,
     });
-    const labels = family.inquiries.map((row) => portalLifecycleFromInquiry(row)).sort();
-    assert.deepEqual(labels, ['NOT_SUBMITTED', 'OPEN']);
-    const history = family.inquiries.find((row) => row.isCurrent === false);
-    assert.equal(portalLifecycleFromInquiry(history || {}), 'OPEN');
+    assert.equal(family.inquiries.length, 1);
+    assert.equal(family.inquiries[0].versionNo, 1);
+    assert.equal(portalLifecycleFromInquiry(family.inquiries[0]), 'NOT_SUBMITTED');
   });
 
   it('keeps portal lifecycle on the customer projection', () => {
@@ -187,7 +185,7 @@ describe('inquiry portal status counts', () => {
     assert.equal(line.commercialUnitPrice, 12);
   });
 
-  it('approves a calculated inquiry as a direct order or a sales agreement and keeps the previous status', async () => {
+  it('approves a calculated inquiry in place as a direct order or a sales agreement', async () => {
     const prisma = getPrisma();
     assert.ok(prisma);
     const actor = { id: 'portal-approve-test', name: 'Portal Approve', email: 'portal-approve@example.com', userType: 'internal' };
@@ -234,10 +232,11 @@ describe('inquiry portal status counts', () => {
     assert.equal(directQuote?.fulfillmentType, 'DIRECT_ORDER');
     assert.equal(await prisma.epcSalesOrder.count({ where: { inquiryId: directId, status: { not: 'CANCELLED' } } }), 1);
     await assert.rejects(() => acceptPortalInquiry(directId, actor, 'DIRECT_ORDER'), /already approved/);
-    const directHistory = await prisma.commercialInquiry.findFirst({
-      where: { customerId: approveCustomerId, inquiryGroupKey: direct.inquiryGroupKey, isCurrent: false },
-    });
-    assert.equal(portalLifecycleFromInquiry(directHistory || {}), 'NOT_SUBMITTED');
+    assert.equal(direct.versionNo, 1);
+    assert.equal(
+      await prisma.commercialInquiry.count({ where: { customerId: approveCustomerId, inquiryGroupKey: direct.inquiryGroupKey } }),
+      1
+    );
 
     const agreementId = await seed('SA');
     const agreement = await acceptPortalInquiry(agreementId, actor, 'SALES_AGREEMENT');

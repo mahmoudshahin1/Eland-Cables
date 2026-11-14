@@ -175,7 +175,7 @@ describe('customer Cutting & Drums workspace', () => {
     assert.match(html, /4,650/);
     assert.match(html, /800/);
     assert.match(html, /8,600/);
-    assert.equal((html.match(/Configure Drums/g) || []).length, 3);
+    assert.equal((html.match(/Edit/g) || []).length, 3);
     assert.doesNotMatch(html, /V2 Engine/);
     assert.doesNotMatch(html, /No V2 configuration snapshot/);
 
@@ -268,10 +268,10 @@ describe('customer Cutting & Drums workspace', () => {
     assert.equal(src.includes('isCustomer && isCustomerCuttingDrumsTab(tab)'), false);
     assert.equal(src.includes('tab="drums"'), false);
     const bridgeMounts = src.match(/<InquiryV2TabBridge/g) || [];
-    assert.equal(bridgeMounts.length, 3);
+    assert.equal(bridgeMounts.length, 2);
     assert.match(src, /shouldMountInquiryV2BridgeInPacking/);
     assert.match(src, /shouldMountInquiryV2BridgeInCutting/);
-    assert.equal((src.match(/tab=\{v2CuttingDrumsBridgeTab\}/g) || []).length, 2);
+    assert.equal((src.match(/tab=\{v2CuttingDrumsBridgeTab\}/g) || []).length, 1);
   });
 
   it('static: InquiryV2TabBridge gates V2 Engine chrome on snapshot lineage, not workflowChannel', () => {

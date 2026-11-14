@@ -31,7 +31,7 @@ export function DrumDimensionTable({ drum }: { drum: DrumDimensionValues }) {
     >
       {COLUMNS.map((column) => (
         <div key={column.key} className="min-w-0 bg-slate-50 px-3 py-2 dark:bg-slate-900">
-          <div className="text-[10px] font-semibold leading-tight text-slate-500">{column.label}</div>
+          <div className="whitespace-nowrap text-[10px] font-semibold leading-tight text-slate-500">{column.label}</div>
           <div className="mt-0.5 font-bold tabular-nums text-slate-900 dark:text-white">
             {Number.isFinite(drum[column.key]) ? drum[column.key].toLocaleString() : '—'}
           </div>

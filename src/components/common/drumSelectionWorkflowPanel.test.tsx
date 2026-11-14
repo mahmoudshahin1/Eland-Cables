@@ -127,6 +127,36 @@ describe('DrumSelectionWorkflowPanel', () => {
     assert.match(html, /Drum Plan: CONFIRMED/);
     assert.doesNotMatch(html, /data-confirm-drum-plan/);
     assert.doesNotMatch(html, /Drum Plan: NOT CONFIRMED/);
+    const addAt = html.indexOf('Add Drum Line');
+    const addButton = html.slice(html.lastIndexOf('<button', addAt), addAt);
+    assert.doesNotMatch(addButton, /\sdisabled(=|\s|>)/);
+  });
+
+  it('keeps Add Drum Line enabled after a confirmed plan and disables it only when read only', () => {
+    const readOnlyHtml = renderToStaticMarkup(
+      React.createElement(DrumSelectionWorkflowPanel, {
+        cableCode: '10009487',
+        cableDescription: 'Test cable',
+        cableDiameterMm: 10.9,
+        approxWeightKgKm: 268,
+        drums: [],
+        inquiryId: 'inq-1',
+        lineId: 'line-1',
+        initialLifecycleStatus: 'CONFIRMED',
+        readOnly: true,
+        rows: [
+          { id: 'r1', drumCode: 'EWD1250', noOfDrums: 2, cuttingLengthM: 1500, drumTolerancePercent: '0' },
+        ],
+        cableTolerancePercent: '1',
+        onCableToleranceChange: () => undefined,
+        onRowsChange: () => undefined,
+        onPlanValidityChange: () => undefined,
+        error: null,
+      })
+    );
+    const addAt = readOnlyHtml.indexOf('Add Drum Line');
+    const addButton = readOnlyHtml.slice(readOnlyHtml.lastIndexOf('<button', addAt), addAt);
+    assert.match(addButton, /\sdisabled(=|\s|>)/);
   });
 
   it('automatic path calls POST /api/master/drums/optimize instead of the local engine', async () => {
