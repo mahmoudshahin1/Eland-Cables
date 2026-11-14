@@ -339,6 +339,31 @@ export async function approveCommercialInquiry(
   return data.inquiry;
 }
 
+export async function createPortalInquiryRevision(
+  token: string,
+  inquiryId: string,
+  reason: string
+): Promise<CommercialInquiryDto> {
+  const data = await httpClient.post<{ inquiry: CommercialInquiryDto }>(
+    `/api/inquiries/${encodeURIComponent(inquiryId)}/revisions`,
+    { reason },
+    { token }
+  );
+  return data.inquiry;
+}
+
+export async function discardPortalInquiryRevision(
+  token: string,
+  inquiryId: string
+): Promise<CommercialInquiryDto> {
+  const data = await httpClient.post<{ inquiry: CommercialInquiryDto }>(
+    `/api/inquiries/${encodeURIComponent(inquiryId)}/discard-revision`,
+    undefined,
+    { token }
+  );
+  return data.inquiry;
+}
+
 export async function createCommercialInquiryVersion(
   token: string,
   inquiryId: string

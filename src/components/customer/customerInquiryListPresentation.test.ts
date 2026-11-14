@@ -87,14 +87,14 @@ describe('customer inquiry list presentation', () => {
   });
 
   it('only offers quotation actions when a quotation exists', () => {
-    assert.deepEqual(customerInquiryRowActions(inquiry()), ['view', 'continue', 'edit']);
+    assert.deepEqual(customerInquiryRowActions(inquiry()), ['view', 'copy', 'continue', 'edit']);
     assert.deepEqual(
       customerInquiryRowActions(inquiry({ status: 'SUBMITTED' })),
-      ['view', 'continue', 'edit']
+      ['view', 'copy', 'continue', 'edit']
     );
     assert.deepEqual(
       customerInquiryRowActions(inquiry({ status: 'CANCELLED' })),
-      ['view']
+      ['view', 'copy']
     );
     assert.deepEqual(
       customerInquiryRowActions(
@@ -103,7 +103,7 @@ describe('customer inquiry list presentation', () => {
           quotations: [{ quotationNumber: 'QUO-26-00015', status: 'SUBMITTED' }],
         })
       ),
-      ['view', 'continue', 'edit', 'view_quotation', 'download_pdf']
+      ['view', 'copy', 'continue', 'edit', 'view_quotation', 'download_pdf']
     );
   });
 

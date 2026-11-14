@@ -10,15 +10,23 @@ import { getPrisma } from './db';
 import type { RequestActor } from './auth';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import { allocateNextNumber } from './numberSequenceService';
+import { canCalculateInquiry } from '../domain/inquiryProcessCommands';
 import {
+  commercialMetadataForCopy,
   displayInquiryNumber,
-  inquiryLineFingerprint,
+  inquiryCalculationFingerprint,
+  portalCanCreateRevision,
   portalLifecycleFromInquiry,
-  shouldForkCalculatedInquiry,
+  revisionDeadlineAtFrom,
   withPortalLifecycle,
 } from '../domain/inquiryPortalLifecycle';
+import {
+  buildInquiryVersionSnapshot,
+  diffInquiryVersions,
+  parseInquiryVersionSnapshot,
+} from '../domain/inquiryVersionDiff';
+import { appendServerAudit } from './serverAudit';
 
-const EDIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 function requirePrisma() {
   const prisma = getPrisma();
@@ -71,7 +79,10 @@ async function loadInquiry(inquiryId: string) {
   return inquiry;
 }
 
-function lineCreates(lines: Awaited<ReturnType<typeof loadInquiry>>['lines']) {
+function lineCreates(
+  lines: Awaited<ReturnType<typeof loadInquiry>>['lines'],
+  options?: { clearCosting?: boolean }
+) {
   return lines.map((line) => ({
     lineNumber: line.lineNumber,
     materialNumber: line.materialNumber,
@@ -88,10 +99,10 @@ function lineCreates(lines: Awaited<ReturnType<typeof loadInquiry>>['lines']) {
     configurationPayload: line.configurationPayload === null ? Prisma.JsonNull : line.configurationPayload,
     cableAuthorityStatus: line.cableAuthorityStatus,
     technicalOfficeRequestId: line.technicalOfficeRequestId,
-    costingReadinessStatus: line.costingReadinessStatus,
-    costingRunId: line.costingRunId,
-    costingCalculationId: line.costingCalculationId,
-    materialCost: line.materialCost,
+    costingReadinessStatus: options?.clearCosting ? 'NOT_READY' : line.costingReadinessStatus,
+    costingRunId: options?.clearCosting ? null : line.costingRunId,
+    costingCalculationId: options?.clearCosting ? null : line.costingCalculationId,
+    materialCost: options?.clearCosting ? null : line.materialCost,
     materialCostCurrency: line.materialCostCurrency,
     status: 'DRAFT' as const,
     notes: line.notes,
@@ -111,90 +122,20 @@ function inquiryInclude() {
 export async function preparePortalCalculateTarget(inquiryId: string, actor: RequestActor) {
   const current = await loadInquiry(inquiryId);
   assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
-  const fingerprint = inquiryLineFingerprint(current.lines);
   const lifecycle = portalLifecycleFromInquiry(current);
-  const acceptedAt =
-    typeof metadataOf(current.commercialMetadata).acceptedAt === 'string'
-      ? String(metadataOf(current.commercialMetadata).acceptedAt)
-      : null;
-
   if (lifecycle === 'ACCEPTED') {
-    const editable = await acceptedOrderStillEditable(current.id, current.inquiryGroupKey || current.inquiryNumber);
-    if (!editable) {
-      throwCode(
-        'This inquiry is Accepted and the sales order is outside the 7-day window or already released to production.',
-        'INVALID_STATE'
-      );
-    }
+    throwCode('This inquiry is approved and cannot be recalculated. Create a revision instead.', 'INVALID_STATE');
   }
-
-  if (!shouldForkCalculatedInquiry({ ...current, lineFingerprint: fingerprint })) {
-    return {
-      inquiryId: current.id,
-      inquiryNumber: current.inquiryNumber,
-      supersededInquiryId: null as string | null,
-      fingerprint,
-      acceptedAt: lifecycle === 'ACCEPTED' ? acceptedAt : null,
-    };
+  if (lifecycle === 'CANCELED' || current.status === 'CANCELLED') {
+    throwCode('A canceled inquiry cannot be calculated.', 'INVALID_STATE');
   }
-
-  const created = await createVersionRow(current, actor);
   return {
-    inquiryId: created.id,
-    inquiryNumber: created.inquiryNumber,
-    supersededInquiryId: current.id,
-    fingerprint,
-    acceptedAt: lifecycle === 'ACCEPTED' ? acceptedAt : null,
+    inquiryId: current.id,
+    inquiryNumber: current.inquiryNumber,
+    supersededInquiryId: null as string | null,
+    fingerprint: inquiryCalculationFingerprint(current),
+    acceptedAt: null as string | null,
   };
-}
-
-async function createVersionRow(
-  current: Awaited<ReturnType<typeof loadInquiry>>,
-  actor: RequestActor
-) {
-  const prisma = requirePrisma();
-  const nextVersion = (current.versionNo || 1) + 1;
-  const display = displayInquiryNumber(current);
-  const inquiryNumber = `${display}-V${nextVersion}`;
-  const metadata = withPortalLifecycle(current.commercialMetadata, 'OPEN', {
-    displayInquiryNumber: display,
-    calculatedLineFingerprint: null,
-  });
-  return prisma.$transaction(async (tx) => {
-    await tx.commercialInquiry.update({
-      where: { id: current.id },
-      data: { isCurrent: false },
-    });
-    return tx.commercialInquiry.create({
-      data: {
-        inquiryNumber,
-        customerId: current.customerId,
-        customerMasterId: current.customerMasterId,
-        customerName: current.customerName,
-        contactPerson: current.contactPerson,
-        customerReference: current.customerReference,
-        inquiryDate: current.inquiryDate,
-        requestedDeliveryDate: current.requestedDeliveryDate,
-        currency: current.currency,
-        incoterms: current.incoterms,
-        paymentTerms: current.paymentTerms,
-        deliveryTerms: current.deliveryTerms,
-        projectName: current.projectName,
-        status: 'DRAFT',
-        notes: current.notes,
-        salesAgent: current.salesAgent,
-        quotationOwner: current.quotationOwner || actor.name || actor.email,
-        commercialMetadata: metadata as Prisma.InputJsonValue,
-        inquiryGroupKey: current.inquiryGroupKey || current.inquiryNumber,
-        versionNo: nextVersion,
-        isCurrent: true,
-        supersedesInquiryId: current.id,
-        createdBy: actor.name || actor.email || current.createdBy,
-        modifiedBy: actor.name || actor.email || current.modifiedBy,
-        lines: { create: lineCreates(current.lines) },
-      },
-    });
-  });
 }
 
 export async function finishPortalCalculate(input: {
@@ -206,54 +147,49 @@ export async function finishPortalCalculate(input: {
 }) {
   const prisma = requirePrisma();
   if (!input.completed) {
-    if (input.supersededInquiryId) {
-      await prisma.commercialInquiry.update({
-        where: { id: input.inquiryId },
-        data: {
-          isCurrent: false,
-          status: 'CANCELLED',
-          commercialMetadata: withPortalLifecycle(
-            (await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } }))?.commercialMetadata,
-            'CANCELED'
-          ) as Prisma.InputJsonValue,
-        },
-      });
-      await prisma.commercialInquiry.update({
-        where: { id: input.supersededInquiryId },
-        data: { isCurrent: true },
-      });
-    }
-    const originalId = input.supersededInquiryId || input.inquiryId;
-    const original = await prisma.commercialInquiry.findUnique({ where: { id: originalId } });
-    return { inquiryId: originalId, inquiryNumber: original?.inquiryNumber || '' };
+    const original = await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } });
+    return { inquiryId: input.inquiryId, inquiryNumber: original?.inquiryNumber || '' };
   }
 
-  if (input.supersededInquiryId) {
-    await prisma.commercialInquiry.update({
-      where: { id: input.supersededInquiryId },
-      data: { isCurrent: false },
-    });
-  }
-
-  let current = await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } });
-  const keepAccepted = Boolean(input.acceptedAt);
-  const nextLifecycle = keepAccepted ? 'ACCEPTED' : 'NOT_SUBMITTED';
-  if (!input.supersededInquiryId && current && portalLifecycleFromInquiry(current) !== nextLifecycle) {
-    await archiveInquirySnapshot(current.id);
-    current = await prisma.commercialInquiry.findUnique({ where: { id: input.inquiryId } });
-  }
+  let current = await prisma.commercialInquiry.findUnique({
+    where: { id: input.inquiryId },
+    include: { lines: { orderBy: { lineNumber: 'asc' } } },
+  });
+  const nextLifecycle = 'NOT_SUBMITTED' as const;
+  const quote = await prisma.commercialQuotation.findFirst({
+    where: { inquiryId: input.inquiryId, isCurrent: true },
+    select: { sellingPrice: true },
+  });
+  const calculatedAt = new Date().toISOString();
+  const after = buildInquiryVersionSnapshot({
+    incoterms: current?.incoterms,
+    currency: current?.currency,
+    paymentTerms: current?.paymentTerms,
+    deliveryTerms: current?.deliveryTerms,
+    commercialMetadata: current?.commercialMetadata,
+    totalValue: quote?.sellingPrice != null ? Number(quote.sellingPrice) : '',
+    lines: current?.lines || [],
+  });
+  const before = parseInquiryVersionSnapshot(metadataOf(current?.commercialMetadata).calculatedSnapshot);
+  const changes = diffInquiryVersions(before, after);
   const metadata = withPortalLifecycle(current?.commercialMetadata, nextLifecycle, {
     calculatedLineFingerprint: input.fingerprint,
-    ...(keepAccepted ? { acceptedAt: input.acceptedAt } : {}),
+    calculatedAt,
+    calculatedSnapshot: after,
+    ...(changes.length ? { versionChangeSummary: changes } : {}),
   });
   await prisma.commercialInquiry.update({
     where: { id: input.inquiryId },
     data: { isCurrent: true, commercialMetadata: metadata as Prisma.InputJsonValue },
   });
 
-  if (keepAccepted && input.supersededInquiryId) {
-    await relinkEditableSalesOrder(input.supersededInquiryId, input.inquiryId);
-  }
+  await appendServerAudit({
+    actorName: 'System',
+    entity: 'CommercialInquiry',
+    entityId: current?.inquiryNumber || input.inquiryId,
+    action: 'STATUS_CHANGE',
+    message: `Calculated V${current?.versionNo || 1}`,
+  });
 
   return { inquiryId: input.inquiryId, inquiryNumber: current?.inquiryNumber || '' };
 }
@@ -270,18 +206,6 @@ async function familyInquiryIds(inquiryId: string, groupKey: string | null) {
     select: { id: true },
   });
   return rows.map((row) => row.id);
-}
-
-async function acceptedOrderStillEditable(inquiryId: string, groupKey: string | null) {
-  const prisma = requirePrisma();
-  const ids = await familyInquiryIds(inquiryId, groupKey);
-  const order = await prisma.epcSalesOrder.findFirst({
-    where: { inquiryId: { in: ids }, status: { not: 'CANCELLED' } },
-    orderBy: { createdAt: 'desc' },
-  });
-  if (!order) return true;
-  if (order.integrationStatus !== 'NOT_SENT') return false;
-  return Date.now() - order.createdAt.getTime() <= EDIT_WINDOW_MS;
 }
 
 async function currentQuotation(inquiryId: string) {
@@ -315,48 +239,18 @@ function salesOrderLineData(
   }));
 }
 
-async function relinkEditableSalesOrder(previousInquiryId: string, nextInquiryId: string) {
-  const prisma = requirePrisma();
-  const previous = await prisma.commercialInquiry.findUnique({ where: { id: previousInquiryId } });
-  if (!previous) return;
-  const ids = await familyInquiryIds(previous.id, previous.inquiryGroupKey || previous.inquiryNumber);
-  const order = await prisma.epcSalesOrder.findFirst({
-    where: {
-      inquiryId: { in: ids },
-      status: { not: 'CANCELLED' },
-      integrationStatus: 'NOT_SENT',
-      createdAt: { gte: new Date(Date.now() - EDIT_WINDOW_MS) },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-  if (!order) return;
-  const quotation = await currentQuotation(nextInquiryId);
-  if (!quotation) return;
-  await prisma.$transaction(async (tx) => {
-    await tx.epcSalesOrderLine.deleteMany({ where: { salesOrderId: order.id } });
-    await tx.epcSalesOrder.update({
-      where: { id: order.id },
-      data: {
-        inquiryId: nextInquiryId,
-        quotationId: quotation.id,
-        lines: { create: salesOrderLineData(quotation.lines) },
-      },
-    });
-  });
-}
-
 export async function copyInquiryAsNew(inquiryId: string, actor: RequestActor) {
   const current = await loadInquiry(inquiryId);
   assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
   const prisma = requirePrisma();
   const inquiryNumber = await allocatePortalInquiryNumber(actor);
-  const metadata = withPortalLifecycle(current.commercialMetadata, 'OPEN', {
+  const metadata = withPortalLifecycle(commercialMetadataForCopy(current.commercialMetadata), 'OPEN', {
     displayInquiryNumber: inquiryNumber,
-    calculatedLineFingerprint: null,
-    acceptedAt: null,
-    portalVersion: 1,
+    copiedFromInquiryId: current.id,
+    copiedFromInquiryNumber: displayInquiryNumber(current),
+    copiedFromVersion: current.versionNo || 1,
   });
-  return prisma.commercialInquiry.create({
+  const created = await prisma.commercialInquiry.create({
     data: {
       inquiryNumber,
       customerId: current.customerId,
@@ -381,10 +275,182 @@ export async function copyInquiryAsNew(inquiryId: string, actor: RequestActor) {
       isCurrent: true,
       createdBy: actor.name || actor.email || 'user',
       modifiedBy: actor.name || actor.email || 'user',
-      lines: { create: lineCreates(current.lines) },
+      lines: { create: lineCreates(current.lines, { clearCosting: true }) },
     },
     include: inquiryInclude(),
   });
+  await appendServerAudit({
+    actorId: actor.id,
+    actorName: actor.name || actor.email,
+    entity: 'CommercialInquiry',
+    entityId: created.inquiryNumber,
+    action: 'INQUIRY_COPIED',
+    newValue: {
+      copiedFromInquiryId: current.id,
+      copiedFromInquiryNumber: displayInquiryNumber(current),
+      copiedFromVersion: current.versionNo || 1,
+    },
+    message: `Copied ${displayInquiryNumber(current)} V${current.versionNo || 1} as ${created.inquiryNumber}`,
+  });
+  return created;
+}
+
+export async function createPortalRevision(inquiryId: string, reason: string, actor: RequestActor) {
+  const trimmed = String(reason || '').trim();
+  if (!trimmed) throwCode('A revision reason is required.', 'VALIDATION_FAILED');
+  const current = await loadInquiry(inquiryId);
+  assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
+  const prisma = requirePrisma();
+  const created = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "CommercialInquiry" WHERE id = ${current.id} FOR UPDATE`;
+    const locked = await tx.commercialInquiry.findUnique({
+      where: { id: current.id },
+      include: { lines: { orderBy: { lineNumber: 'asc' } } },
+    });
+    if (!locked) throwCode(`Inquiry ${inquiryId} not found.`, 'NOT_FOUND');
+    const group = locked.inquiryGroupKey || locked.inquiryNumber;
+    const family = await tx.commercialInquiry.findMany({
+      where: { OR: [{ inquiryGroupKey: group }, { inquiryNumber: group }, { id: locked.id }] },
+    });
+    const active = family.find((row) => {
+      if (row.id === locked.id || row.status === 'CANCELLED') return false;
+      const lifecycle = portalLifecycleFromInquiry(row);
+      return lifecycle === 'OPEN' || lifecycle === 'NOT_SUBMITTED';
+    });
+    if (active) throwCode(`Revision ${active.inquiryNumber} is already open.`, 'INVALID_STATE');
+    const order = await tx.epcSalesOrder.findFirst({
+      where: { inquiryId: { in: family.map((row) => row.id) }, status: { not: 'CANCELLED' } },
+      orderBy: { createdAt: 'desc' },
+    });
+    const decision = portalCanCreateRevision({
+      status: locked.status,
+      commercialMetadata: locked.commercialMetadata,
+      isCurrent: locked.isCurrent,
+      vip: canCalculateInquiry(locked),
+      salesOrderSent: Boolean(order && order.integrationStatus !== 'NOT_SENT'),
+    });
+    if (decision.ok === false) throwCode(decision.reason, 'INVALID_STATE');
+
+    const nextVersion = (locked.versionNo || 1) + 1;
+    const display = displayInquiryNumber(locked);
+    const inquiryNumber = `${display}-V${nextVersion}`;
+    const openedAt = new Date().toISOString();
+    const metadata = withPortalLifecycle(locked.commercialMetadata, 'OPEN', {
+      displayInquiryNumber: display,
+      calculatedLineFingerprint: null,
+      calculatedSnapshot: null,
+      calculatedAt: null,
+      acceptedAt: null,
+      revisionDeadlineAt: null,
+      sourceQuotationId: null,
+      sourceQuotationNumber: null,
+      sourceQuotationVersion: null,
+      releasedSalesOrderId: null,
+      releasedAgreementId: null,
+      requestedFulfillmentType: null,
+      productionStatus: null,
+      releasedToProductionAt: null,
+      supersededByVersion: null,
+      supersededByInquiryId: null,
+      supersededAt: null,
+      revisionReason: trimmed,
+      revisionOpenedAt: openedAt,
+      revisionOpenedBy: actor.name || actor.email || 'user',
+      revisionBaseSalesOrderId: order?.id ?? null,
+      revisionOfInquiryId: locked.id,
+    });
+    await tx.commercialInquiry.update({ where: { id: locked.id }, data: { isCurrent: false } });
+    return tx.commercialInquiry.create({
+      data: {
+        inquiryNumber,
+        customerId: locked.customerId,
+        customerMasterId: locked.customerMasterId,
+        customerName: locked.customerName,
+        contactPerson: locked.contactPerson,
+        customerReference: locked.customerReference,
+        inquiryDate: locked.inquiryDate,
+        requestedDeliveryDate: locked.requestedDeliveryDate,
+        currency: locked.currency,
+        incoterms: locked.incoterms,
+        paymentTerms: locked.paymentTerms,
+        deliveryTerms: locked.deliveryTerms,
+        projectName: locked.projectName,
+        status: 'DRAFT',
+        notes: locked.notes,
+        salesAgent: locked.salesAgent,
+        quotationOwner: locked.quotationOwner || actor.name || actor.email,
+        commercialMetadata: metadata as Prisma.InputJsonValue,
+        inquiryGroupKey: group,
+        versionNo: nextVersion,
+        isCurrent: true,
+        supersedesInquiryId: locked.id,
+        createdBy: actor.name || actor.email || locked.createdBy,
+        modifiedBy: actor.name || actor.email || locked.modifiedBy,
+        lines: { create: lineCreates(locked.lines) },
+      },
+      include: inquiryInclude(),
+    });
+  });
+  await appendServerAudit({
+    actorId: actor.id,
+    actorName: actor.name || actor.email,
+    entity: 'CommercialInquiry',
+    entityId: created.inquiryNumber,
+    action: 'REVISION_CREATED',
+    newValue: {
+      reason: trimmed,
+      previousInquiryId: current.id,
+      previousVersion: current.versionNo || 1,
+      versionNo: created.versionNo,
+    },
+    message: `Opened V${created.versionNo} from V${current.versionNo || 1}: ${trimmed}`,
+  });
+  return created;
+}
+
+export async function discardPortalRevision(inquiryId: string, actor: RequestActor) {
+  const current = await loadInquiry(inquiryId);
+  assertCanAccessInquiryOwnership(actor, current.customerId, current.customerMasterId);
+  if (!current.supersedesInquiryId || (current.versionNo || 1) <= 1) {
+    throwCode('Only a draft revision can be discarded.', 'INVALID_STATE');
+  }
+  const lifecycle = portalLifecycleFromInquiry(current);
+  if (lifecycle !== 'OPEN' && lifecycle !== 'NOT_SUBMITTED') {
+    throwCode('An approved revision cannot be discarded.', 'INVALID_STATE');
+  }
+  const prisma = requirePrisma();
+  const discardedAt = new Date().toISOString();
+  await prisma.$transaction(async (tx) => {
+    await tx.commercialInquiry.update({
+      where: { id: current.id },
+      data: {
+        isCurrent: false,
+        status: 'CANCELLED',
+        commercialMetadata: withPortalLifecycle(current.commercialMetadata, 'CANCELED', {
+          cancelReason: 'DISCARDED',
+          canceledAt: discardedAt,
+        }) as Prisma.InputJsonValue,
+      },
+    });
+    await tx.commercialQuotation.updateMany({
+      where: { inquiryId: current.id, status: { notIn: ['ACCEPTED', 'SUPERSEDED'] } },
+      data: { status: 'CANCELLED', isCurrent: false },
+    });
+    await tx.commercialInquiry.update({
+      where: { id: current.supersedesInquiryId! },
+      data: { isCurrent: true },
+    });
+  });
+  await appendServerAudit({
+    actorId: actor.id,
+    actorName: actor.name || actor.email,
+    entity: 'CommercialInquiry',
+    entityId: current.inquiryNumber,
+    action: 'REVISION_DISCARDED',
+    newValue: { restoredInquiryId: current.supersedesInquiryId },
+    message: `Discarded V${current.versionNo || 1}`,
+  });
+  return loadInquiry(current.supersedesInquiryId);
 }
 
 export async function acceptPortalInquiry(
@@ -411,6 +477,10 @@ export async function acceptPortalInquiry(
     quotation.fulfillmentType !== fulfillmentType
   ) {
     throwCode(`This quotation is already approved as ${quotation.fulfillmentType}.`, 'INVALID_STATE');
+  }
+
+  if (current.supersedesInquiryId && fulfillmentType === 'SALES_AGREEMENT') {
+    throwCode('A released sales agreement cannot be revised. Copy the inquiry instead.', 'INVALID_STATE');
   }
 
   const prisma = requirePrisma();
@@ -443,19 +513,16 @@ export async function acceptPortalInquiry(
     }
     const agreement = await createSalesAgreementFromApprovedQuotation(quotation.id, {}, actor);
     releasedAgreementId = agreement.id;
-  } else {
-  const ids = await familyInquiryIds(current.id, current.inquiryGroupKey || current.inquiryNumber);
-  const existing = await prisma.epcSalesOrder.findFirst({
-    where: {
-      inquiryId: { in: ids },
-      status: { not: 'CANCELLED' },
-      integrationStatus: 'NOT_SENT',
-      createdAt: { gte: new Date(Date.now() - EDIT_WINDOW_MS) },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  if (existing) {
+  } else if (current.supersedesInquiryId) {
+    const baseId = metadataOf(current.commercialMetadata).revisionBaseSalesOrderId;
+    if (typeof baseId !== 'string' || !baseId) {
+      throwCode('The sales order captured for this revision is no longer available.', 'INVALID_STATE');
+    }
+    const existing = await prisma.epcSalesOrder.findUnique({ where: { id: baseId } });
+    if (!existing || existing.status === 'CANCELLED' || existing.integrationStatus !== 'NOT_SENT') {
+      throwCode('The sales order can no longer be updated, so this revision cannot be approved.', 'INVALID_STATE');
+    }
+    const previousLineCount = await prisma.epcSalesOrderLine.count({ where: { salesOrderId: existing.id } });
     await prisma.$transaction(async (tx) => {
       await tx.epcSalesOrderLine.deleteMany({ where: { salesOrderId: existing.id } });
       await tx.epcSalesOrder.update({
@@ -466,6 +533,22 @@ export async function acceptPortalInquiry(
           lines: { create: salesOrderLineData(quotation.lines) },
         },
       });
+    });
+    await appendServerAudit({
+      actorId: actor.id,
+      actorName: actor.name || actor.email,
+      entity: 'EpcSalesOrder',
+      entityId: existing.salesOrderNumber,
+      action: 'SALES_ORDER_RELINKED',
+      newValue: {
+        salesOrderId: existing.id,
+        previousInquiryId: existing.inquiryId,
+        previousQuotationId: existing.quotationId,
+        nextInquiryId: current.id,
+        nextQuotationId: quotation.id,
+        previousLineCount,
+      },
+      message: `Relinked ${existing.salesOrderNumber} from the previous revision to V${current.versionNo || 1}`,
     });
   } else {
     const salesOrderNumber = await allocateSalesOrderNumber(actor);
@@ -491,24 +574,61 @@ export async function acceptPortalInquiry(
       },
     });
   }
-  }
 
-  await prisma.commercialQuotation.update({
-    where: { id: quotation.id },
-    data: { status: 'ACCEPTED', fulfillmentType },
+  const previousQuotation = current.supersedesInquiryId
+    ? await prisma.commercialQuotation.findFirst({
+        where: { inquiryId: current.supersedesInquiryId, status: 'ACCEPTED', supersededByQuotationId: null },
+        orderBy: { versionNo: 'desc' },
+      })
+    : null;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.commercialQuotation.update({
+      where: { id: quotation.id },
+      data: {
+        status: 'ACCEPTED',
+        fulfillmentType,
+        inquirySnapshot: {
+          inquiryId: current.id,
+          inquiryNumber: current.inquiryNumber,
+          versionNo: current.versionNo,
+          acceptedAt,
+        } as Prisma.InputJsonValue,
+      },
+    });
+    if (previousQuotation) {
+      await tx.commercialQuotation.update({
+        where: { id: previousQuotation.id },
+        data: { status: 'SUPERSEDED', supersededByQuotationId: quotation.id },
+      });
+    }
+    if (current.supersedesInquiryId) {
+      const previous = await tx.commercialInquiry.findUnique({ where: { id: current.supersedesInquiryId } });
+      if (previous) {
+        await tx.commercialInquiry.update({
+          where: { id: previous.id },
+          data: {
+            commercialMetadata: withPortalLifecycle(previous.commercialMetadata, 'ACCEPTED', {
+              supersededByVersion: current.versionNo,
+              supersededByInquiryId: current.id,
+              supersededAt: acceptedAt,
+            }) as Prisma.InputJsonValue,
+          },
+        });
+      }
+    }
   });
 
-  await archiveInquirySnapshot(current.id);
-  const live = await prisma.commercialInquiry.findUnique({ where: { id: current.id } });
-  const metadata = withPortalLifecycle(live?.commercialMetadata, 'ACCEPTED', {
+  const metadata = withPortalLifecycle(current.commercialMetadata, 'ACCEPTED', {
     acceptedAt,
+    revisionDeadlineAt: revisionDeadlineAtFrom(acceptedAt),
     requestedFulfillmentType: fulfillmentType,
     sourceQuotationId: quotation.id,
     sourceQuotationNumber: quotation.quotationNumber,
     sourceQuotationVersion: quotation.versionNo,
     ...(releasedAgreementId ? { releasedAgreementId } : {}),
   });
-  return prisma.commercialInquiry.update({
+  const approved = await prisma.commercialInquiry.update({
     where: { id: current.id },
     data: {
       commercialMetadata: metadata as Prisma.InputJsonValue,
@@ -516,6 +636,27 @@ export async function acceptPortalInquiry(
     },
     include: inquiryInclude(),
   });
+  await appendServerAudit({
+    actorId: actor.id,
+    actorName: actor.name || actor.email,
+    entity: 'CommercialInquiry',
+    entityId: current.inquiryNumber,
+    action: 'INQUIRY_APPROVED',
+    newValue: { acceptedAt, quotationNumber: quotation.quotationNumber, quotationVersion: quotation.versionNo },
+    message: `Approved V${current.versionNo || 1}`,
+  });
+  if (previousQuotation) {
+    await appendServerAudit({
+      actorId: actor.id,
+      actorName: actor.name || actor.email,
+      entity: 'CommercialQuotation',
+      entityId: `${previousQuotation.quotationNumber}-V${previousQuotation.versionNo}`,
+      action: 'QUOTATION_SUPERSEDED',
+      newValue: { supersededByQuotationId: quotation.id, nextVersion: quotation.versionNo },
+      message: `Superseded ${previousQuotation.quotationNumber} V${previousQuotation.versionNo} with V${quotation.versionNo}`,
+    });
+  }
+  return approved;
 }
 
 async function allocateSalesOrderNumber(actor: RequestActor) {
@@ -625,14 +766,32 @@ export async function backfillPortalLifecycles() {
   return { scanned: rows.length, updated };
 }
 
-export async function markInquiryCanceledMetadata(inquiryId: string) {
+export async function markInquiryCanceledMetadata(
+  inquiryId: string,
+  actor?: { name?: string | null; email?: string | null }
+) {
   const prisma = requirePrisma();
   const inquiry = await prisma.commercialInquiry.findUnique({ where: { id: inquiryId } });
   if (!inquiry) return;
+  const existing = metadataOf(inquiry.commercialMetadata);
+  if (existing.cancelReason === 'SUPERSEDED') return;
+  const canceledAt = new Date().toISOString();
   await prisma.commercialInquiry.update({
     where: { id: inquiry.id },
     data: {
-      commercialMetadata: withPortalLifecycle(inquiry.commercialMetadata, 'CANCELED') as Prisma.InputJsonValue,
+      commercialMetadata: withPortalLifecycle(inquiry.commercialMetadata, 'CANCELED', {
+        cancelReason: 'USER',
+        canceledAt,
+        canceledBy: actor?.name || actor?.email || null,
+      }) as Prisma.InputJsonValue,
     },
+  });
+  await appendServerAudit({
+    actorId: null,
+    actorName: actor?.name || actor?.email || 'User',
+    entity: 'CommercialInquiry',
+    entityId: inquiry.inquiryNumber,
+    action: 'CANCELED',
+    message: `Canceled V${inquiry.versionNo || 1} by user`,
   });
 }

@@ -133,6 +133,8 @@ export async function autoConfirmInquiryDrumPlanFromSchedule(
     unresolvedErrors?: string[];
     technicalPlanValid: boolean | null;
     lifecycleStatus?: string | null;
+    allowReconfirm?: boolean;
+    savedRows?: DrumPlanConfirmRowInput[] | null;
   },
   deps: ConfirmInquiryDrumPlanDeps = defaultDeps
 ): Promise<
@@ -151,6 +153,8 @@ export async function autoConfirmInquiryDrumPlanFromSchedule(
     inquiryId: input.inquiryId,
     lineId: input.lineId,
     technicalPlanValid: input.technicalPlanValid,
+    allowReconfirm: input.allowReconfirm,
+    savedRows: input.savedRows,
   });
   if (decision.confirmed) {
     return { skipped: true, lifecycleStatus: 'CONFIRMED' };

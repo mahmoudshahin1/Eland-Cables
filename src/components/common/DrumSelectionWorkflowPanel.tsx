@@ -29,7 +29,7 @@ import type { DrumMasterRecord } from '../../types';
 import { DrumCuttingScheduleTable, type DrumScheduleRow } from './DrumCuttingScheduleTable';
 import { DrumDimensionTable, drumMaterialLabel } from './DrumDimensionTable';
 import { resolveDrumDescription } from '../../services/drumMasterService';
-import { evaluateAutoConfirmDrumPlan, evaluateDrumPlanConfirmReadiness, DRUM_PLAN_CONFIRMED_STATUS_LABEL, DRUM_PLAN_NOT_CONFIRMED_STATUS_LABEL } from '../../domain/drumPlanConfirmReadiness';
+import { drumPlanRowsSignature, evaluateAutoConfirmDrumPlan, evaluateDrumPlanConfirmReadiness, DRUM_PLAN_CONFIRMED_STATUS_LABEL, DRUM_PLAN_NOT_CONFIRMED_STATUS_LABEL } from '../../domain/drumPlanConfirmReadiness';
 import { autoConfirmInquiryDrumPlanFromSchedule } from '../../services/confirmInquiryDrumPlanFromSchedule';
 
 export type DrumSelectionMode = 'MANUAL' | 'AUTOMATIC';
@@ -80,6 +80,12 @@ interface DrumSelectionWorkflowPanelProps {
   lineId?: string | null;
   initialLifecycleStatus?: string | null;
   onDrumPlanConfirmed?: () => void;
+  /** Locks every drum edit. Editable inquiries leave this false, including after a plan is confirmed. */
+  readOnly?: boolean;
+  /** Last saved schedule. Used so a confirmed plan can be saved again after the rows change. */
+  savedRows?: DrumScheduleRow[] | null;
+  /** Inquiry modal layout: one total row, no suitable-drum cards, narrower inputs. */
+  compact?: boolean;
 }
 
 function drumSelectionDebug(message: string, payload?: Record<string, unknown>) {
@@ -111,6 +117,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   lineId = null,
   initialLifecycleStatus = null,
   onDrumPlanConfirmed,
+  readOnly = false,
+  savedRows = null,
+  compact = false,
 }) => {
   const [mode, setMode] = useState<DrumSelectionMode>('MANUAL');
   const [showUnsuitable, setShowUnsuitable] = useState(false);
@@ -136,6 +145,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   const [manualRetryToken, setManualRetryToken] = useState(0);
   const [autoRetryToken, setAutoRetryToken] = useState(0);
   const [planLifecycle, setPlanLifecycle] = useState<string | null>(initialLifecycleStatus);
+  const [ackedSignature, setAckedSignature] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [technicalPlanValid, setTechnicalPlanValid] = useState<boolean | null>(null);
@@ -181,6 +191,10 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
     [cableDiameterMm, approxWeightKgKm]
   );
 
+  const savedSignature = drumPlanRowsSignature(savedRows);
+  const rowsSignature = drumPlanRowsSignature(rows);
+  const baselineSignature = ackedSignature ?? savedSignature;
+  const rowsNeedPersist = !readOnly && savedRows != null && rowsSignature !== baselineSignature;
   const confirmReadiness = useMemo(
     () =>
       evaluateDrumPlanConfirmReadiness({
@@ -188,8 +202,10 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         rows,
         inquiryId,
         lineId,
+        allowReconfirm: rowsNeedPersist,
+        savedRows,
       }),
-    [planLifecycle, rows, inquiryId, lineId]
+    [planLifecycle, rows, inquiryId, lineId, rowsNeedPersist, savedRows]
   );
   const autoConfirmDecision = useMemo(
     () =>
@@ -199,18 +215,21 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         inquiryId,
         lineId,
         technicalPlanValid,
+        allowReconfirm: rowsNeedPersist,
+        savedRows,
       }),
-    [planLifecycle, rows, inquiryId, lineId, technicalPlanValid]
+    [planLifecycle, rows, inquiryId, lineId, technicalPlanValid, rowsNeedPersist, savedRows]
   );
-  const planConfirmed = confirmReadiness.confirmed;
+  const planConfirmed = (planLifecycle === 'CONFIRMED' && !rowsNeedPersist) || confirmReadiness.confirmed;
 
   useEffect(() => {
     setPlanLifecycle(initialLifecycleStatus);
+    setAckedSignature(null);
     lastAutoConfirmAttemptKeyRef.current = '';
   }, [initialLifecycleStatus, inquiryId, lineId]);
 
   const handleConfirmDrumPlan = async () => {
-    if (planConfirmed || confirming) return;
+    if (readOnly || confirming) return;
     if (!jwtToken || !inquiryId || !lineId) {
       return;
     }
@@ -230,12 +249,16 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         cableTolerancePercent: cableTol,
         technicalPlanValid,
         lifecycleStatus: planLifecycle,
+        allowReconfirm: rowsNeedPersist,
+        savedRows,
       });
       if (!result.skipped && result.lifecycleStatus === 'CONFIRMED') {
         setPlanLifecycle(result.lifecycleStatus);
+        setAckedSignature(drumPlanRowsSignature(rows));
         onDrumPlanConfirmed?.();
       } else if (result.skipped && result.lifecycleStatus === 'CONFIRMED') {
         setPlanLifecycle('CONFIRMED');
+        setAckedSignature(drumPlanRowsSignature(rows));
       }
     } catch (err) {
       setConfirmError(err instanceof Error ? err.message : 'Drum plan could not be confirmed.');
@@ -257,7 +280,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   ].join('/');
 
   useEffect(() => {
-    if (planConfirmed || confirming) return;
+    if (readOnly || confirming) return;
     if (!jwtToken || !inquiryId || !lineId) return;
     if (!autoConfirmDecision.shouldAutoConfirm) return;
     if (lastAutoConfirmAttemptKeyRef.current === autoConfirmAttemptKey) return;
@@ -270,7 +293,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
     inquiryId,
     jwtToken,
     lineId,
-    planConfirmed,
+    readOnly,
   ]);
 
   // Manual candidates: keyed only on stable inputs + explicit retry. Never depend on parent
@@ -562,7 +585,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   }, [mode, autoRetryToken]);
 
   const startAutomatic = () => {
-    if (planConfirmed) return;
+    if (readOnly) return;
     setMode('AUTOMATIC');
     setAutoRetryToken((n) => n + 1);
   };
@@ -571,7 +594,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
   const retryAutomatic = () => setAutoRetryToken((n) => n + 1);
 
   const applyManualDrum = (code: string) => {
-    if (planConfirmed) return;
+    if (readOnly) return;
     const target = resolveManualFocusRow(rows) || rows[0];
     const targetId = target?.id;
     const targetCutting =
@@ -704,19 +727,31 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Order Length</div>
-        <div className="text-xs">
-          <div className="text-slate-500">Total Length (m)</div>
-          <div className="font-bold text-slate-900 dark:text-white">
+      {compact ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <p className="min-w-0 truncate text-slate-600 dark:text-slate-300">
+            <span className="font-mono font-bold text-slate-900 dark:text-white">{cableCode || '—'}</span>
+            {cableDescription ? ` · ${cableDescription}` : ''}
+          </p>
+          <p className="font-bold text-slate-900 dark:text-white whitespace-nowrap">
             {totalLengthM > 0 ? `${totalLengthM.toLocaleString()} m` : '—'}
-          </div>
-          <div className="text-[10px] text-slate-500">Sum of drums × cutting length across all schedule lines</div>
+          </p>
         </div>
-        <p className="text-[11px] text-slate-500">
-          {cableCode} · Ø {cableDiameterMm || '—'} mm · {approxWeightKgKm || '—'} kg/km · {cableDescription}
-        </p>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Order Length</div>
+          <div className="text-xs">
+            <div className="text-slate-500">Total Length (m)</div>
+            <div className="font-bold text-slate-900 dark:text-white">
+              {totalLengthM > 0 ? `${totalLengthM.toLocaleString()} m` : '—'}
+            </div>
+            <div className="text-[10px] text-slate-500">Sum of drums × cutting length across all schedule lines</div>
+          </div>
+          <p className="text-[11px] text-slate-500">
+            {cableCode} · Ø {cableDiameterMm || '—'} mm · {approxWeightKgKm || '—'} kg/km · {cableDescription}
+          </p>
+        </div>
+      )}
 
       <div>
         <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-2">Drum Selection</div>
@@ -725,9 +760,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
             type="button"
             variant={mode === 'MANUAL' ? 'primary' : 'secondary'}
             size="md"
-            disabled={planConfirmed}
+            disabled={readOnly}
             onClick={() => {
-              if (planConfirmed) return;
+              if (readOnly) return;
               setMode('MANUAL');
               setBusy(false);
               setLocalError(null);
@@ -742,7 +777,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
             type="button"
             variant={mode === 'AUTOMATIC' ? 'primary' : 'secondary'}
             size="md"
-            disabled={planConfirmed || (busy && mode === 'AUTOMATIC')}
+            disabled={readOnly || (busy && mode === 'AUTOMATIC')}
             onClick={() => startAutomatic()}
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -758,18 +793,19 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         cableTolerancePercent={0}
         onCableToleranceChange={() => undefined}
         showCableTolerance={false}
+        compact={compact}
         asymmetricDrumTolerance
         cableDiameterMm={cableDiameterMm}
         suitableSelectOptionsForRow={mode === 'MANUAL' ? suitableSelectOptionsForRow : undefined}
         suitableSelectEmptyLabelForRow={mode === 'MANUAL' ? suitableSelectEmptyLabelForRow : undefined}
-        addRowDisabled={planConfirmed}
-        disabled={planConfirmed}
+        addRowDisabled={readOnly}
+        disabled={readOnly}
         onUpdateRow={(id, patch) => {
-          if (planConfirmed) return;
+          if (readOnly) return;
           onRowsChange(patchDrumScheduleRow(rows, id, patch));
         }}
         onAddRow={() => {
-          if (planConfirmed) return;
+          if (readOnly) return;
           onRowsChange([
             ...rows,
             {
@@ -784,7 +820,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
           ]);
         }}
         onRemoveRow={(id) => {
-          if (planConfirmed) return;
+          if (readOnly) return;
           if (rows.length <= 1) setExpandedCode(null);
           onRowsChange(
             removeOrResetDrumScheduleRow(rows, id, {
@@ -800,7 +836,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
         }}
       />
 
-      {mode === 'MANUAL' && (
+      {mode === 'MANUAL' && !compact && (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">Suitable drums</h4>
@@ -870,7 +906,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
                           type="button"
                           size="sm"
                           variant="primary"
-                          disabled={planConfirmed}
+                          disabled={readOnly}
                           onClick={() => applyManualDrum(c.drum.drumCode)}
                         >
                           Select
@@ -1113,7 +1149,7 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
               type="button"
               size="sm"
               variant="secondary"
-              disabled={busy || planConfirmed}
+              disabled={busy || readOnly}
               onClick={() => retryAutomatic()}
             >
               {fetchFailureKind || !autoPlan ? 'Retry' : 'Recalculate'}
@@ -1188,7 +1224,9 @@ export const DrumSelectionWorkflowPanel: React.FC<DrumSelectionWorkflowPanelProp
               {DRUM_PLAN_CONFIRMED_STATUS_LABEL}
             </p>
             <p className="text-[11px] text-slate-500">
-              Confirmed plan cannot be edited in place. Create a new version to supersede it.
+              {readOnly
+                ? 'Drum lines are locked because this inquiry cannot be edited.'
+                : 'Add or change drum lines. Total length is the sum of drums × cutting length.'}
             </p>
           </div>
         ) : (

@@ -41,6 +41,15 @@ export function appendFrozenSheet(
   XLSX.utils.book_append_sheet(workbook, ws, sheetName);
 }
 
+export function appendAoaSheet(
+  workbook: XLSX.WorkBook,
+  name: string,
+  rows: Array<Array<string | number | boolean | Date | null>>
+): void {
+  const ws = XLSX.utils.aoa_to_sheet(rows, { cellDates: true });
+  XLSX.utils.book_append_sheet(workbook, ws, name.slice(0, 31));
+}
+
 export function createWorkbook(): XLSX.WorkBook {
   return XLSX.utils.book_new();
 }

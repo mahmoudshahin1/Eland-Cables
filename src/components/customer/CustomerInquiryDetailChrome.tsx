@@ -81,6 +81,9 @@ export function CustomerInquiryPrimaryActions({
   canApprove,
   canCancel,
   canCopy,
+  canCreateRevision,
+  canDiscardRevision,
+  calculateLabel,
   savingHeader,
   costingLoading,
   hasLines,
@@ -90,6 +93,8 @@ export function CustomerInquiryPrimaryActions({
   onApprove,
   onCancel,
   onCopy,
+  onCreateRevision,
+  onDiscardRevision,
 }: {
   canEdit: boolean;
   canSave: boolean;
@@ -97,6 +102,9 @@ export function CustomerInquiryPrimaryActions({
   canApprove: boolean;
   canCancel: boolean;
   canCopy: boolean;
+  canCreateRevision?: boolean;
+  canDiscardRevision?: boolean;
+  calculateLabel?: string;
   savingHeader: boolean;
   costingLoading: boolean;
   hasLines: boolean;
@@ -106,13 +114,22 @@ export function CustomerInquiryPrimaryActions({
   onApprove: () => void;
   onCancel: () => void;
   onCopy: () => void;
+  onCreateRevision?: () => void;
+  onDiscardRevision?: () => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2" role="toolbar" aria-label="Inquiry actions">
-      <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
-        <Pencil className="h-3.5 w-3.5 text-slate-500" />
-        Edit
-      </button>
+      {canCreateRevision ? (
+        <button type="button" className={inquiryToolButtonClass} onClick={onCreateRevision}>
+          <Pencil className="h-3.5 w-3.5 text-slate-500" />
+          Create Revision
+        </button>
+      ) : (
+        <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
+          <Pencil className="h-3.5 w-3.5 text-slate-500" />
+          Edit
+        </button>
+      )}
       <button type="button" className={inquiryToolButtonClass} onClick={onSave} disabled={!canSave || savingHeader}>
         <Save className="h-3.5 w-3.5 text-slate-500" />
         {savingHeader ? 'Saving…' : 'Save'}
@@ -124,7 +141,7 @@ export function CustomerInquiryPrimaryActions({
         disabled={!canCalculate || costingLoading || !hasLines}
       >
         <Calculator className="h-3.5 w-3.5 text-slate-500" />
-        {costingLoading ? 'Processing…' : 'Calculate'}
+        {costingLoading ? 'Processing…' : calculateLabel || 'Calculate'}
       </button>
       <button type="button" className={inquiryToolButtonClass} onClick={onApprove} disabled={!canApprove}>
         Approve
@@ -133,6 +150,11 @@ export function CustomerInquiryPrimaryActions({
         <XCircle className="h-3.5 w-3.5 text-slate-500" />
         Cancel
       </button>
+      {canDiscardRevision ? (
+        <button type="button" className={inquiryToolButtonClass} onClick={onDiscardRevision}>
+          Discard Revision
+        </button>
+      ) : null}
       <button type="button" className={inquiryToolButtonClass} onClick={onCopy} disabled={!canCopy}>
         <Copy className="h-3.5 w-3.5 text-slate-500" />
         Copy
@@ -255,6 +277,7 @@ export function CustomerInquiryFooterKpis({
   estimatedValueLabel,
   freightCostLabel,
   grandTotalLabel,
+  totalsPending,
   incoterm,
   destination,
   containerType,
@@ -265,11 +288,13 @@ export function CustomerInquiryFooterKpis({
   estimatedValueLabel: string | null;
   freightCostLabel?: string | null;
   grandTotalLabel?: string | null;
+  totalsPending?: boolean;
   incoterm?: string | null;
   destination?: string | null;
   containerType?: string | null;
 }) {
   const showFreightBreakdown = Boolean(freightCostLabel && grandTotalLabel);
+  const pendingNote = totalsPending ? 'Recalculate to update totals' : null;
 
   const cards = [
     {
@@ -301,11 +326,13 @@ export function CustomerInquiryFooterKpis({
       value: estimatedValueLabel || '—',
       icon: Banknote,
       wrap: 'bg-amber-50 text-amber-700',
-      helper: showFreightBreakdown
-        ? 'Ex-Works / Cable value'
-        : estimatedValueLabel
-          ? null
-          : 'Shown when a selling price is available',
+      helper: pendingNote
+        ? pendingNote
+        : showFreightBreakdown
+          ? 'Ex-Works / Cable value'
+          : estimatedValueLabel
+            ? null
+            : 'Shown when a selling price is available',
       isGrandTotal: false,
     },
     ...(showFreightBreakdown
@@ -315,7 +342,7 @@ export function CustomerInquiryFooterKpis({
             value: freightCostLabel || '—',
             icon: Ship,
             wrap: 'bg-blue-50 text-blue-700',
-            helper: destination ? `To ${destination}` : 'Container shipping',
+            helper: pendingNote || (destination ? `To ${destination}` : 'Container shipping'),
             isGrandTotal: false,
           },
           {
@@ -323,7 +350,7 @@ export function CustomerInquiryFooterKpis({
             value: grandTotalLabel || '—',
             icon: Sparkles,
             wrap: 'bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/30',
-            helper: 'All Inclusive: Products + Freight',
+            helper: pendingNote || 'All Inclusive: Products + Freight',
             isGrandTotal: true,
           },
         ]

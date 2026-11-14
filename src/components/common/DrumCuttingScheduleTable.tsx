@@ -48,6 +48,8 @@ interface DrumCuttingScheduleTableProps {
   suitableSelectEmptyLabelForRow?: (row: DrumScheduleRow) => string;
   /** Disable Add Drum Line until a valid Drum Plan exists. */
   addRowDisabled?: boolean;
+  /** Narrow inputs and drop repeated helper text for the inquiry modal. */
+  compact?: boolean;
   disabled?: boolean;
   onUpdateRow: (id: string, patch: Partial<DrumScheduleRow>) => void;
   onAddRow: () => void;
@@ -70,6 +72,7 @@ export function DrumCuttingScheduleTable({
   suitableSelectEmptyLabel = 'Select suitable drum',
   suitableSelectEmptyLabelForRow,
   addRowDisabled = false,
+  compact = false,
   disabled = false,
   onUpdateRow,
   onAddRow,
@@ -131,9 +134,11 @@ export function DrumCuttingScheduleTable({
           <h4 className="font-bold text-slate-900 dark:text-white text-sm">
             Multi-Drum Cutting Schedule Lines
           </h4>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Define distinct drum sizes, drum quantities, cutting lengths, and drum tolerances per line.
-          </p>
+          {!compact && (
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Define distinct drum sizes, drum quantities, cutting lengths, and drum tolerances per line.
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -198,16 +203,16 @@ export function DrumCuttingScheduleTable({
       </div>}
 
       <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-        <table className={`${asymmetricDrumTolerance ? 'min-w-[1370px]' : 'min-w-[1134px]'} w-full text-left text-xs border-collapse`}>
+        <table className={`${compact ? 'min-w-[1080px]' : asymmetricDrumTolerance ? 'min-w-[1370px]' : 'min-w-[1134px]'} w-full text-left text-xs border-collapse`}>
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
               <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-10 text-center align-bottom">#</th>
               {showCableDescription && (
                 <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 min-w-[180px] align-bottom">Cable Description</th>
               )}
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 min-w-[440px] align-bottom">Drum Type &amp; Specs</th>
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-36 min-w-[140px] align-bottom">No. of Drums</th>
-              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className="p-3 w-56 min-w-[200px] align-bottom">Cutting Length / Drum</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className={`p-3 align-bottom ${compact ? 'min-w-[520px]' : 'min-w-[440px]'}`}>Drum Type &amp; Specs</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className={`p-3 align-bottom ${compact ? 'w-24 min-w-[88px]' : 'w-36 min-w-[140px]'}`}>No. of Drums</th>
+              <th rowSpan={asymmetricDrumTolerance ? 2 : undefined} className={`p-3 align-bottom ${compact ? 'w-28 min-w-[104px]' : 'w-56 min-w-[200px]'}`}>Cutting Length / Drum</th>
               {asymmetricDrumTolerance ? (
                 <th colSpan={2} className="px-3 pt-3 pb-1 text-center">
                   Drum Tolerance (%) <span className="text-red-500">*</span>
@@ -339,15 +344,17 @@ export function DrumCuttingScheduleTable({
                     />
                     {master && (
                       <div className="mt-2 overflow-x-auto space-y-1">
-                        <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                          Material: {drumMaterialLabel(master)}
-                        </p>
+                        {!compact && (
+                          <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                            Material: {drumMaterialLabel(master)}
+                          </p>
+                        )}
                         <DrumDimensionTable drum={master} />
                       </div>
                     )}
                   </td>
                   <td className="p-3">
-                    <div className="relative min-w-[120px]">
+                    <div className={`relative ${compact ? 'w-20' : 'min-w-[120px]'}`}>
                       <input
                         type="number"
                         min={1}
@@ -360,7 +367,7 @@ export function DrumCuttingScheduleTable({
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="relative min-w-[180px]">
+                    <div className={`relative ${compact ? 'w-24' : 'min-w-[180px]'}`}>
                       <input
                         type="number"
                         min={1}
@@ -433,15 +440,19 @@ export function DrumCuttingScheduleTable({
                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-3 pr-7 py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0"
                         />
-                        <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                        {!compact && (
+                          <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                        )}
                       </div>
                     </td>
                   )}
                   {asymmetricDrumTolerance && (
                     <>
                       <td className="p-3">
-                        <div className="relative min-w-[88px]">
-                          <span className="absolute left-2.5 top-2.5 text-xs font-bold text-amber-600 pointer-events-none">+</span>
+                        <div className={`relative ${compact ? 'w-16' : 'min-w-[88px]'}`}>
+                          {!compact && (
+                            <span className="absolute left-2.5 top-2.5 text-xs font-bold text-amber-600 pointer-events-none">+</span>
+                          )}
                           <input
                             type="number"
                             min={0}
@@ -457,15 +468,19 @@ export function DrumCuttingScheduleTable({
                                 drumTolerancePercent: e.target.value,
                               })
                             }
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-6 pr-7 py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className={`w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl ${compact ? 'px-2' : 'pl-6 pr-7'} py-2 text-sm font-mono font-bold text-amber-600 dark:text-amber-400 shadow-xs focus:ring-2 focus:ring-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                             placeholder="0"
                           />
-                          <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                          {!compact && (
+                            <span className="absolute right-2.5 top-2.5 text-xs font-bold text-amber-500 pointer-events-none">%</span>
+                          )}
                         </div>
                       </td>
                       <td className="p-3">
-                        <div className="relative min-w-[88px]">
-                          <span className="absolute left-2.5 top-2.5 text-xs font-bold text-orange-600 pointer-events-none">−</span>
+                        <div className={`relative ${compact ? 'w-16' : 'min-w-[88px]'}`}>
+                          {!compact && (
+                            <span className="absolute left-2.5 top-2.5 text-xs font-bold text-orange-600 pointer-events-none">−</span>
+                          )}
                           <input
                             type="number"
                             min={0}
@@ -476,10 +491,12 @@ export function DrumCuttingScheduleTable({
                             value={row.drumToleranceNegativePercent ?? row.drumTolerancePercent}
                             disabled={disabled}
                             onChange={(e) => onUpdateRow(row.id, { drumToleranceNegativePercent: e.target.value })}
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-6 pr-7 py-2 text-sm font-mono font-bold text-orange-600 dark:text-orange-400 shadow-xs focus:ring-2 focus:ring-orange-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className={`w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl ${compact ? 'px-2' : 'pl-6 pr-7'} py-2 text-sm font-mono font-bold text-orange-600 dark:text-orange-400 shadow-xs focus:ring-2 focus:ring-orange-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                             placeholder="0"
                           />
-                          <span className="absolute right-2.5 top-2.5 text-xs font-bold text-orange-500 pointer-events-none">%</span>
+                          {!compact && (
+                            <span className="absolute right-2.5 top-2.5 text-xs font-bold text-orange-500 pointer-events-none">%</span>
+                          )}
                         </div>
                       </td>
                     </>

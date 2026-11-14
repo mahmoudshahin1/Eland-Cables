@@ -52,6 +52,7 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
   inquiry,
 }) => {
   const [stuffingMethod, setStuffingMethod] = useState<StuffingMethod>('Rolling');
+  const [confirmedAllocation, setConfirmedAllocation] = useState<string | null>(null);
 
   // 1. Extract physical drums from inquiry lines or drum schedule
   const effectiveLines = useMemo(() => {
@@ -305,7 +306,7 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
         <div className="space-y-1">
           <p className="font-bold text-xs text-slate-800">
             Confirmed Shipping Plan Summary:{' '}
-            <span className="text-blue-700 font-mono">{currentDetails.spec.name}</span>
+            <span className="text-blue-700 font-mono">{confirmedAllocation || currentDetails.spec.name}</span>
           </p>
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
             <span>
@@ -356,6 +357,9 @@ export const VipContainerStudyPlanner: React.FC<VipContainerStudyPlannerProps> =
         <button
           type="button"
           onClick={() => {
+            const allocation = `${currentDetails.containersRequired} container - ${currentDetails.spec.name}`;
+            setActiveType(activeType);
+            setConfirmedAllocation(allocation);
             onSelectContainerType(activeType);
             onProceedToCosting();
           }}

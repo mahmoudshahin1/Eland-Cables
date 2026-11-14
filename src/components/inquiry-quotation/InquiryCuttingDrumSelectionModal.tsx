@@ -18,6 +18,7 @@ export interface InquiryCuttingDrumSelectionModalProps {
   drums: DrumMasterRecord[];
   jwtToken?: string | null;
   onConfirmed?: () => void;
+  readOnly?: boolean;
 }
 
 export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelectionModalProps> = ({
@@ -28,6 +29,7 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
   drums,
   jwtToken,
   onConfirmed,
+  readOnly = false,
 }) => {
   const [engineering, setEngineering] = useState(() => resolveLineCableEngineering(line));
 
@@ -66,10 +68,6 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
               <h3 className="font-bold text-sm text-slate-900 dark:text-white font-display">
                 {CUTTING_LENGTH_AND_DRUM_SELECTION_TITLE}
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                {line.materialNumber || 'Unmapped cable'}
-                {line.cableDescription ? ` · ${line.cableDescription}` : ''}
-              </p>
             </div>
           </div>
           <button
@@ -89,6 +87,7 @@ export const InquiryCuttingDrumSelectionModal: React.FC<InquiryCuttingDrumSelect
           jwtToken={jwtToken}
           cableDiameterMm={engineering.cableDiameterMm}
           approxWeightKgKm={engineering.approxWeightKgKm}
+          readOnly={readOnly}
           onConfirmed={() => {
             onConfirmed?.();
           }}

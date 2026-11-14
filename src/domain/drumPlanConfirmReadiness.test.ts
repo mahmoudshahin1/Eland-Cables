@@ -4,6 +4,7 @@ import {
   canEditDrumPlanInPlace,
   confirmedPhysicalPopulationFromPlanLines,
   cuttingLengthsIntact,
+  drumPlanRowsContentChanged,
   evaluateAutoConfirmDrumPlan,
   evaluateDrumPlanConfirmReadiness,
   expectedPhysicalCountFromSchedule,
@@ -76,6 +77,43 @@ describe('evaluateDrumPlanConfirmReadiness', () => {
       false
     );
     assert.equal(canEditDrumPlanInPlace('DRAFT'), true);
+  });
+
+  it('reconfirms a confirmed plan when the schedule rows changed and editing is allowed', () => {
+    const next = [
+      ...threeRequirementRows,
+      { cuttingLengthM: 200, noOfDrums: 2, drumCode: 'EWD630' },
+    ];
+    assert.equal(drumPlanRowsContentChanged(threeRequirementRows, next), true);
+    assert.equal(
+      drumPlanRowsContentChanged(threeRequirementRows, [
+        ...threeRequirementRows,
+        { cuttingLengthM: '', noOfDrums: 1, drumCode: '' },
+      ]),
+      false
+    );
+    const readiness = evaluateDrumPlanConfirmReadiness({
+      lifecycleStatus: 'CONFIRMED',
+      inquiryId: 'inq-1',
+      lineId: 'line-1',
+      allowReconfirm: true,
+      savedRows: threeRequirementRows,
+      rows: next,
+    });
+    assert.equal(readiness.confirmed, false);
+    assert.equal(readiness.canConfirm, true);
+    assert.equal(readiness.canEditInPlace, true);
+    const decision = evaluateAutoConfirmDrumPlan({
+      lifecycleStatus: 'CONFIRMED',
+      inquiryId: 'inq-1',
+      lineId: 'line-1',
+      allowReconfirm: true,
+      savedRows: threeRequirementRows,
+      rows: next,
+      technicalPlanValid: true,
+    });
+    assert.equal(decision.shouldAutoConfirm, true);
+    assert.equal(decision.confirmed, false);
   });
 
   it('5. Container Study can read the confirmed physical drum population', () => {

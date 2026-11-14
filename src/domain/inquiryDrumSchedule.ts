@@ -172,12 +172,21 @@ export function inquiryDrumScheduleRowsEquivalent(
   const a = left || [];
   const b = right || [];
   if (a.length !== b.length) return false;
-  return a.every(
-    (row, index) =>
-      row.drumCode === b[index]?.drumCode &&
-      row.noOfDrums === b[index]?.noOfDrums &&
-      row.cuttingLengthM === b[index]?.cuttingLengthM
-  );
+  return a.every((row, index) => {
+    const other = b[index];
+    if (!other) return false;
+    const positive = row.drumTolerancePositivePercent ?? row.drumTolerancePercent;
+    const negative = row.drumToleranceNegativePercent ?? row.drumTolerancePercent;
+    const otherPositive = other.drumTolerancePositivePercent ?? other.drumTolerancePercent;
+    const otherNegative = other.drumToleranceNegativePercent ?? other.drumTolerancePercent;
+    return (
+      row.drumCode === other.drumCode &&
+      row.noOfDrums === other.noOfDrums &&
+      row.cuttingLengthM === other.cuttingLengthM &&
+      positive === otherPositive &&
+      negative === otherNegative
+    );
+  });
 }
 
 export function expandPhysicalDrumsFromInquirySchedule(

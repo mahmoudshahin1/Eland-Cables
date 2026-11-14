@@ -58,11 +58,22 @@ const CUSTOMER_VISIBLE_COMMERCIAL_METADATA_KEYS = new Set([
   'portalLifecycle',
   'displayInquiryNumber',
   'acceptedAt',
+  'revisionDeadlineAt',
+  'revisionReason',
+  'copiedFromInquiryNumber',
+  'copiedFromVersion',
   'contactPhone',
   'destinationCountryCode',
   'sourceQuotationId',
   'sourceQuotationNumber',
   'sourceQuotationVersion',
+  'cancelReason',
+  'canceledAt',
+  'supersededByVersion',
+  'supersededByInquiryId',
+  'supersededAt',
+  'versionChangeSummary',
+  'supersededChangeSummary',
 ]);
 
 function projectCommercialMetadataForActor(metadata: unknown, actor: RequestActor): unknown {
