@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  inquiryCommercialFiguresPending,
   resolveInquiryCommercialTotals,
   resolveSubmittedProductsTotal,
   unitSeaFreightUsd,
@@ -54,6 +55,43 @@ describe('resolveInquiryCommercialTotals', () => {
       7732.18
     );
     assert.equal(resolveSubmittedProductsTotal({ commercialProductsTotal: null, lines: [] }), null);
+  });
+
+  it('hides totals after a new unpriced cable while old line prices remain', () => {
+    assert.equal(
+      inquiryCommercialFiguresPending({
+        commercialValueState: 'UNPRICED',
+        commercialProductsTotal: null,
+        lines: [
+          { commercialPricingState: 'PRICED', commercialLineTotal: 241984.84 },
+          { commercialPricingState: 'UNPRICED', commercialLineTotal: null },
+        ],
+      }),
+      true
+    );
+    assert.equal(
+      inquiryCommercialFiguresPending({
+        commercialValueState: 'RECALCULATION_REQUIRED',
+        lines: [{ commercialPricingState: 'RECALCULATION_REQUIRED' }],
+      }),
+      true
+    );
+    assert.equal(
+      inquiryCommercialFiguresPending({
+        commercialValueState: 'PRICED',
+        commercialProductsTotal: 100,
+        lines: [{ commercialPricingState: 'PRICED', commercialLineTotal: 100 }],
+      }),
+      false
+    );
+    assert.equal(
+      inquiryCommercialFiguresPending({
+        commercialValueState: 'UNPRICED',
+        commercialProductsTotal: null,
+        lines: [{ commercialPricingState: 'UNPRICED' }],
+      }),
+      false
+    );
   });
 
   it('returns null totals when the products subtotal is missing', () => {

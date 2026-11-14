@@ -157,7 +157,11 @@ import {
   visibleFieldsForUser,
 } from '../../services/inquiryFieldManifest';
 import { formatCommercialPriceAmount } from '../../domain/commercialLinePricingDisplay';
-import { resolveInquiryCommercialTotals, resolveSubmittedProductsTotal } from '../../domain/inquiryGrandTotal';
+import {
+  inquiryCommercialFiguresPending,
+  resolveInquiryCommercialTotals,
+  resolveSubmittedProductsTotal,
+} from '../../domain/inquiryGrandTotal';
 import { StatusBadge } from '../ui/Badge';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import {
@@ -1451,10 +1455,17 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     (typeof inquiry.commercialMetadata?.deliveryDestination === 'string'
       ? inquiry.commercialMetadata.deliveryDestination
       : null);
-  const submittedProductsTotal = resolveSubmittedProductsTotal({
+  const commercialFiguresPending = inquiryCommercialFiguresPending({
+    commercialValueState: inquiry.commercialValueState,
     commercialProductsTotal: inquiry.commercialProductsTotal,
     lines: inquiry.lines,
   });
+  const submittedProductsTotal = commercialFiguresPending
+    ? null
+    : resolveSubmittedProductsTotal({
+        commercialProductsTotal: inquiry.commercialProductsTotal,
+        lines: inquiry.lines,
+      });
   const commercialTotals = resolveInquiryCommercialTotals({
     productsTotal: submittedProductsTotal,
     containerType: preferredContainerType,
@@ -1580,7 +1591,13 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           <CustomerInquiryDetailHero
             inquiry={inquiry}
             totalContractValueSlot={
-              commercialTotals.grandTotal != null ? (
+              commercialFiguresPending ? (
+                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
+                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">—</p>
+                  <p className="text-[10px] text-slate-500 mt-1">Recalculate to update totals.</p>
+                </div>
+              ) : commercialTotals.grandTotal != null ? (
                 <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
                   <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">
@@ -1649,7 +1666,8 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
               <h1 className="text-xl sm:text-2xl font-black text-brand-800 tracking-tight font-display">
                 Commercial Inquiry / {inquiryDisplayRef(inquiry)} - V{inquiry.versionNo || 1}
               </h1>
-              {commercialTotals.grandTotal != null &&
+              {!commercialFiguresPending &&
+                commercialTotals.grandTotal != null &&
                 inquiryFinancialTotalReady(headerForm?.copperPriceRate, headerForm?.aluminiumPriceRate, requiredMetals) && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Grand Total</p>
@@ -3374,18 +3392,29 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
           totalDrums={summary.totalQty}
           totalLength={summary.totalLength}
           estimatedValueLabel={
-            inquiry.commercialValueState === 'RECALCULATION_REQUIRED'
-              ? '— Recalculation Required'
-              : inquiry.commercialProductsTotal == null
-                ? null
-                : `${Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency}`
+            commercialFiguresPending
+              ? '—'
+              : inquiry.commercialValueState === 'RECALCULATION_REQUIRED'
+                ? '— Recalculation Required'
+                : inquiry.commercialProductsTotal == null
+                  ? null
+                  : `${Number(inquiry.commercialProductsTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${inquiry.currency}`
           }
           freightCostLabel={
-            commercialTotals.freightTotal == null ? null : formatCommercialMoney(commercialTotals.freightTotal)
+            commercialFiguresPending
+              ? '—'
+              : commercialTotals.freightTotal == null
+                ? null
+                : formatCommercialMoney(commercialTotals.freightTotal)
           }
           grandTotalLabel={
-            commercialTotals.grandTotal == null ? null : formatCommercialMoney(commercialTotals.grandTotal)
+            commercialFiguresPending
+              ? '—'
+              : commercialTotals.grandTotal == null
+                ? null
+                : formatCommercialMoney(commercialTotals.grandTotal)
           }
+          totalsPending={commercialFiguresPending}
           incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
           destination={commercialDestination || 'Doncaster'}
           containerType={preferredContainerType || '20STD'}
@@ -3398,10 +3427,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
       {!isCustomer && summary && (
         <InquirySummaryBar
           summary={summary}
-          commercialValue={inquiry.commercialProductsTotal ?? null}
+          commercialValue={commercialFiguresPending ? null : (inquiry.commercialProductsTotal ?? null)}
           recalculationRequired={inquiry.commercialValueState === 'RECALCULATION_REQUIRED'}
-          freightValue={commercialTotals.freightTotal}
-          grandTotalValue={commercialTotals.grandTotal}
+          totalsPending={commercialFiguresPending}
+          freightValue={commercialFiguresPending ? null : commercialTotals.freightTotal}
+          grandTotalValue={commercialFiguresPending ? null : commercialTotals.grandTotal}
           incoterm={headerForm?.incoterms || inquiry.incoterms || 'DAP'}
           containerType={preferredContainerType || '20STD'}
         />

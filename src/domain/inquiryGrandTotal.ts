@@ -32,6 +32,36 @@ export function unitSeaFreightUsd(
   return is20 ? 3100 : 3300;
 }
 
+/**
+ * True when money totals must not be shown. A new or changed cable is not priced yet,
+ * so leftover line amounts must not keep the previous freight and grand total on screen.
+ */
+export function inquiryCommercialFiguresPending(input: {
+  commercialValueState?: string | null;
+  commercialProductsTotal?: number | string | null;
+  lines?: Array<{
+    commercialPricingState?: string | null;
+    commercialLineTotal?: number | string | null;
+    sellingPrice?: number | string | null;
+  }> | null;
+}): boolean {
+  if (input.commercialValueState === 'RECALCULATION_REQUIRED') return true;
+  const lines = input.lines || [];
+  const needsRefresh = lines.some(
+    (line) => line.commercialPricingState === 'UNPRICED' || line.commercialPricingState === 'RECALCULATION_REQUIRED'
+  );
+  if (!needsRefresh) return false;
+  if (lines.some((line) => line.commercialPricingState === 'PRICED')) return true;
+  const headerMissing = input.commercialProductsTotal == null || input.commercialProductsTotal === '';
+  return (
+    headerMissing &&
+    lines.some((line) => {
+      const raw = line.commercialLineTotal ?? line.sellingPrice;
+      return raw != null && raw !== '' && Number.isFinite(Number(raw));
+    })
+  );
+}
+
 /** Customer-submitted line prices, used when the inquiry has no stored products subtotal yet. */
 export function resolveSubmittedProductsTotal(input: {
   commercialProductsTotal?: number | string | null;

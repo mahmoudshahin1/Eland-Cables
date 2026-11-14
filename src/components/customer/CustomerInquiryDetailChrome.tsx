@@ -277,6 +277,7 @@ export function CustomerInquiryFooterKpis({
   estimatedValueLabel,
   freightCostLabel,
   grandTotalLabel,
+  totalsPending,
   incoterm,
   destination,
   containerType,
@@ -287,11 +288,13 @@ export function CustomerInquiryFooterKpis({
   estimatedValueLabel: string | null;
   freightCostLabel?: string | null;
   grandTotalLabel?: string | null;
+  totalsPending?: boolean;
   incoterm?: string | null;
   destination?: string | null;
   containerType?: string | null;
 }) {
   const showFreightBreakdown = Boolean(freightCostLabel && grandTotalLabel);
+  const pendingNote = totalsPending ? 'Recalculate to update totals' : null;
 
   const cards = [
     {
@@ -323,11 +326,13 @@ export function CustomerInquiryFooterKpis({
       value: estimatedValueLabel || '—',
       icon: Banknote,
       wrap: 'bg-amber-50 text-amber-700',
-      helper: showFreightBreakdown
-        ? 'Ex-Works / Cable value'
-        : estimatedValueLabel
-          ? null
-          : 'Shown when a selling price is available',
+      helper: pendingNote
+        ? pendingNote
+        : showFreightBreakdown
+          ? 'Ex-Works / Cable value'
+          : estimatedValueLabel
+            ? null
+            : 'Shown when a selling price is available',
       isGrandTotal: false,
     },
     ...(showFreightBreakdown
@@ -337,7 +342,7 @@ export function CustomerInquiryFooterKpis({
             value: freightCostLabel || '—',
             icon: Ship,
             wrap: 'bg-blue-50 text-blue-700',
-            helper: destination ? `To ${destination}` : 'Container shipping',
+            helper: pendingNote || (destination ? `To ${destination}` : 'Container shipping'),
             isGrandTotal: false,
           },
           {
@@ -345,7 +350,7 @@ export function CustomerInquiryFooterKpis({
             value: grandTotalLabel || '—',
             icon: Sparkles,
             wrap: 'bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/30',
-            helper: 'All Inclusive: Products + Freight',
+            helper: pendingNote || 'All Inclusive: Products + Freight',
             isGrandTotal: true,
           },
         ]
