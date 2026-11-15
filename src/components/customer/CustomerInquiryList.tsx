@@ -23,12 +23,15 @@ import {
   Ban,
   ChevronLeft,
   ChevronRight,
+  Download,
   Eye,
   FileCheck,
   FilePlus,
   FileText,
   Filter,
   Inbox,
+  LayoutGrid,
+  List,
   Loader2,
   MoreHorizontal,
   Plus,
@@ -45,6 +48,7 @@ import {
   customerFacingLineStatusLabel,
   customerInquiryDestination,
   customerInquiryTimelineState,
+  exportInquiryListCsv,
   formatCustomerListDate,
   formatCustomerQuantityMeters,
   inquiryMatchesCableTypeFilter,
@@ -108,6 +112,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -323,6 +328,17 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     setFilterDrawerOpen(false);
   };
 
+  const handleExportCsv = () => {
+    const csv = exportInquiryListCsv(inquiryRows);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inquiries-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -435,137 +451,305 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
 
   return (
     <div className="space-y-4">
-          <CustomerPageHero
-            breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Inquiry / Quotation' }]}
-            title="Inquiry / Quotation"
-            subtitle="Create new inquiries, track your quotations and request updates."
-          />
+      <CustomerPageHero
+        breadcrumbs={[{ label: 'Home', to: CUSTOMER_HOME_PATH }, { label: 'Inquiry / Quotation' }]}
+        title="Inquiry / Quotation"
+        subtitle="Create new inquiries, track your quotations and request updates."
+        actions={
+          <button
+            type="button"
+            disabled={creating}
+            onClick={() => void handleCreate()}
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-[13px] font-semibold bg-brand-500 text-white hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{creating ? 'Creating…' : 'New Inquiry'}</span>
+          </button>
+        }
+      />
 
-          <div className="min-w-0 overflow-hidden space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-              <div className="flex items-center gap-1 border-b border-slate-200" role="tablist">
-                {(['inquiries', 'quotations'] as const).map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === id}
-                    onClick={() => {
-                      setTab(id);
-                      setPage(1);
-                      setSelectedIds(new Set());
-                      setExpandedId(null);
-                      if (id === 'inquiries' && !PORTAL_STATUS_CODES.has(statusFilter)) setStatusFilter('');
-                    }}
-                    className={`px-3 py-2.5 -mb-px text-sm font-semibold border-b-2 ${
-                      tab === id ? 'border-brand-500 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    {id === 'inquiries' ? 'Inquiries' : 'Quotations'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  className="lg:hidden"
-                  variant="secondary"
-                  size="sm"
-                  leadingIcon={Filter}
-                  onClick={() => setFilterDrawerOpen(true)}
-                >
-                  Filters
-                </Button>
-                <Button variant="primary" size="sm" leadingIcon={Plus} disabled={creating} onClick={() => void handleCreate()}>
-                  {creating ? 'Creating…' : 'New Inquiry'}
-                </Button>
-              </div>
-            </div>
-
-          <Card className="hidden lg:block" flushBody>
-            <div className="p-3">{filterControls}</div>
-            {filtersActive ? (
-              <div className="px-3 pb-3 flex justify-end">
-                <Button variant="tertiary" size="sm" onClick={clearFilters}>
-                  Clear filters
-                </Button>
-              </div>
-            ) : null}
-          </Card>
-
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
-            {kpiCards.map((card) => {
-              const Icon = card.icon;
-              const selected =
-                (card.key === 'draft' && statusFilter === 'OPEN') ||
-                (card.key === 'submitted' && statusFilter === 'NOT_SUBMITTED') ||
-                (card.key === 'canceled' && statusFilter === 'CANCELED') ||
-                (card.key === 'approved' && statusFilter === 'ACCEPTED') ||
-                (card.key === 'total' && tab === 'inquiries' && !statusFilter);
+      <div className="min-w-0 overflow-hidden space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-1">
+          <div className="flex items-center gap-2" role="tablist">
+            {(['inquiries', 'quotations'] as const).map((id) => {
+              const active = tab === id;
               return (
                 <button
-                  key={card.key}
+                  key={id}
                   type="button"
-                  onClick={() => handleKpi(card.key)}
-                  className={`text-start rounded-xl border px-3 py-3 shadow-[var(--shadow-card)] ${card.className} ${
-                    selected ? 'ring-1 ring-brand-400' : ''
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    setTab(id);
+                    setPage(1);
+                    setSelectedIds(new Set());
+                    setExpandedId(null);
+                    if (id === 'inquiries' && !PORTAL_STATUS_CODES.has(statusFilter)) setStatusFilter('');
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2.5 -mb-px text-sm font-semibold border-b-2 transition-colors ${
+                    active
+                      ? 'border-brand-500 text-brand-600 font-bold bg-transparent'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <Icon className="h-4 w-4" />
-                    <span className="text-[11px] font-semibold">{card.label}</span>
-                  </div>
-                  <p className="mt-2 text-xl font-bold font-display text-brand-800">{card.value}</p>
+                  <span>{id === 'inquiries' ? 'Inquiries' : 'Quotations'}</span>
+                  <span className="text-xs font-normal text-slate-400">
+                    ({id === 'inquiries' ? kpi.total : quotations.length})
+                  </span>
                 </button>
               );
             })}
           </div>
+          <div className="flex items-center gap-2">
+            <Button
+              className="lg:hidden"
+              variant="secondary"
+              size="sm"
+              leadingIcon={Filter}
+              onClick={() => setFilterDrawerOpen(true)}
+            >
+              Filters
+            </Button>
+            <div className="inline-flex items-center rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  viewMode === 'cards'
+                    ? 'bg-white text-brand-600 shadow-2xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+                aria-label="Cards view"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Cards</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  viewMode === 'table'
+                    ? 'bg-white text-brand-600 shadow-2xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+                aria-label="Table view"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Table</span>
+              </button>
+            </div>
+            <button
+              type="button"
+              disabled={creating}
+              onClick={() => void handleCreate()}
+              className="sm:hidden inline-flex items-center gap-1 h-8 px-3 rounded-lg text-xs font-semibold bg-brand-500 text-white hover:bg-brand-600"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{creating ? 'Creating…' : 'New'}</span>
+            </button>
+          </div>
+        </div>
 
-          {error && !loading && (
-            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {error}
+        <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm hidden lg:block">
+          <div>{filterControls}</div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {tab === 'inquiries' && inquiryRows.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors shadow-2xs"
+                >
+                  <Download className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Export CSV</span>
+                </button>
+              )}
+            </div>
+            {filtersActive ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                Clear filters
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {kpiCards.map((card) => {
+            const Icon = card.icon;
+            const selected =
+              (card.key === 'draft' && statusFilter === 'OPEN') ||
+              (card.key === 'submitted' && statusFilter === 'NOT_SUBMITTED') ||
+              (card.key === 'canceled' && statusFilter === 'CANCELED') ||
+              (card.key === 'approved' && statusFilter === 'ACCEPTED') ||
+              (card.key === 'total' && tab === 'inquiries' && !statusFilter);
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={() => handleKpi(card.key)}
+                className={`text-start rounded-2xl border p-4 shadow-sm transition-all min-w-0 ${card.className} ${
+                  selected
+                    ? 'border-brand-500 ring-2 ring-brand-500/20 bg-white'
+                    : 'hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Icon className="h-4 w-4" />
+                  <span className="text-[12px] font-semibold text-slate-600 truncate">{card.label}</span>
+                </div>
+                <p className="mt-2 text-2xl font-bold font-display text-brand-800">{card.value}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {error && !loading && (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          {loading && (
+            <div className="flex flex-col items-center py-14 text-slate-500">
+              <Loader2 className="h-7 w-7 animate-spin mb-2 text-brand-500" />
+              <p className="text-sm">{tab === 'quotations' ? 'Loading quotations…' : 'Loading inquiries…'}</p>
             </div>
           )}
 
-          <Card flushBody className="overflow-hidden">
-            {loading && (
-              <div className="flex flex-col items-center py-14 text-slate-500">
-                <Loader2 className="h-7 w-7 animate-spin mb-2 text-brand-500" />
-                <p className="text-sm">{tab === 'quotations' ? 'Loading quotations…' : 'Loading inquiries…'}</p>
+          {!loading && tab === 'inquiries' && inquiryRows.length === 0 && (
+            <div className="py-14 px-4 text-center">
+              <div className="mx-auto h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                <Inbox className="h-5 w-5" />
               </div>
-            )}
+              <p className="text-sm font-semibold text-slate-800">No inquiries yet</p>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                {filtersActive
+                  ? 'Try clearing your search or status filters.'
+                  : 'Start your first cable inquiry and our team will guide you through the process.'}
+              </p>
+              {!filtersActive && (
+                <Button className="mt-4" variant="primary" size="sm" leadingIcon={Plus} onClick={() => void handleCreate()}>
+                  New Inquiry
+                </Button>
+              )}
+            </div>
+          )}
 
-            {!loading && tab === 'inquiries' && inquiryRows.length === 0 && (
-              <div className="py-14 px-4 text-center">
-                <div className="mx-auto h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                  <Inbox className="h-5 w-5" />
+          {!loading && tab === 'quotations' && quotationRows.length === 0 && (
+            <div className="py-14 px-4 text-center">
+              <p className="text-sm font-semibold text-slate-800">No quotations available yet.</p>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                Quotations will appear here once your inquiry has completed the required process.
+              </p>
+            </div>
+          )}
+
+          {!loading && tab === 'inquiries' && inquiryRows.length > 0 && (
+            <>
+              {viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+                  {inquiryRows.map((row) => {
+                    const inquiry = rows.find((item) => item.id === row.id);
+                    return (
+                      <div
+                        key={row.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-start justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(row.id)}
+                                onChange={() => toggleSelected(row.id)}
+                                aria-label={`Select ${row.inquiryNumber}`}
+                                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                              />
+                              <button
+                                type="button"
+                                className="font-mono font-bold text-sm text-brand-600 hover:text-brand-700 hover:underline"
+                                onClick={() => openInquiry(row.id)}
+                              >
+                                {row.inquiryNumber}
+                              </button>
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                                {row.versionLabel}
+                              </span>
+                            </div>
+                            <InquiryStatusBadge label={row.statusLabel} tone={row.statusTone} detail={row.statusDetail} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="font-bold text-sm text-slate-800 truncate" title={row.projectName}>
+                              {row.projectName}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                              {row.cableType && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11.5px]">
+                                  {row.cableType}
+                                </span>
+                              )}
+                              {row.application && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11.5px]">
+                                  {row.application}
+                                </span>
+                              )}
+                              <span className="font-semibold text-slate-700">{row.quantityLabel}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 pt-1">
+                              Created {row.createdDate} · Updated {row.lastUpdated}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => openInquiry(row.id)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              <span>View</span>
+                            </button>
+                            {row.actions.includes('continue') && (
+                              <button
+                                type="button"
+                                onClick={() => openInquiry(row.id)}
+                                className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                              >
+                                Continue
+                              </button>
+                            )}
+                            {row.actions.includes('view_quotation') && (
+                              <button
+                                type="button"
+                                onClick={() => openInquiry(row.id, 'quotation')}
+                                className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-brand-200 text-brand-700 bg-brand-50/50 hover:bg-brand-50 transition-colors"
+                              >
+                                Quotation
+                              </button>
+                            )}
+                          </div>
+                          <RowActions
+                            actions={row.actions}
+                            open={menuId === row.id}
+                            menuRef={menuId === row.id ? menuRef : undefined}
+                            onView={() => openInquiry(row.id)}
+                            onToggleMenu={() => setMenuId((id) => (id === row.id ? null : row.id))}
+                            onAction={(action) => runAction(action, row.id)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p className="text-sm font-semibold text-slate-800">No inquiries yet</p>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  {filtersActive
-                    ? 'Try clearing your search or status filters.'
-                    : 'Start your first cable inquiry and our team will guide you through the process.'}
-                </p>
-                {!filtersActive && (
-                  <Button className="mt-4" variant="primary" size="sm" leadingIcon={Plus} onClick={() => void handleCreate()}>
-                    New Inquiry
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {!loading && tab === 'quotations' && quotationRows.length === 0 && (
-              <div className="py-14 px-4 text-center">
-                <p className="text-sm font-semibold text-slate-800">No quotations available yet.</p>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Quotations will appear here once your inquiry has completed the required process.
-                </p>
-              </div>
-            )}
-
-            {!loading && tab === 'inquiries' && inquiryRows.length > 0 && (
-              <>
-                <div className="hidden md:block overflow-x-auto">
+              ) : (
+                <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs min-w-[860px]">
                     <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wide text-[11px]">
                       <tr>
@@ -656,56 +840,57 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                     </tbody>
                   </table>
                 </div>
+              )}
+            </>
+          )}
 
-                <ul className="md:hidden divide-y divide-slate-100">
-                  {inquiryRows.map((row) => (
-                    <li key={row.id} className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <label className="flex items-center gap-2 min-w-0">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(row.id)}
-                            onChange={() => toggleSelected(row.id)}
-                          />
-                          <button
-                            type="button"
-                            className="font-mono font-semibold text-brand-700"
-                            onClick={() => openInquiry(row.id)}
-                          >
-                            {row.inquiryNumber} {row.versionLabel}
-                          </button>
-                        </label>
-                        <InquiryStatusBadge label={row.statusLabel} tone={row.statusTone} detail={row.statusDetail} />
+          {!loading && tab === 'quotations' && quotationRows.length > 0 && (
+            <>
+              {viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+                  {quotationRows.map((row) => (
+                    <div
+                      key={row.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.has(row.id)}
+                              onChange={() => toggleSelected(row.id)}
+                              className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <span className="font-mono font-bold text-sm text-brand-600">{row.quotationNumber}</span>
+                          </div>
+                          <Badge tone={row.statusTone}>{row.statusLabel}</Badge>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="font-bold text-sm text-slate-800 truncate">{row.projectName}</p>
+                          <p className="text-xs text-slate-500 font-mono">Ref: {row.inquiryNumber}</p>
+                          <div className="text-[11px] text-slate-400 space-y-0.5 pt-1">
+                            <p>Issued: {row.issuedDate}</p>
+                            <p>Valid until: {row.validUntil}</p>
+                          </div>
+                          <p className="mt-2 text-xl font-bold font-display text-slate-900">{row.totalLabel}</p>
+                        </div>
                       </div>
-                      <p className="text-sm text-slate-800 truncate">{row.projectName}</p>
-                      <p className="text-xs text-slate-500">
-                        {row.cableType} · {row.application} · {row.quantityLabel}
-                      </p>
-                      <p className="text-xs text-slate-400">Updated {row.lastUpdated}</p>
-                      <div className="flex items-center gap-2 pt-1">
-                        <Button variant="secondary" size="sm" leadingIcon={Eye} onClick={() => openInquiry(row.id)}>
-                          View
-                        </Button>
-                        {row.actions.includes('continue') && (
-                          <Button variant="tertiary" size="sm" onClick={() => openInquiry(row.id)}>
-                            Continue
-                          </Button>
-                        )}
-                        {row.actions.includes('view_quotation') && (
-                          <Button variant="tertiary" size="sm" onClick={() => openInquiry(row.id)}>
-                            Quotation
-                          </Button>
-                        )}
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => openInquiry(row.inquiryId, 'quotation')}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors shadow-2xs"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span>View Quotation</span>
+                        </button>
                       </div>
-                    </li>
+                    </div>
                   ))}
-                </ul>
-              </>
-            )}
-
-            {!loading && tab === 'quotations' && quotationRows.length > 0 && (
-              <>
-                <div className="hidden md:block overflow-x-auto">
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs min-w-[760px]">
                     <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wide text-[11px]">
                       <tr>
@@ -761,81 +946,63 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                     </tbody>
                   </table>
                 </div>
-                <ul className="md:hidden divide-y divide-slate-100">
-                  {quotationRows.map((row) => (
-                    <li key={row.id} className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-mono font-semibold text-brand-700">{row.quotationNumber}</p>
-                        <Badge tone={row.statusTone}>{row.statusLabel}</Badge>
-                      </div>
-                      <p className="text-sm text-slate-800">{row.projectName}</p>
-                      <p className="text-xs text-slate-500">
-                        {row.inquiryNumber} · {row.totalLabel}
-                      </p>
-                      <div className="flex gap-2 pt-1">
-                        <Button variant="secondary" size="sm" onClick={() => openInquiry(row.inquiryId, 'quotation')}>
-                          View
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
+              )}
+            </>
+          )}
 
-            {!loading && (tab === 'inquiries' ? inquiryRows.length > 0 : quotationRows.length > 0) && (
-              <div className="px-4 py-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
-                <p>
-                  {tab === 'quotations'
-                    ? `Showing ${quotationRows.length} quotation${quotationRows.length === 1 ? '' : 's'}`
-                    : `Showing ${(page - 1) * pageSize + 1} to ${Math.min(page * pageSize, total)} of ${total} inquiries`}
-                </p>
-                {tab === 'inquiries' && (
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5">
-                      Rows per page
-                      <select
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPage(1);
-                          setPageSize(Number(e.target.value));
-                        }}
-                        className="border border-slate-200 rounded-md px-1.5 py-1 text-xs"
-                      >
-                        {[5, 10, 25].map((size) => (
-                          <option key={size} value={size}>
-                            {size}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="h-7 w-7 rounded-md border border-slate-200 disabled:opacity-40"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        aria-label="Previous page"
-                      >
-                        <ChevronLeft className="h-4 w-4 mx-auto" />
-                      </button>
-                      <span className="min-w-[2.5rem] text-center font-semibold text-brand-700">{page}</span>
-                      <button
-                        type="button"
-                        className="h-7 w-7 rounded-md border border-slate-200 disabled:opacity-40"
-                        disabled={page >= pageCount}
-                        onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-                        aria-label="Next page"
-                      >
-                        <ChevronRight className="h-4 w-4 mx-auto" />
-                      </button>
-                    </div>
+          {!loading && (tab === 'inquiries' ? inquiryRows.length > 0 : quotationRows.length > 0) && (
+            <div className="px-5 py-3.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+              <p className="font-medium text-slate-600">
+                {tab === 'quotations'
+                  ? `Showing ${quotationRows.length} quotation${quotationRows.length === 1 ? '' : 's'}`
+                  : `Showing ${(page - 1) * pageSize + 1} to ${Math.min(page * pageSize, total)} of ${total} inquiries`}
+              </p>
+              {tab === 'inquiries' && (
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 font-medium text-slate-600">
+                    Rows per page
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPage(1);
+                        setPageSize(Number(e.target.value));
+                      }}
+                      className="border border-slate-200 rounded-lg px-2.5 py-1 text-xs bg-white text-slate-800 focus:outline-none focus:border-brand-500"
+                    >
+                      {[5, 10, 25].map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="min-w-[2.5rem] text-center font-bold text-brand-700">{page}</span>
+                    <button
+                      type="button"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
+                      disabled={page >= pageCount}
+                      onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
-                )}
-              </div>
-            )}
-          </Card>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+      </div>
 
       <Drawer
         open={filterDrawerOpen}
