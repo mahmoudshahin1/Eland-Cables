@@ -72,7 +72,13 @@ export function CustomerInquiryDetailHero({
 }
 
 const inquiryToolButtonClass =
-  'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-semibold border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed';
+  'inline-flex items-center gap-1.5 h-10 px-3.5 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-2xs';
+
+const inquiryPrimaryButtonClass =
+  'inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-[13px] font-semibold bg-brand-500 text-white hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm';
+
+const inquiryAccentButtonClass =
+  'inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-[13px] font-semibold bg-accent-500 text-white hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm';
 
 export function CustomerInquiryPrimaryActions({
   canEdit,
@@ -136,14 +142,14 @@ export function CustomerInquiryPrimaryActions({
       </button>
       <button
         type="button"
-        className={inquiryToolButtonClass}
+        className={inquiryAccentButtonClass}
         onClick={onCalculate}
         disabled={!canCalculate || costingLoading || !hasLines}
       >
-        <Calculator className="h-3.5 w-3.5 text-slate-500" />
+        <Calculator className="h-3.5 w-3.5 text-white/90" />
         {costingLoading ? 'Processing…' : calculateLabel || 'Calculate'}
       </button>
-      <button type="button" className={inquiryToolButtonClass} onClick={onApprove} disabled={!canApprove}>
+      <button type="button" className={inquiryPrimaryButtonClass} onClick={onApprove} disabled={!canApprove}>
         Approve
       </button>
       <button type="button" className={inquiryToolButtonClass} onClick={onCancel} disabled={!canCancel}>
@@ -359,9 +365,9 @@ export function CustomerInquiryFooterKpis({
 
   return (
     <div
-      className={`grid gap-2.5 ${
+      className={`grid gap-3.5 ${
         showFreightBreakdown
-          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-[minmax(80px,0.6fr)_minmax(80px,0.6fr)_minmax(110px,0.9fr)_minmax(180px,1.4fr)_minmax(150px,1.1fr)_minmax(200px,1.5fr)]'
+          ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-[minmax(100px,0.7fr)_minmax(100px,0.7fr)_minmax(120px,0.9fr)_minmax(180px,1.4fr)_minmax(150px,1.1fr)_minmax(200px,1.5fr)]'
           : 'grid-cols-2 xl:grid-cols-4'
       }`}
     >
@@ -370,25 +376,25 @@ export function CustomerInquiryFooterKpis({
         return (
           <div
             key={card.label}
-            className={`rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-[var(--shadow-card)] min-w-0 transition-all ${
+            className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-0 transition-colors ${
               card.isGrandTotal ? 'bg-gradient-to-b from-white to-emerald-50/50 border-emerald-300' : ''
             }`}
           >
-            <div className="flex items-center gap-2 text-slate-500">
+            <div className="flex items-center gap-2.5 text-slate-500">
               <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${card.wrap}`}>
                 <Icon className="h-4 w-4" />
               </span>
-              <span className={`text-[12px] font-medium leading-tight ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
+              <span className={`text-[12px] font-semibold leading-tight text-slate-600 ${card.isGrandTotal ? 'font-bold text-emerald-950' : ''}`}>
                 {card.label}
               </span>
             </div>
-            <p className={`mt-2 text-[18px] leading-tight font-bold tabular-nums whitespace-nowrap ${
+            <p className={`mt-2.5 text-xl leading-tight font-display font-bold tabular-nums whitespace-nowrap ${
               card.isGrandTotal ? 'text-emerald-900 font-black' : 'text-brand-800'
             }`}>
               {card.value}
             </p>
             {card.helper ? (
-              <p className={`mt-1 text-[10px] break-words ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+              <p className={`mt-1 text-[11px] break-words ${card.isGrandTotal ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
                 {card.helper}
               </p>
             ) : null}

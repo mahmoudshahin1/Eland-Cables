@@ -115,7 +115,12 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   onReturnToContainerStudy,
   customerProfile,
 }) => {
-  const { jwtToken } = useAuth();
+  let jwtToken: string | null = null;
+  try {
+    jwtToken = useAuth().jwtToken;
+  } catch {
+    jwtToken = null;
+  }
   const formRef = useRef(form);
   formRef.current = form;
   const requestedMetalDate = useRef('');
@@ -954,8 +959,14 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   };
 
   const customerCardClass =
-    'rounded-xl border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] flex flex-col min-w-0';
-  const customerTitleClass = 'flex items-center gap-2 pb-3 mb-3 border-b border-slate-100';
+    'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col min-w-0';
+  const customerTitleClass = 'flex items-center gap-2 pb-2.5 mb-3.5 border-b border-slate-100 font-display text-sm font-bold text-brand-500';
+  const customerInputClass =
+    'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-800 font-medium placeholder-slate-400 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+  const customerReadOnlyClass =
+    'w-full rounded-lg border border-slate-200 px-3 py-2 bg-slate-50 text-[13px] font-medium text-slate-600 select-all';
+  const customerMetalInputClass =
+    'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-900 font-semibold outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
   const paymentTermOptions = Array.from(
     new Set([...PAYMENT_TERM_OPTIONS, form.paymentTerms].filter((value) => String(value || '').trim()))
   );
@@ -965,30 +976,30 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
   if (isCustomer) {
     return (
-      <div className="space-y-3">
-        <div id="inquiry-header" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
+      <div className="space-y-4">
+        <div id="inquiry-header" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <button
             type="button"
             onClick={() => setHeaderExpanded((open) => !open)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50/80 transition-colors"
+            className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-slate-50/80 transition-colors"
             aria-expanded={headerExpanded}
           >
             <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-[#2F6BFF]" />
-              <span className="text-[13px] font-bold text-[#2F6BFF]">Inquiry Header</span>
+              <ClipboardList className="h-4 w-4 text-brand-500" />
+              <span className="text-[13px] font-bold text-brand-500">Inquiry Header</span>
             </div>
             <ChevronDown
               className={`h-4 w-4 text-slate-400 transition-transform ${headerExpanded ? 'rotate-180' : ''}`}
             />
           </button>
           {headerExpanded && (
-            <div className="px-3 pb-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <section className={customerCardClass}>
                 <div className={customerTitleClass}>
-                  <User className="h-4 w-4 text-[#2F6BFF]" />
-                  <h3 className="text-[13px] font-bold text-[#2F6BFF]">Customer Information</h3>
+                  <User className="h-4 w-4 text-brand-500" />
+                  <h3 className="text-sm font-bold font-display text-brand-500">Customer Information</h3>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <HeaderField
                     label={
                       <>
@@ -997,14 +1008,14 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     }
                   >
                     <div className="relative">
-                      <div className={`${readOnlyClass} font-semibold pr-8`}>
+                      <div className={`${customerReadOnlyClass} font-semibold pr-8`}>
                         {customerProfile?.companyName || form.customerName || '—'}
                       </div>
                       <Search className="h-3.5 w-3.5 text-slate-400 absolute end-2.5 top-1/2 -translate-y-1/2" />
                     </div>
                   </HeaderField>
                   <HeaderField label="Customer Code">
-                    <div className={`${readOnlyClass} font-mono`}>{customerProfile?.customerCode || inquiry.customerId || '—'}</div>
+                    <div className={`${customerReadOnlyClass} font-mono`}>{customerProfile?.customerCode || inquiry.customerId || '—'}</div>
                   </HeaderField>
                   {show('contactPerson') && (
                     <HeaderField label="Contact Person">
@@ -1013,18 +1024,18 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           type="text"
                           value={form.contactPerson}
                           onChange={(e) => onChange({ contactPerson: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.contactPerson || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.contactPerson || '—'}</div>
                       )}
                     </HeaderField>
                   )}
                   <HeaderField label="Email">
-                    <div className={readOnlyClass}>{customerProfile?.email || '—'}</div>
+                    <div className={customerReadOnlyClass}>{customerProfile?.email || '—'}</div>
                   </HeaderField>
                   <HeaderField label="Phone">
-                    <div className={readOnlyClass}>
+                    <div className={customerReadOnlyClass}>
                       {customerProfile?.phone ||
                         (typeof inquiry.commercialMetadata?.contactPhone === 'string'
                           ? inquiry.commercialMetadata.contactPhone
@@ -1034,7 +1045,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                   </HeaderField>
                   <Link
                     to={CUSTOMER_PROFILE_PATH}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#2F6BFF] hover:underline pt-1"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-600 hover:text-brand-700 hover:underline pt-1"
                   >
                     <FileText className="h-3.5 w-3.5" />
                     View Customer Profile
@@ -1044,17 +1055,17 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
               <section className={customerCardClass}>
                 <div className={customerTitleClass}>
-                  <ClipboardList className="h-4 w-4 text-[#2F6BFF]" />
-                  <h3 className="text-[13px] font-bold text-[#2F6BFF]">Project & Inquiry Information</h3>
+                  <ClipboardList className="h-4 w-4 text-brand-500" />
+                  <h3 className="text-sm font-bold font-display text-brand-500">Project & Inquiry Information</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {show('transactionType') && (
                     <HeaderField label="Transaction Type">
                       {isEditable ? (
                         <select
                           value={form.transactionType}
                           onChange={(e) => onChange({ transactionType: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         >
                           {TRANSACTION_TYPE_OPTIONS.map((opt) => (
                             <option key={opt} value={opt}>
@@ -1063,12 +1074,12 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           ))}
                         </select>
                       ) : (
-                        <div className={readOnlyClass}>{form.transactionType}</div>
+                        <div className={customerReadOnlyClass}>{form.transactionType}</div>
                       )}
                     </HeaderField>
                   )}
                   <HeaderField label="Inquiry No.">
-                    <div className={`${readOnlyClass} font-mono text-[#2F6BFF]`}>{inquiry.inquiryNumber}</div>
+                    <div className={`${customerReadOnlyClass} font-mono font-bold text-brand-600`}>{inquiry.inquiryNumber}</div>
                   </HeaderField>
                   {show('inquiryDate') && (
                     <HeaderField
@@ -1083,10 +1094,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           type="date"
                           value={form.inquiryDate}
                           onChange={(e) => onChange({ inquiryDate: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.inquiryDate || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.inquiryDate || '—'}</div>
                       )}
                     </HeaderField>
                   )}
@@ -1104,10 +1115,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           type="text"
                           value={form.projectName}
                           onChange={(e) => onChange({ projectName: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.projectName || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.projectName || '—'}</div>
                       )}
                     </HeaderField>
                   )}
@@ -1117,10 +1128,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="text"
                         value={form.endUser}
                         onChange={(e) => onChange({ endUser: e.target.value })}
-                        className={inputClass}
+                        className={customerInputClass}
                       />
                     ) : (
-                      <div className={readOnlyClass}>{form.endUser || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.endUser || '—'}</div>
                     )}
                   </HeaderField>
                   {show('customerReference') && (
@@ -1130,10 +1141,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           type="text"
                           value={form.customerReference}
                           onChange={(e) => onChange({ customerReference: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.customerReference || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.customerReference || '—'}</div>
                       )}
                     </HeaderField>
                   )}
@@ -1143,10 +1154,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="text"
                         value={form.customerPoTenderNo}
                         onChange={(e) => onChange({ customerPoTenderNo: e.target.value })}
-                        className={inputClass}
+                        className={customerInputClass}
                       />
                     ) : (
-                      <div className={readOnlyClass}>{form.customerPoTenderNo || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.customerPoTenderNo || '—'}</div>
                     )}
                   </HeaderField>
                   <HeaderField
@@ -1157,32 +1168,66 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                     }
                     className="sm:col-span-2"
                   >
-                    <div className="flex flex-wrap items-center gap-4 pt-1">
-                      <label className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-700">
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <label
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-[13px] font-semibold cursor-pointer transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 ${
+                          form.inquiryKind !== 'TECHNICAL'
+                            ? 'border-brand-500 bg-brand-50/40 text-brand-700 ring-1 ring-brand-500/30'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        } ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
                         <input
                           type="radio"
                           name="inquiryKind"
+                          value="PRICE"
+                          className="sr-only"
                           checked={form.inquiryKind !== 'TECHNICAL'}
                           disabled={!isEditable}
                           onChange={() => onChange({ inquiryKind: 'PRICE' })}
                         />
-                        Price Inquiry
+                        <span
+                          className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                            form.inquiryKind !== 'TECHNICAL'
+                              ? 'border-brand-500 bg-brand-500'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {form.inquiryKind !== 'TECHNICAL' && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </span>
+                        <span>Price Inquiry</span>
                       </label>
-                      <label className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-700">
+                      <label
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-[13px] font-semibold cursor-pointer transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 ${
+                          form.inquiryKind === 'TECHNICAL'
+                            ? 'border-brand-500 bg-brand-50/40 text-brand-700 ring-1 ring-brand-500/30'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        } ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
                         <input
                           type="radio"
                           name="inquiryKind"
+                          value="TECHNICAL"
+                          className="sr-only"
                           checked={form.inquiryKind === 'TECHNICAL'}
                           disabled={!isEditable}
                           onChange={() => onChange({ inquiryKind: 'TECHNICAL' })}
                         />
-                        Technical Inquiry
+                        <span
+                          className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                            form.inquiryKind === 'TECHNICAL'
+                              ? 'border-brand-500 bg-brand-500'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {form.inquiryKind === 'TECHNICAL' && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </span>
+                        <span>Technical Inquiry</span>
                       </label>
                     </div>
                   </HeaderField>
                   {(show('organization') || show('salesAgent') || show('quotationOwner') || show('versionNo')) && (
                     <details className="sm:col-span-2 pt-1">
-                      <summary className="cursor-pointer text-[11px] font-semibold text-slate-500">
+                      <summary className="cursor-pointer text-[11px] font-semibold text-slate-500 hover:text-slate-700">
                         Additional commercial fields
                       </summary>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
@@ -1192,7 +1237,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                               <select
                                 value={form.organization}
                                 onChange={(e) => onChange({ organization: e.target.value })}
-                                className={inputClass}
+                                className={customerInputClass}
                               >
                                 {ORGANIZATION_OPTIONS.map((opt) => (
                                   <option key={opt} value={opt}>
@@ -1201,7 +1246,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                                 ))}
                               </select>
                             ) : (
-                              <div className={readOnlyClass}>{form.organization}</div>
+                              <div className={customerReadOnlyClass}>{form.organization}</div>
                             )}
                           </HeaderField>
                         )}
@@ -1212,10 +1257,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                                 type="text"
                                 value={form.salesAgent}
                                 onChange={(e) => onChange({ salesAgent: e.target.value })}
-                                className={inputClass}
+                                className={customerInputClass}
                               />
                             ) : (
-                              <div className={readOnlyClass}>{form.salesAgent || '—'}</div>
+                              <div className={customerReadOnlyClass}>{form.salesAgent || '—'}</div>
                             )}
                           </HeaderField>
                         )}
@@ -1226,16 +1271,16 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                                 type="text"
                                 value={form.quotationOwner}
                                 onChange={(e) => onChange({ quotationOwner: e.target.value })}
-                                className={inputClass}
+                                className={customerInputClass}
                               />
                             ) : (
-                              <div className={readOnlyClass}>{form.quotationOwner || '—'}</div>
+                              <div className={customerReadOnlyClass}>{form.quotationOwner || '—'}</div>
                             )}
                           </HeaderField>
                         )}
                         {show('versionNo') && (
                           <HeaderField label="Version No">
-                            <div className={`${readOnlyClass} font-bold`}>V{form.versionNo}</div>
+                            <div className={`${customerReadOnlyClass} font-bold`}>V{form.versionNo}</div>
                           </HeaderField>
                         )}
                       </div>
@@ -1246,17 +1291,17 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
 
               <section className={customerCardClass} data-customer-pricing-card="true">
                 <div className={customerTitleClass}>
-                  <Coins className="h-4 w-4 text-[#2F6BFF]" />
-                  <h3 className="text-[13px] font-bold text-[#2F6BFF]">Pricing & Currency</h3>
+                  <Coins className="h-4 w-4 text-brand-500" />
+                  <h3 className="text-sm font-bold font-display text-brand-500">Pricing & Currency</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {show('currency') && (
                     <HeaderField label="Currency" className="sm:col-span-2">
                       {isEditable ? (
                         <select
                           value={form.currency}
                           onChange={(e) => onChange(applyInquiryCurrencyChange(form, e.target.value))}
-                          className={inputClass}
+                          className={customerInputClass}
                         >
                           {CURRENCY_OPTIONS.map((opt) => (
                             <option key={opt} value={opt}>
@@ -1265,13 +1310,13 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           ))}
                         </select>
                       ) : (
-                        <div className={readOnlyClass}>{form.currency}</div>
+                        <div className={customerReadOnlyClass}>{form.currency}</div>
                       )}
                     </HeaderField>
                   )}
                   {show('rawMaterialCurrency') && (
                     <HeaderField label="Raw Material Currency" className="sm:col-span-2">
-                      <div className={readOnlyClass}>{form.rawMaterialCurrency || form.currency}</div>
+                      <div className={customerReadOnlyClass}>{form.rawMaterialCurrency || form.currency}</div>
                     </HeaderField>
                   )}
                   {show('copperPriceRate') && (
@@ -1285,10 +1330,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           onChange={(e) =>
                             onChange(metalRateEditPatch('copper', e.target.value, form.originalSystemDefaultCopperRate))
                           }
-                          className={metalInputClass}
+                          className={customerMetalInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.copperPriceRate || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.copperPriceRate || '—'}</div>
                       )}
                       <div className="mt-1">{metalNote('copper')}</div>
                     </HeaderField>
@@ -1306,10 +1351,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                               metalRateEditPatch('aluminium', e.target.value, form.originalSystemDefaultAluminiumRate)
                             )
                           }
-                          className={metalInputClass}
+                          className={customerMetalInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.aluminiumPriceRate || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.aluminiumPriceRate || '—'}</div>
                       )}
                       <div className="mt-1">{metalNote('aluminium')}</div>
                     </HeaderField>
@@ -1320,10 +1365,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="date"
                         value={form.metalPriceDate}
                         onChange={(e) => onMetalPriceDateChange(e.target.value)}
-                        className={inputClass}
+                        className={customerInputClass}
                       />
                     ) : (
-                      <div className={readOnlyClass}>{form.metalPriceDate || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.metalPriceDate || '—'}</div>
                     )}
                   </HeaderField>
                   <HeaderField label="Price Basis" className="sm:col-span-2">
@@ -1331,7 +1376,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                       <select
                         value={form.priceBasis}
                         onChange={(e) => onChange({ priceBasis: e.target.value })}
-                        className={inputClass}
+                        className={customerInputClass}
                       >
                         <option value="">Select</option>
                         {priceBasisOptions.map((opt) => (
@@ -1341,7 +1386,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         ))}
                       </select>
                     ) : (
-                      <div className={readOnlyClass}>{form.priceBasis || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.priceBasis || '—'}</div>
                     )}
                   </HeaderField>
                 </div>
@@ -1355,10 +1400,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                 }`}
               >
                 <div className={customerTitleClass}>
-                  <Truck className="h-4 w-4 text-[#2F6BFF]" />
-                  <h3 className="text-[13px] font-bold text-[#2F6BFF]">Delivery & Commercial</h3>
+                  <Truck className="h-4 w-4 text-brand-500" />
+                  <h3 className="text-sm font-bold font-display text-brand-500">Delivery & Commercial</h3>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <HeaderField
                     label={
                       <>
@@ -1371,10 +1416,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="date"
                         value={form.requiredQuotationDate}
                         onChange={(e) => onChange({ requiredQuotationDate: e.target.value })}
-                        className={inputClass}
+                        className={customerInputClass}
                       />
                     ) : (
-                      <div className={readOnlyClass}>{form.requiredQuotationDate || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.requiredQuotationDate || '—'}</div>
                     )}
                   </HeaderField>
                   {show('requestedDeliveryDate') && (
@@ -1384,10 +1429,10 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           type="date"
                           value={form.requestedDeliveryDate}
                           onChange={(e) => onChange({ requestedDeliveryDate: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         />
                       ) : (
-                        <div className={readOnlyClass}>{form.requestedDeliveryDate || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.requestedDeliveryDate || '—'}</div>
                       )}
                     </HeaderField>
                   )}
@@ -1404,7 +1449,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                                 deliveryDestination: '',
                               })
                             }
-                            className={inputClass}
+                            className={customerInputClass}
                             data-destination-country-select="true"
                           >
                             <option value="">Select country</option>
@@ -1415,7 +1460,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                             ))}
                           </select>
                         ) : (
-                          <div className={readOnlyClass}>{destinationCountryLabel || '—'}</div>
+                          <div className={customerReadOnlyClass}>{destinationCountryLabel || '—'}</div>
                         )}
                       </HeaderField>
                       <HeaderField label="Destination Port">
@@ -1430,7 +1475,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                                 deliveryDestination: port?.name || '',
                               });
                             }}
-                            className={inputClass}
+                            className={customerInputClass}
                             data-destination-port-master-select="true"
                           >
                             <option value="">Select destination port</option>
@@ -1441,7 +1486,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                             ))}
                           </select>
                         ) : (
-                          <div className={readOnlyClass} data-destination-port-master-select="true">
+                          <div className={customerReadOnlyClass} data-destination-port-master-select="true">
                             {form.destinationPortCode ||
                               form.deliveryDestination ||
                               CUSTOMER_MASTER_DESTINATION_NOT_CONFIGURED_MESSAGE}
@@ -1459,7 +1504,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                             const code = e.target.value;
                             onChange({ incoterms: code, deliveryTerms: code });
                           }}
-                          className={inputClass}
+                          className={customerInputClass}
                           data-incoterm-master-select="true"
                         >
                           <option value="">Select Incoterm</option>
@@ -1470,7 +1515,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           ))}
                         </select>
                       ) : (
-                        <div className={readOnlyClass}>
+                        <div className={customerReadOnlyClass}>
                           {incotermConfigured
                             ? incotermSelect.options.find((opt) => opt.value === incotermSelect.selectedCode)?.label ||
                               incotermSelect.selectedCode
@@ -1485,7 +1530,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         <select
                           value={form.paymentTerms}
                           onChange={(e) => onChange({ paymentTerms: e.target.value })}
-                          className={inputClass}
+                          className={customerInputClass}
                         >
                           <option value="">Select</option>
                           {paymentTermOptions.map((opt) => (
@@ -1495,7 +1540,7 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                           ))}
                         </select>
                       ) : (
-                        <div className={readOnlyClass}>{form.paymentTerms || '—'}</div>
+                        <div className={customerReadOnlyClass}>{form.paymentTerms || '—'}</div>
                       )}
                     </HeaderField>
                   )}
@@ -1505,17 +1550,17 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
                         type="text"
                         value={form.deliveryAddress}
                         onChange={(e) => onChange({ deliveryAddress: e.target.value })}
-                        className={inputClass}
+                        className={customerInputClass}
                       />
                     ) : (
-                      <div className={readOnlyClass}>{form.deliveryAddress || '—'}</div>
+                      <div className={customerReadOnlyClass}>{form.deliveryAddress || '—'}</div>
                     )}
                   </HeaderField>
                   {showReturnToContainerStudy && onReturnToContainerStudy ? (
                     <button
                       type="button"
                       onClick={onReturnToContainerStudy}
-                      className="inline-flex items-center px-3 py-1.5 rounded-xl border border-blue-300 bg-blue-50 text-blue-800 font-bold hover:bg-blue-100"
+                      className="inline-flex items-center px-3.5 py-2 rounded-xl border border-brand-200 bg-brand-50 text-brand-800 font-bold hover:bg-brand-100 transition-colors shadow-2xs"
                       data-return-to-container-study="true"
                     >
                       Return to Container Study
@@ -1527,28 +1572,28 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
           )}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <button
             type="button"
             onClick={() => setRemarksExpanded((open) => !open)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50/80"
+            className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-slate-50/80 transition-colors"
             aria-expanded={remarksExpanded}
           >
             <span className="text-[13px] font-bold text-slate-800">Customer Requirements & Special Conditions</span>
-            <ChevronDown className={`h-4 w-4 text-slate-400 ${remarksExpanded ? '' : '-rotate-90'}`} />
+            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${remarksExpanded ? 'rotate-180' : ''}`} />
           </button>
           {remarksExpanded && show('notes') && (
-            <div className="px-4 pb-4">
+            <div className="px-5 pb-4">
               <HeaderField label="Remarks">
                 {isEditable ? (
                   <textarea
                     rows={2}
                     value={form.notes}
                     onChange={(e) => onChange({ notes: e.target.value })}
-                    className={inputClass}
+                    className={customerInputClass}
                   />
                 ) : (
-                  <div className={readOnlyClass}>{form.notes || '—'}</div>
+                  <div className={customerReadOnlyClass}>{form.notes || '—'}</div>
                 )}
               </HeaderField>
             </div>
