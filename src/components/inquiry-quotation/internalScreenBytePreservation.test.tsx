@@ -54,13 +54,33 @@ describe('Internal Screen Preservation Proof', () => {
   const snapshotPath = path.join(__dirname, 'internal_header_baseline.snap.html');
 
   it('renders internal staff header identically without customer portal styles leaking', () => {
-    const internalHtml = renderInternalHeader();
-
-    if (!fs.existsSync(snapshotPath)) {
-      fs.writeFileSync(snapshotPath, internalHtml, 'utf8');
+    const RealDate = globalThis.Date;
+    class MockDate extends RealDate {
+      constructor(...args: any[]) {
+        if (args.length === 0) {
+          super('2026-11-15T12:00:00.000Z');
+        } else {
+          // @ts-expect-error pass through
+          super(...args);
+        }
+      }
+      static now() {
+        return new RealDate('2026-11-15T12:00:00.000Z').getTime();
+      }
     }
+    globalThis.Date = MockDate as any;
 
-    const baselineHtml = fs.readFileSync(snapshotPath, 'utf8');
-    assert.equal(internalHtml, baselineHtml, 'Internal staff header markup MUST be byte-for-byte identical to baseline!');
+    try {
+      const internalHtml = renderInternalHeader();
+
+      if (!fs.existsSync(snapshotPath)) {
+        fs.writeFileSync(snapshotPath, internalHtml, 'utf8');
+      }
+
+      const baselineHtml = fs.readFileSync(snapshotPath, 'utf8');
+      assert.equal(internalHtml, baselineHtml, 'Internal staff header markup MUST be byte-for-byte identical to baseline!');
+    } finally {
+      globalThis.Date = RealDate;
+    }
   });
 });

@@ -959,14 +959,14 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   };
 
   const customerCardClass =
-    'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col min-w-0';
-  const customerTitleClass = 'flex items-center gap-2 pb-2.5 mb-3.5 border-b border-slate-100 font-display text-sm font-bold text-brand-500';
+    'rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-[var(--shadow-card)] flex flex-col justify-between min-w-0 transition-shadow hover:shadow-md';
+  const customerTitleClass = 'flex items-center gap-2 pb-3 mb-4 border-b border-slate-100 font-display text-sm font-bold text-brand-600';
   const customerInputClass =
-    'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-800 font-medium placeholder-slate-400 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+    'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-medium placeholder-slate-400 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
   const customerReadOnlyClass =
-    'w-full rounded-lg border border-slate-200 px-3 py-2 bg-slate-50 text-[13px] font-medium text-slate-600 select-all';
+    'w-full rounded-xl border border-slate-200/80 px-3.5 py-2.5 bg-[#F1F4F9] text-xs font-medium text-slate-700 select-all';
   const customerMetalInputClass =
-    'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-900 font-semibold outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+    'w-full bg-white border border-amber-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20';
   const paymentTermOptions = Array.from(
     new Set([...PAYMENT_TERM_OPTIONS, form.paymentTerms].filter((value) => String(value || '').trim()))
   );
@@ -977,23 +977,24 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
   if (isCustomer) {
     return (
       <div className="space-y-4">
-        <div id="inquiry-header" className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <button
-            type="button"
-            onClick={() => setHeaderExpanded((open) => !open)}
-            className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-slate-50/80 transition-colors"
-            aria-expanded={headerExpanded}
-          >
-            <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-brand-500" />
-              <span className="text-[13px] font-bold text-brand-500">Inquiry Header</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 text-slate-400 transition-transform ${headerExpanded ? 'rotate-180' : ''}`}
-            />
-          </button>
+        <div id="inquiry-header" className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <button
+              type="button"
+              onClick={() => setHeaderExpanded((open) => !open)}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-brand-700 rounded-xl hover:bg-slate-100 transition-colors"
+              aria-expanded={headerExpanded}
+              aria-label="Toggle Inquiry Header"
+            >
+              <ClipboardList className="h-4 w-4 text-brand-600" />
+              <span>Inquiry Header</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${headerExpanded ? 'rotate-180' : ''}`}
+              />
+            </button>
+          </div>
           {headerExpanded && (
-            <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <section className={customerCardClass}>
                 <div className={customerTitleClass}>
                   <User className="h-4 w-4 text-brand-500" />
@@ -1572,28 +1573,29 @@ export const InquiryHeaderForm: React.FC<InquiryHeaderFormProps> = ({
           )}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[var(--shadow-card)]">
           <button
             type="button"
             onClick={() => setRemarksExpanded((open) => !open)}
-            className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-slate-50/80 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-50/80 transition-colors"
             aria-expanded={remarksExpanded}
           >
-            <span className="text-[13px] font-bold text-slate-800">Customer Requirements & Special Conditions</span>
-            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${remarksExpanded ? 'rotate-180' : ''}`} />
+            <span className="text-sm font-bold font-display text-slate-900">Customer Requirements & Special Conditions</span>
+            <ChevronDown className={`h-4 w-4 text-brand-600 transition-transform duration-200 ${remarksExpanded ? 'rotate-180' : ''}`} />
           </button>
           {remarksExpanded && show('notes') && (
-            <div className="px-5 pb-4">
-              <HeaderField label="Remarks">
+            <div className="px-6 pb-5 pt-1">
+              <HeaderField label="Requirements & Special Instructions">
                 {isEditable ? (
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={form.notes}
                     onChange={(e) => onChange({ notes: e.target.value })}
+                    placeholder="Add packaging, testing, marking or any special conditions…"
                     className={customerInputClass}
                   />
                 ) : (
-                  <div className={customerReadOnlyClass}>{form.notes || '—'}</div>
+                  <div className={customerReadOnlyClass}>{form.notes || 'No special conditions provided.'}</div>
                 )}
               </HeaderField>
             </div>

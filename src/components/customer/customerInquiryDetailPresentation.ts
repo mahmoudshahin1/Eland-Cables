@@ -261,3 +261,90 @@ export function customerLineUnitLabel(line: CommercialInquiryLineDto): string {
 }
 
 export const CUSTOMER_PRICE_BASIS_OPTIONS = ['LME'] as const;
+
+export interface InquiryCompletenessResult {
+  percentage: number;
+  filledCount: number;
+  totalCount: number;
+  label: string;
+}
+
+export function calculateInquiryCompleteness(
+  inquiry: Pick<CommercialInquiryDto, 'lines' | 'projectName' | 'commercialMetadata'> | null | undefined,
+  headerForm?: {
+    customerName?: string;
+    projectName?: string;
+    requiredQuotationDate?: string;
+    destinationCountry?: string;
+    destinationPort?: string;
+    copperPriceRate?: number | string | null;
+    aluminiumPriceRate?: number | string | null;
+  } | null
+): InquiryCompletenessResult {
+  const totalCount = 6;
+  let filledCount = 0;
+
+  // 1. Customer information
+  if (headerForm?.customerName?.trim() || inquiry?.commercialMetadata) filledCount++;
+
+  // 2. Project Name
+  if (headerForm?.projectName?.trim() || inquiry?.projectName?.trim()) filledCount++;
+
+  // 3. Required Quotation Date
+  if (headerForm?.requiredQuotationDate?.trim()) filledCount++;
+
+  // 4. Delivery Destination (Country or Port)
+  if (headerForm?.destinationCountry?.trim() || headerForm?.destinationPort?.trim()) filledCount++;
+
+  // 5. Pricing / Currency configuration
+  if (headerForm?.copperPriceRate != null || headerForm?.aluminiumPriceRate != null) filledCount++;
+
+  // 6. Cable Lines
+  if (Array.isArray(inquiry?.lines) && inquiry.lines.length > 0) filledCount++;
+
+  const percentage = Math.round((filledCount / totalCount) * 100);
+  return {
+    percentage,
+    filledCount,
+    totalCount,
+    label: `${filledCount} of ${totalCount} required`,
+  };
+}
+
+export type LifecycleStepState = 'complete' | 'current' | 'upcoming';
+
+export interface InquiryLifecycleStepItem {
+  id: string;
+  label: string;
+  state: LifecycleStepState;
+}
+
+export function resolveInquiryLifecycleSteps(
+  inquiry: Pick<CommercialInquiryDto, 'status' | 'commercialMetadata'> | null | undefined
+): InquiryLifecycleStepItem[] {
+  const rawStatus = (inquiry?.status || '').toUpperCase();
+  const isOrder =
+    rawStatus === 'ORDER_CREATED' ||
+    rawStatus === 'CONVERTED' ||
+    rawStatus === 'WON';
+  const isApproved =
+    isOrder ||
+    rawStatus === 'APPROVED' ||
+    rawStatus === 'QUOTED' ||
+    rawStatus === 'ACCEPTED' ||
+    Boolean((inquiry?.commercialMetadata as Record<string, unknown> | undefined)?.submittedToSales);
+  const isSubmitted = isApproved || rawStatus === 'SUBMITTED';
+
+  let activeIndex = 0; // 0 = Draft, 1 = Submitted, 2 = Approved, 3 = Order
+  if (isOrder) activeIndex = 3;
+  else if (isApproved) activeIndex = 2;
+  else if (isSubmitted) activeIndex = 1;
+
+  const stepLabels = ['Draft', 'Submitted', 'Approved', 'Order'];
+  return stepLabels.map((label, idx) => ({
+    id: label.toLowerCase(),
+    label,
+    state: idx < activeIndex ? 'complete' : idx === activeIndex ? 'current' : 'upcoming',
+  }));
+}
+

@@ -1,0 +1,8 @@
+Step 1: Logging in programmatically via /api/auth/login
+  ✓ Logged in as: david.smith@elandcables.com (ELAND Cables)
+Step 2: Navigating to Customer Inquiries (/customer/inquiries)
+❌ Test error: page.waitForSelector: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('h1') to be visible[22m
+
+    at run (H:\Eland-Cables\scripts\e2e_verify_customer_portal.ts:51:16)

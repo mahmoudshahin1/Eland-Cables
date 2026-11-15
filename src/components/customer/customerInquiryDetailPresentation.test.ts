@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
+  calculateInquiryCompleteness,
   customerCableTypeLabel,
   customerCoresSizeLabel,
   customerInquiryBreadcrumbLabel,
@@ -17,6 +18,7 @@ import {
   isCustomerCuttingDrumsTab,
   lineHasV2SnapshotLineage,
   presentationTabFromWorkspace,
+  resolveInquiryLifecycleSteps,
   resolveInquiryV2TabBridges,
   shouldMountInquiryV2BridgeInCutting,
   shouldMountInquiryV2BridgeInPacking,
@@ -284,5 +286,67 @@ describe('customer Cutting & Drums workspace', () => {
     assert.match(src, /v2EngineSectionsForBridgeTab/);
     assert.equal(src.includes('No V2 configuration snapshot saved for this line'), false);
     assert.match(src, /workflowChannel: inquiry\.workflowChannel/);
+  });
+
+  it('calculates inquiry completeness gauge percentage and label', () => {
+    const emptyResult = calculateInquiryCompleteness(null, null);
+    assert.equal(emptyResult.percentage, 0);
+    assert.equal(emptyResult.filledCount, 0);
+    assert.equal(emptyResult.totalCount, 6);
+
+    const partialResult = calculateInquiryCompleteness(
+      { lines: [{ id: '1' }] as any, projectName: 'Project Alpha' },
+      {
+        customerName: 'ELAND Cables',
+        projectName: 'Project Alpha',
+        requiredQuotationDate: '2026-11-20',
+        destinationCountry: 'NL',
+        copperPriceRate: 9200,
+      }
+    );
+    // All 6 fulfilled
+    assert.equal(partialResult.percentage, 100);
+    assert.equal(partialResult.filledCount, 6);
+    assert.equal(partialResult.label, '6 of 6 required');
+
+    const fiveOfSix = calculateInquiryCompleteness(
+      { lines: [], projectName: 'Project Alpha' },
+      {
+        customerName: 'ELAND Cables',
+        projectName: 'Project Alpha',
+        requiredQuotationDate: '2026-11-20',
+        destinationCountry: 'NL',
+        copperPriceRate: 9200,
+      }
+    );
+    assert.equal(fiveOfSix.percentage, 83);
+    assert.equal(fiveOfSix.filledCount, 5);
+    assert.equal(fiveOfSix.label, '5 of 6 required');
+  });
+
+  it('resolves inquiry lifecycle steps correctly across draft, submitted, approved, order', () => {
+    const draftSteps = resolveInquiryLifecycleSteps({ status: 'DRAFT' });
+    assert.equal(draftSteps[0].state, 'current');
+    assert.equal(draftSteps[1].state, 'upcoming');
+    assert.equal(draftSteps[2].state, 'upcoming');
+    assert.equal(draftSteps[3].state, 'upcoming');
+
+    const submittedSteps = resolveInquiryLifecycleSteps({ status: 'SUBMITTED' });
+    assert.equal(submittedSteps[0].state, 'complete');
+    assert.equal(submittedSteps[1].state, 'current');
+    assert.equal(submittedSteps[2].state, 'upcoming');
+    assert.equal(submittedSteps[3].state, 'upcoming');
+
+    const approvedSteps = resolveInquiryLifecycleSteps({ status: 'APPROVED' });
+    assert.equal(approvedSteps[0].state, 'complete');
+    assert.equal(approvedSteps[1].state, 'complete');
+    assert.equal(approvedSteps[2].state, 'current');
+    assert.equal(approvedSteps[3].state, 'upcoming');
+
+    const orderSteps = resolveInquiryLifecycleSteps({ status: 'ORDER_CREATED' });
+    assert.equal(orderSteps[0].state, 'complete');
+    assert.equal(orderSteps[1].state, 'complete');
+    assert.equal(orderSteps[2].state, 'complete');
+    assert.equal(orderSteps[3].state, 'current');
   });
 });

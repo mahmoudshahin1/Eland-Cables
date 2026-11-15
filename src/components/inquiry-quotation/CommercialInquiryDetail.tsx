@@ -1599,6 +1599,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
         <div className="space-y-3">
           <CustomerInquiryDetailHero
             inquiry={inquiry}
+            headerForm={headerForm}
             totalContractValueSlot={
               commercialFiguresPending ? (
                 <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">

@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Banknote,
   Bot,
   Calculator,
+  Check,
   ClipboardList,
   Copy,
   Headphones,
@@ -18,67 +19,121 @@ import {
 } from 'lucide-react';
 import { CUSTOMER_HOME_PATH, CUSTOMER_INQUIRIES_PATH, customerPathForTab } from '../../app/shellRoutes';
 import { Badge, Drawer } from '../ui';
-import { CustomerPageHero } from './CustomerPageHero';
 import { WoodenDrumIcon } from '../common/WoodenDrumIcon';
 import { SupportChatPanel } from './SupportChatPanel';
 import { customerFacingInquiryStatusLabel, customerFacingInquiryStatusTone } from './customerInquiryListPresentation';
 import { portalVersionLabel } from '../../domain/inquiryPortalLifecycle';
 import {
+  calculateInquiryCompleteness,
   customerInquiryBreadcrumbLabel,
   customerInquiryDetailTitle,
+  resolveInquiryLifecycleSteps,
 } from './customerInquiryDetailPresentation';
+import { InquiryLifecycleStepper } from './InquiryLifecycleStepper';
+import { InquiryCompletenessGauge } from './InquiryCompletenessGauge';
 import type { CommercialInquiryDto } from '../../services/commercialInquiryApiService';
 
 export function CustomerInquiryDetailHero({
   inquiry,
   actions,
   totalContractValueSlot,
-  totalContractValuePlacement = 'actions',
+  headerForm,
 }: {
   inquiry: CommercialInquiryDto;
   actions?: React.ReactNode;
   totalContractValueSlot?: React.ReactNode;
   totalContractValuePlacement?: 'titleAccessory' | 'actions';
+  headerForm?: any;
 }) {
-  const titleAccessory = (
-    <>
-      <Badge tone="neutral">{portalVersionLabel(inquiry.versionNo)}</Badge>
-      <Badge tone={customerFacingInquiryStatusTone(inquiry.status, inquiry.commercialMetadata)}>
-        {customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
-      </Badge>
-      {totalContractValuePlacement === 'titleAccessory' ? totalContractValueSlot : null}
-    </>
-  );
-  const heroActions = totalContractValuePlacement === 'actions' && totalContractValueSlot ? (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      {totalContractValueSlot}
-      {actions}
-    </div>
-  ) : actions;
+  const lifecycleSteps = resolveInquiryLifecycleSteps(inquiry);
+  const completeness = calculateInquiryCompleteness(inquiry, headerForm);
 
   return (
-    <CustomerPageHero
-      breadcrumbs={[
-        { label: 'Home', to: CUSTOMER_HOME_PATH },
-        { label: 'My Inquiries', to: CUSTOMER_INQUIRIES_PATH },
-        { label: customerInquiryBreadcrumbLabel(inquiry.status) },
-      ]}
-      title={customerInquiryDetailTitle(inquiry)}
-      titleAccessory={titleAccessory}
-      subtitle="Provide your cable requirements and we will prepare a technical and commercial offer."
-      actions={heroActions}
-    />
+    <section
+      aria-label="Inquiry Header Hero"
+      className="card relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#102447] via-[#163261] to-[#1d4fa1] text-white p-6 sm:p-7 shadow-lg border border-brand-900/40 select-none"
+    >
+      {/* Real Cable Asset Background Texture */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-1/3 bg-cover bg-right opacity-15 mix-blend-luminosity pointer-events-none rounded-r-2xl"
+        style={{ backgroundImage: "url('/login-cables.jpg')" }}
+        aria-hidden="true"
+      />
+
+      {/* Slow decorative rotating SVG geometric ring */}
+      <svg
+        aria-hidden="true"
+        width="160"
+        height="160"
+        viewBox="0 0 100 100"
+        className="absolute right-40 -top-10 opacity-10 pointer-events-none motion-safe:animate-spin duration-[25s]"
+      >
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#fff" strokeWidth="3" />
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" strokeWidth="3" />
+        <circle cx="50" cy="50" r="14" fill="none" stroke="#fff" strokeWidth="3" />
+      </svg>
+
+      <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        <div className="space-y-3 max-w-2xl">
+          {/* Breadcrumbs */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-white/70">
+            <Link to={CUSTOMER_HOME_PATH} className="hover:text-white transition-colors">
+              Home
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link to={CUSTOMER_INQUIRIES_PATH} className="hover:text-white transition-colors">
+              My Inquiries
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-white font-semibold">{customerInquiryBreadcrumbLabel(inquiry.status)}</span>
+          </nav>
+
+          {/* Title & Badges */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-white">
+              {customerInquiryDetailTitle(inquiry)}
+            </h1>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/20 text-white font-mono align-middle">
+              {portalVersionLabel(inquiry.versionNo)}
+            </span>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/20 text-white font-sans align-middle">
+              {customerFacingInquiryStatusLabel(inquiry.status, inquiry.commercialMetadata)}
+            </span>
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-xs sm:text-sm text-white/85 leading-relaxed font-normal">
+            Provide your cable requirements and we will prepare a technical and commercial offer.
+          </p>
+
+          {/* Embedded Action Toolbar */}
+          {actions && <div className="pt-2">{actions}</div>}
+        </div>
+
+        {/* Right Stepper + Completeness Gauge */}
+        <div className="flex flex-wrap items-center gap-6 sm:gap-8 self-start xl:self-center bg-white/5 backdrop-blur-xs p-4 sm:p-5 rounded-xl border border-white/10 shadow-inner">
+          <InquiryLifecycleStepper steps={lifecycleSteps} />
+          <div className="h-10 w-px bg-white/20 hidden sm:block" aria-hidden="true" />
+          <InquiryCompletenessGauge completeness={completeness} />
+          {totalContractValueSlot && (
+            <div className="sm:border-l sm:border-white/20 sm:pl-6">{totalContractValueSlot}</div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
-const inquiryToolButtonClass =
-  'inline-flex items-center gap-1.5 h-10 px-3.5 rounded-lg text-[13px] font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-2xs';
+const heroButtonBaseClass =
+  'inline-flex items-center gap-1.5 h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl text-xs sm:text-[13px] font-semibold transition-all focus:outline-none focus:ring-2 disabled:opacity-40 disabled:cursor-not-allowed select-none';
 
-const inquiryPrimaryButtonClass =
-  'inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-[13px] font-semibold bg-brand-500 text-white hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm';
+const heroEditButtonClass = `${heroButtonBaseClass} bg-white text-slate-900 hover:bg-slate-100 focus:ring-white/40 shadow-xs font-bold`;
 
-const inquiryAccentButtonClass =
-  'inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-[13px] font-semibold bg-accent-500 text-white hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm';
+const heroGhostButtonClass = `${heroButtonBaseClass} bg-white/15 text-white hover:bg-white/25 border border-white/20 focus:ring-white/30`;
+
+const heroCalculateButtonClass = `${heroButtonBaseClass} bg-[#f04e30] text-white hover:bg-[#e03e20] focus:ring-red-400 shadow-md shadow-[#f04e30]/30 font-bold`;
+
+const heroApproveButtonClass = `${heroButtonBaseClass} bg-[#1d4fa1] text-white hover:bg-[#163f85] border border-blue-400/40 focus:ring-blue-400 shadow-md shadow-[#1d4fa1]/30 font-bold`;
 
 export function CustomerInquiryPrimaryActions({
   canEdit,
@@ -124,46 +179,47 @@ export function CustomerInquiryPrimaryActions({
   onDiscardRevision?: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2" role="toolbar" aria-label="Inquiry actions">
+    <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Inquiry actions">
       {canCreateRevision ? (
-        <button type="button" className={inquiryToolButtonClass} onClick={onCreateRevision}>
-          <Pencil className="h-3.5 w-3.5 text-slate-500" />
-          Create Revision
+        <button type="button" className={heroGhostButtonClass} onClick={onCreateRevision}>
+          <Pencil className="h-3.5 w-3.5" />
+          <span>Create Revision</span>
         </button>
       ) : (
-        <button type="button" className={inquiryToolButtonClass} onClick={onEdit} disabled={!canEdit}>
-          <Pencil className="h-3.5 w-3.5 text-slate-500" />
-          Edit
+        <button type="button" className={heroEditButtonClass} onClick={onEdit} disabled={!canEdit}>
+          <Pencil className="h-3.5 w-3.5 text-slate-700" />
+          <span>Edit</span>
         </button>
       )}
-      <button type="button" className={inquiryToolButtonClass} onClick={onSave} disabled={!canSave || savingHeader}>
-        <Save className="h-3.5 w-3.5 text-slate-500" />
-        {savingHeader ? 'Saving…' : 'Save'}
+      <button type="button" className={heroGhostButtonClass} onClick={onSave} disabled={!canSave || savingHeader}>
+        <Save className="h-3.5 w-3.5" />
+        <span>{savingHeader ? 'Saving…' : 'Save'}</span>
       </button>
       <button
         type="button"
-        className={inquiryAccentButtonClass}
+        className={heroCalculateButtonClass}
         onClick={onCalculate}
         disabled={!canCalculate || costingLoading || !hasLines}
       >
-        <Calculator className="h-3.5 w-3.5 text-white/90" />
-        {costingLoading ? 'Processing…' : calculateLabel || 'Calculate'}
+        <Calculator className="h-3.5 w-3.5 text-white/95" />
+        <span>{costingLoading ? 'Processing…' : calculateLabel || 'Calculate'}</span>
       </button>
-      <button type="button" className={inquiryPrimaryButtonClass} onClick={onApprove} disabled={!canApprove}>
-        Approve
+      <button type="button" className={heroApproveButtonClass} onClick={onApprove} disabled={!canApprove}>
+        <Check className="h-3.5 w-3.5" />
+        <span>Approve</span>
       </button>
-      <button type="button" className={inquiryToolButtonClass} onClick={onCancel} disabled={!canCancel}>
-        <XCircle className="h-3.5 w-3.5 text-slate-500" />
-        Cancel
+      <button type="button" className={heroGhostButtonClass} onClick={onCancel} disabled={!canCancel}>
+        <XCircle className="h-3.5 w-3.5" />
+        <span>Cancel</span>
       </button>
       {canDiscardRevision ? (
-        <button type="button" className={inquiryToolButtonClass} onClick={onDiscardRevision}>
-          Discard Revision
+        <button type="button" className={heroGhostButtonClass} onClick={onDiscardRevision}>
+          <span>Discard Revision</span>
         </button>
       ) : null}
-      <button type="button" className={inquiryToolButtonClass} onClick={onCopy} disabled={!canCopy}>
-        <Copy className="h-3.5 w-3.5 text-slate-500" />
-        Copy
+      <button type="button" className={heroGhostButtonClass} onClick={onCopy} disabled={!canCopy}>
+        <Copy className="h-3.5 w-3.5" />
+        <span>Copy</span>
       </button>
     </div>
   );
