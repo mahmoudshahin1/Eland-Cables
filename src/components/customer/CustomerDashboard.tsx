@@ -68,25 +68,34 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onNavigate
   }, [jwtToken]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
+      {/* Top Banner / Hero */}
       <CustomerHomeHero firstName={firstName} />
 
-      <CustomerHomeKpis
-        loading={loading}
-        values={{
-          totalInquiries: inquiryTotal,
-          quotations: quotedTotal,
-          openOrders,
-          deliveredOrders,
-        }}
-        onNavigateTab={onNavigateTab}
-      />
+      {/* Row 1: KPI 1 (Total Inquiries), KPI 2 (Quotations), Quick Actions (2x2 spanning 2 cols) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+        <CustomerHomeKpis
+          loading={loading}
+          inquiries={inquiries}
+          values={{
+            totalInquiries: inquiryTotal,
+            quotations: quotedTotal,
+            openOrders,
+            deliveredOrders,
+          }}
+          onNavigateTab={onNavigateTab}
+        />
+        <div className="sm:col-span-2 lg:col-span-2 min-w-0">
+          <CustomerHomeQuickActions onNavigateTab={onNavigateTab} />
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-        <div className="xl:col-span-2 min-w-0">
+      {/* Row 2: Inquiry Trend (spans 3 cols) + Recent Inquiries (spans 2 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch">
+        <div className="lg:col-span-3 min-w-0">
           <CustomerHomeInquiryTrend inquiries={inquiries} loading={loading} />
         </div>
-        <div className="xl:col-span-3 min-w-0">
+        <div className="lg:col-span-2 min-w-0">
           <CustomerHomeRecentInquiries
             inquiries={inquiries}
             loading={loading}
@@ -97,13 +106,12 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onNavigate
         </div>
       </div>
 
-      <CustomerHomeQuickActions onNavigateTab={onNavigateTab} />
-
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-        <div className="xl:col-span-3 min-w-0">
+      {/* Row 3: Product Categories (spans 3 cols) + Announcements (spans 2 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch">
+        <div className="lg:col-span-3 min-w-0">
           <CustomerHomeProductCategories />
         </div>
-        <div className="xl:col-span-2 min-w-0">
+        <div className="lg:col-span-2 min-w-0">
           <CustomerHomeAnnouncements
             notifications={notifications}
             onViewAll={() => onNavigateTab('support')}
