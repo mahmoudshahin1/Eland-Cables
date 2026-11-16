@@ -337,6 +337,26 @@ describe('customer Cutting & Drums workspace', () => {
     assert.equal(submittedSteps[2].state, 'upcoming');
     assert.equal(submittedSteps[3].state, 'upcoming');
 
+    const quotedSteps = resolveInquiryLifecycleSteps({ status: 'QUOTED' });
+    assert.equal(quotedSteps[0].state, 'complete');
+    assert.equal(quotedSteps[1].state, 'current');
+    assert.equal(quotedSteps[2].state, 'upcoming');
+
+    const notSubmittedSteps = resolveInquiryLifecycleSteps({
+      status: 'DRAFT',
+      commercialMetadata: { portalLifecycle: 'NOT_SUBMITTED' },
+    });
+    assert.equal(notSubmittedSteps[0].state, 'complete');
+    assert.equal(notSubmittedSteps[1].state, 'current');
+
+    const acceptedLifecycleSteps = resolveInquiryLifecycleSteps({
+      status: 'QUOTED',
+      commercialMetadata: { portalLifecycle: 'ACCEPTED' },
+    });
+    assert.equal(acceptedLifecycleSteps[0].state, 'complete');
+    assert.equal(acceptedLifecycleSteps[1].state, 'complete');
+    assert.equal(acceptedLifecycleSteps[2].state, 'current');
+
     const approvedSteps = resolveInquiryLifecycleSteps({ status: 'APPROVED' });
     assert.equal(approvedSteps[0].state, 'complete');
     assert.equal(approvedSteps[1].state, 'complete');

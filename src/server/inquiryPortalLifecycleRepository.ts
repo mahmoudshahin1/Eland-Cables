@@ -180,7 +180,7 @@ export async function finishPortalCalculate(input: {
   });
   await prisma.commercialInquiry.update({
     where: { id: input.inquiryId },
-    data: { isCurrent: true, commercialMetadata: metadata as Prisma.InputJsonValue },
+    data: { isCurrent: true, status: 'QUOTED', commercialMetadata: metadata as Prisma.InputJsonValue },
   });
 
   await appendServerAudit({

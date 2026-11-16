@@ -28,7 +28,7 @@ import { notifyInquirySubmitted as notifyInquirySubmittedLegacy } from './notifi
 import { notifyStandardWorkflowEvent } from './standardWorkflowNotifications';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import { RequestActor } from './auth';
-import { portalInquiryEditable, portalLifecycleFromInquiry } from '../domain/inquiryPortalLifecycle';
+import { portalInquiryEditable, portalLifecycleFromInquiry, withPortalLifecycle } from '../domain/inquiryPortalLifecycle';
 import { lookupCustomerMasterId, resolveCustomerMasterIdForActor, assertCustomerBusinessScope } from './customerScope';
 import { applyMarketMetalSourceOnUpdate, applySystemMarketMetalDefaultsOnCreate } from '../domain/marketMetalPriceDefaults';
 import { requiredMetalsForStoredInquiry, snapshotMissingInquiryMetalPrices } from './marketMetalPriceDefaultRepository';
@@ -842,7 +842,7 @@ export async function submitInquiry(
 
 async function loadMutableInquiry(inquiryId: string, actor: RequestActor) {
   const prisma = requirePrisma();
-  const inquiry = await prisma.commercialInquiry.findFirst({
+  let inquiry = await prisma.commercialInquiry.findFirst({
     where: { OR: [{ id: inquiryId }, { inquiryNumber: inquiryId }] },
     include: { lines: { orderBy: { lineNumber: 'asc' } } },
   });
@@ -867,6 +867,46 @@ async function loadMutableInquiry(inquiryId: string, actor: RequestActor) {
     (err as Error & { code: string }).code = 'INVALID_STATE';
     throw err;
   }
+
+  // Automatic Version Rollover:
+  // If the inquiry was calculated (QUOTED / NOT_SUBMITTED) and is now modified,
+  // roll it over to a new version (e.g. V1 -> V2) and reset to DRAFT / OPEN.
+  const lifecycle = portalLifecycleFromInquiry(inquiry);
+  if (inquiry.status === 'QUOTED' || lifecycle === 'NOT_SUBMITTED') {
+    const nextVersionNo = (inquiry.versionNo || 1) + 1;
+    const currentMeta = (inquiry.commercialMetadata && typeof inquiry.commercialMetadata === 'object' && !Array.isArray(inquiry.commercialMetadata))
+      ? (inquiry.commercialMetadata as Record<string, unknown>)
+      : {};
+    const updatedMeta = withPortalLifecycle(currentMeta, 'OPEN', {
+      commercialValueState: 'RECALCULATION_REQUIRED',
+      calculatedLineFingerprint: null,
+      calculatedSnapshot: null,
+      previousCalculatedVersion: inquiry.versionNo || 1,
+    });
+
+    inquiry = await prisma.commercialInquiry.update({
+      where: { id: inquiry.id },
+      data: {
+        versionNo: nextVersionNo,
+        status: 'DRAFT',
+        commercialMetadata: updatedMeta as Prisma.InputJsonValue,
+        modifiedBy: actor.name || actor.email || inquiry.modifiedBy,
+      },
+      include: { lines: { orderBy: { lineNumber: 'asc' } } },
+    });
+
+    appendAudit({
+      actorId: actor.id,
+      actorName: actor.name || actor.email,
+      entity: 'CommercialInquiry',
+      entityId: inquiry.inquiryNumber,
+      action: 'SUPERSEDE',
+      oldValue: { versionNo: (inquiry.versionNo || 1) - 1, status: 'QUOTED' },
+      newValue: { versionNo: inquiry.versionNo, status: 'DRAFT' },
+      message: `Inquiry ${inquiry.inquiryNumber} modified after calculation; advanced to V${inquiry.versionNo} in DRAFT.`,
+    });
+  }
+
   if (inquiry.status !== 'DRAFT' && inquiry.status !== 'UNDER_REVIEW') {
     const err = new Error(`Inquiry ${inquiry.inquiryNumber} must be in DRAFT to edit header/lines.`);
     (err as Error & { code: string }).code = 'INVALID_STATE';
@@ -883,7 +923,7 @@ export async function updateInquiry(
   const prisma = requirePrisma();
   const inquiry = await loadMutableInquiry(inquiryId, actor);
 
-  const nextCommercialMetadata =
+  const baseCommercialMetadata =
     input.commercialMetadata !== undefined
       ? preserveImmutableInquiryProcess(
           commercialMetadataRecord(inquiry.commercialMetadata),
@@ -892,6 +932,17 @@ export async function updateInquiry(
             stripClientInquiryProcessOverrides(commercialMetadataRecord(input.commercialMetadata))
           )
         )
+      : undefined;
+
+  const nextCommercialMetadata =
+    baseCommercialMetadata !== undefined
+      ? inquiry.status === 'DRAFT'
+        ? withPortalLifecycle(baseCommercialMetadata, 'OPEN', {
+            commercialValueState: 'RECALCULATION_REQUIRED',
+            calculatedLineFingerprint: null,
+            calculatedSnapshot: null,
+          })
+        : baseCommercialMetadata
       : undefined;
 
   const updated = await prisma.commercialInquiry.update({

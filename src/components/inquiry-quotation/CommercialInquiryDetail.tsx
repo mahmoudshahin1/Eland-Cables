@@ -372,10 +372,11 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedFormJsonRef = useRef<string>('');
   const [preferredContainerType, setPreferredContainerType] = useState<ContainerType>('40HQ');
-  const isEditable =
-    (inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW') &&
-    portalLifecycleFromInquiry(inquiry || {}) !== 'ACCEPTED' &&
-    portalLifecycleFromInquiry(inquiry || {}) !== 'CANCELED';
+  const isEditable = isCustomer
+    ? Boolean(inquiry && portalInquiryEditable(inquiry))
+    : (inquiry?.status === 'DRAFT' || inquiry?.status === 'UNDER_REVIEW') &&
+      portalLifecycleFromInquiry(inquiry || {}) !== 'ACCEPTED' &&
+      portalLifecycleFromInquiry(inquiry || {}) !== 'CANCELED';
 
   const notify = (msg: string) => {
     setToast(msg);
@@ -1215,7 +1216,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
     setCostingLoading(true);
     setCostingError(null);
     try {
-      if (isEditable) {
+      if (isEditable && headerIsDirty) {
         const saved = await saveHeader();
         if (!saved) return;
       }
@@ -1601,26 +1602,22 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
             inquiry={inquiry}
             headerForm={headerForm}
             totalContractValueSlot={
-              commercialFiguresPending ? (
-                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
-                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">—</p>
-                  <p className="text-[10px] text-slate-500 mt-1">Recalculate to update totals.</p>
-                </div>
-              ) : commercialTotals.grandTotal != null ? (
-                <div className="shrink-0 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-xs p-4 text-left shadow-xs min-w-[220px]">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Contract Value</p>
-                  <p className="text-xl font-black text-brand-900 font-mono mt-0.5 whitespace-nowrap">
+              (portalLifecycle === 'NOT_SUBMITTED' || portalLifecycle === 'ACCEPTED') &&
+              !commercialFiguresPending &&
+              commercialTotals.grandTotal != null ? (
+                <div className="w-full rounded-xl bg-white p-3.5 sm:p-4 text-left shadow-sm">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Contract Value</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 whitespace-nowrap">
                     {formatCommercialMoney(commercialTotals.grandTotal)}
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-1">Commercial total for this inquiry version.</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Commercial total for this inquiry version.</p>
                 </div>
               ) : undefined
             }
             actions={
               <CustomerInquiryPrimaryActions
                 canEdit={Boolean(inquiry && portalInquiryEditable(inquiry))}
-                canSave={Boolean(inquiry && portalInquiryEditable(inquiry))}
+                canSave={Boolean(inquiry && portalInquiryEditable(inquiry) && headerIsDirty)}
                 canCalculate={Boolean(inquiry && portalInquiryEditable(inquiry) && canCalculate)}
                 canApprove={canApproveInquiry}
                 canCancel={Boolean(canCancel)}
@@ -1634,6 +1631,7 @@ export const CommercialInquiryDetail: React.FC<CommercialInquiryDetailProps> = (
                 onCreateRevision={() => setRevisionDialogOpen(true)}
                 onDiscardRevision={() => void handleDiscardRevision()}
                 onEdit={() => {
+                  setHeaderExpandSignal((n) => n + 1);
                   document.getElementById('inquiry-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
                 onSave={() => void saveHeader()}

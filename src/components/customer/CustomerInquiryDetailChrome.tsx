@@ -110,13 +110,17 @@ export function CustomerInquiryDetailHero({
           {actions && <div className="pt-2">{actions}</div>}
         </div>
 
-        {/* Right Stepper + Completeness Gauge */}
-        <div className="flex flex-wrap items-center gap-6 sm:gap-8 self-start xl:self-center bg-white/5 backdrop-blur-xs p-4 sm:p-5 rounded-xl border border-white/10 shadow-inner">
-          <InquiryLifecycleStepper steps={lifecycleSteps} />
-          <div className="h-10 w-px bg-white/20 hidden sm:block" aria-hidden="true" />
-          <InquiryCompletenessGauge completeness={completeness} />
+        {/* Right Stepper + Completeness Gauge (+ optional Total Contract Value below) */}
+        <div className="flex flex-col gap-3.5 self-start xl:self-center bg-white/10 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/15 shadow-sm min-w-[320px] sm:min-w-[420px]">
+          <div className="flex items-center justify-between gap-4 sm:gap-6">
+            <InquiryLifecycleStepper steps={lifecycleSteps} />
+            <div className="h-10 w-px bg-white/20 hidden sm:block" aria-hidden="true" />
+            <InquiryCompletenessGauge completeness={completeness} />
+          </div>
           {totalContractValueSlot && (
-            <div className="sm:border-l sm:border-white/20 sm:pl-6">{totalContractValueSlot}</div>
+            <div className="border-t border-white/15 pt-3">
+              {totalContractValueSlot}
+            </div>
           )}
         </div>
       </div>

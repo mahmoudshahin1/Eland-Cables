@@ -322,23 +322,33 @@ export interface InquiryLifecycleStepItem {
 export function resolveInquiryLifecycleSteps(
   inquiry: Pick<CommercialInquiryDto, 'status' | 'commercialMetadata'> | null | undefined
 ): InquiryLifecycleStepItem[] {
+  const lifecycle = inquiry ? portalLifecycleFromInquiry(inquiry) : 'OPEN';
   const rawStatus = (inquiry?.status || '').toUpperCase();
   const isOrder =
     rawStatus === 'ORDER_CREATED' ||
     rawStatus === 'CONVERTED' ||
     rawStatus === 'WON';
-  const isApproved =
-    isOrder ||
-    rawStatus === 'APPROVED' ||
-    rawStatus === 'QUOTED' ||
-    rawStatus === 'ACCEPTED' ||
-    Boolean((inquiry?.commercialMetadata as Record<string, unknown> | undefined)?.submittedToSales);
-  const isSubmitted = isApproved || rawStatus === 'SUBMITTED';
 
   let activeIndex = 0; // 0 = Draft, 1 = Submitted, 2 = Approved, 3 = Order
-  if (isOrder) activeIndex = 3;
-  else if (isApproved) activeIndex = 2;
-  else if (isSubmitted) activeIndex = 1;
+  if (isOrder) {
+    activeIndex = 3;
+  } else if (
+    lifecycle === 'ACCEPTED' ||
+    rawStatus === 'APPROVED' ||
+    rawStatus === 'ACCEPTED' ||
+    rawStatus === 'CLOSED'
+  ) {
+    activeIndex = 2;
+  } else if (
+    lifecycle === 'NOT_SUBMITTED' ||
+    rawStatus === 'SUBMITTED' ||
+    rawStatus === 'QUOTED' ||
+    Boolean((inquiry?.commercialMetadata as Record<string, unknown> | undefined)?.submittedToSales)
+  ) {
+    activeIndex = 1;
+  } else {
+    activeIndex = 0;
+  }
 
   const stepLabels = ['Draft', 'Submitted', 'Approved', 'Order'];
   return stepLabels.map((label, idx) => ({
