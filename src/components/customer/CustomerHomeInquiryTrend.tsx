@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react';
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
-  Cell,
-  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -70,11 +68,12 @@ export function CustomerHomeInquiryTrend({ inquiries, loading }: CustomerHomeInq
       ) : (
         <div className="flex-1 w-full min-w-0 min-h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 25, right: 12, left: -20, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 16, right: 12, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="latestBarGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563EB" />
-                  <stop offset="100%" stopColor="#1D4ED8" />
+                <linearGradient id="customerInquiryTrendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2563EB" stopOpacity={0.32} />
+                  <stop offset="70%" stopColor="#3B82F6" stopOpacity={0.08} />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
@@ -92,44 +91,25 @@ export function CustomerHomeInquiryTrend({ inquiries, loading }: CustomerHomeInq
                 tickLine={false}
               />
               <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: '#e2e8f0' }}
+                contentStyle={{
+                  fontSize: 12,
+                  borderRadius: 12,
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  padding: '8px 12px',
+                }}
                 formatter={(value) => [value ?? 0, 'Inquiries']}
               />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} minPointSize={4}>
-                {data.map((_, index) => {
-                  const isLatest = index === data.length - 1;
-                  return (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={isLatest ? 'url(#latestBarGradient)' : '#DBEAFE'}
-                    />
-                  );
-                })}
-                <LabelList
-                  dataKey="count"
-                  content={(props: any) => {
-                    const { x, y, width, value, index } = props;
-                    if (index !== data.length - 1 || value === undefined || value === null) return null;
-                    return (
-                      <g transform={`translate(${x + width / 2}, ${y - 12})`}>
-                        <rect x="-14" y="-18" width="28" height="18" rx="4" fill="#071E3A" />
-                        <polygon points="-4,0 4,0 0,4" fill="#071E3A" />
-                        <text
-                          x="0"
-                          y="-6"
-                          fill="#FFFFFF"
-                          textAnchor="middle"
-                          fontSize="11"
-                          fontWeight="bold"
-                        >
-                          {value}
-                        </text>
-                      </g>
-                    );
-                  }}
-                />
-              </Bar>
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#2563EB"
+                strokeWidth={3}
+                fill="url(#customerInquiryTrendFill)"
+                dot={{ r: 3.5, fill: '#2563EB', stroke: '#FFFFFF', strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: '#1D4ED8', stroke: '#FFFFFF', strokeWidth: 2.5 }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}

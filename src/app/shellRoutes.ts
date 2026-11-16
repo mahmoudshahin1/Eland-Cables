@@ -24,6 +24,7 @@ export function v2CustomerInquiryIdFromPath(pathname: string): string | null {
 export const CUSTOMER_PROFILE_PATH = '/customer/profile';
 export const INTERNAL_PROFILE_PATH = '/internal/profile';
 export const CUSTOMER_INQUIRIES_PATH = '/customer/inquiries';
+export const CUSTOMER_QUOTATIONS_PATH = '/customer/quotations';
 export const CUSTOMER_PRODUCTS_PATH = '/customer/products';
 
 export function customerProductsPath(category?: string | null): string {
@@ -85,6 +86,7 @@ const CUSTOMER_PATH_ALIASES: Record<string, CustomerPortalTab> = {
   '/customer/dashboard': 'dashboard',
   '/customer/products': 'products',
   '/customer/inquiries': 'price_estimation',
+  '/customer/quotations': 'price_estimation',
   '/customer/price-estimation': 'price_estimation',
   '/customer/sales-orders': 'sales_orders',
   '/customer/drum-optimizer': 'drum_optimizer',
@@ -140,7 +142,10 @@ export const INTERNAL_TAB_PERMISSION: Record<InternalPortalTab, keyof ModulePerm
   user_management: 'userManagement',
 };
 
-const ELAND_ALLOWED_TABS = CUSTOMER_PORTAL_VISIBLE_TABS;
+const ELAND_ALLOWED_TABS = new Set<CustomerPortalTab>([
+  ...CUSTOMER_PORTAL_VISIBLE_TABS,
+  'sales_orders',
+]);
 
 export function normalizeAppPath(pathname: string): string {
   const trimmed = pathname.replace(/\/+$/, '');

@@ -22,7 +22,6 @@ import { isPostLoginBlocked, resolvePostLoginDestination } from '../app/shellRou
 import { UserAccount } from '../types';
 
 const LOGIN_HERO_IMAGE = '/login-cables.jpg';
-const CABLE_CROSS_SECTION_IMAGE = '/customer-home/categories/power-cables.jpg';
 const FUTURE_LANGUAGES = ['English', 'العربية'] as const;
 
 function safeRedirectFrom(from: unknown): string | null {
@@ -206,135 +205,91 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#F4F6FA]">
-      <div className="relative grid min-h-dvh lg:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(400px,0.9fr)]">
+    <div className="relative min-h-dvh overflow-x-hidden bg-white">
+      <div className="relative grid min-h-dvh lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(400px,0.85fr)]">
         {/* LEFT PANEL */}
-        <aside className="relative hidden overflow-hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#061833] via-[#0A254D] to-[#041026] text-white p-10 xl:p-14">
-          {/* Background image overlay */}
+        <aside className="relative hidden overflow-hidden lg:flex flex-col justify-between p-10 xl:p-16">
+          {/* Background Image */}
           <img
             src={LOGIN_HERO_IMAGE}
             alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-15 mix-blend-luminosity"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* Subtle natural overlay - not heavy dark blue */}
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-900/78 via-brand-800/62 to-brand-900/48" />
+
+          {/* Slanted / Diagonal Divider */}
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 w-[14%] bg-white"
+            style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
             aria-hidden="true"
           />
 
-          {/* Top Section: Logo card, H1, Subtitle, 2x2 Feature Chips */}
-          <div className="relative z-10">
-            <div className="inline-flex items-center justify-center rounded-2xl bg-white p-3.5 shadow-md border border-white/20">
-              <BrandLogo className="h-10 w-auto" alt="Energya Cables / elsewedy HELAL" />
+          {/* Content */}
+          <div className="relative z-10 flex w-full max-w-xl flex-col justify-between h-full">
+            <div>
+              {/* Original Energya Logo directly on image without white box */}
+              <BrandLogo className="h-24 w-auto xl:h-28" alt="Energya Cables / elsewedy HELAL" />
+
+              <h1 className="mt-10 font-display text-4xl font-bold leading-tight tracking-tight text-white xl:text-5xl">
+                Energya Digital Platform
+              </h1>
+              <p className="mt-3 max-w-md text-base leading-relaxed text-white/90 xl:text-lg">
+                Design. Configure. Request. All in one platform.
+              </p>
+
+              <ul className="mt-10 space-y-4">
+                <HeroFeature icon={Monitor} label="Modern & Professional UI" />
+                <HeroFeature icon={Factory} label="Manufacturing Focused" />
+                <HeroFeature icon={ShieldCheck} label="Standards Compliant" />
+                <HeroFeature icon={Smartphone} label="Responsive & Secure" />
+              </ul>
             </div>
 
-            <h1 className="mt-7 font-display text-3xl xl:text-4xl font-bold leading-tight tracking-tight text-white">
-              Energya Digital Platform
-            </h1>
-            <p className="mt-2 max-w-md text-sm leading-relaxed text-white/80 xl:text-base">
-              Design. Configure. Request. All in one platform.
+            {/* Bottom Line: Accent line + Slogan */}
+            <p className="mt-12 flex items-center gap-3 text-sm font-medium tracking-wide text-white">
+              <span className="h-0.5 w-10 shrink-0 bg-accent-500" aria-hidden="true" />
+              Building a Stronger, Safer World
             </p>
-
-            <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 max-w-lg">
-              <HeroFeature icon={Monitor} label="Modern & Professional UI" />
-              <HeroFeature icon={Factory} label="Manufacturing Focused" />
-              <HeroFeature icon={ShieldCheck} label="Standards Compliant" />
-              <HeroFeature icon={Smartphone} label="Responsive & Secure" />
-            </ul>
-          </div>
-
-          {/* Center Visual: Rotating Ring, Cable Cross-Section, and 4 Spec Pills */}
-          <div className="relative z-10 my-auto py-10 flex flex-col items-center justify-center">
-            <div className="relative flex items-center justify-center w-full max-w-md h-64">
-              {/* Blurred elliptical glow under cable */}
-              <div
-                className="pointer-events-none absolute -bottom-4 h-10 w-56 rounded-full bg-blue-500/25 blur-xl"
-                aria-hidden="true"
-              />
-
-              {/* Slow decorative rotating ring (>= 40s per turn, motion-safe) */}
-              <div
-                className="pointer-events-none absolute h-52 w-52 xl:h-60 xl:w-60 rounded-full border border-sky-400/40 shadow-[0_0_30px_rgba(56,189,248,0.2)] motion-safe:animate-[spin_48s_linear_infinite]"
-                aria-hidden="true"
-              >
-                <div className="absolute -top-1 start-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-sky-300 shadow-[0_0_8px_#38bdf8]" />
-                <div className="absolute -bottom-1 start-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-sky-300 shadow-[0_0_8px_#38bdf8]" />
-              </div>
-
-              {/* Multi-core cable cross-section image */}
-              <div className="relative z-10 h-40 w-40 xl:h-44 xl:w-44 rounded-full overflow-hidden border-2 border-white/30 shadow-[0_12px_36px_rgba(0,0,0,0.5)] bg-[#071E3A]">
-                <img
-                  src={CABLE_CROSS_SECTION_IMAGE}
-                  alt="Cable cross section"
-                  className="h-full w-full object-cover scale-110"
-                />
-              </div>
-
-              {/* 4 Frosted Spec Pills (Fully inside panel bounds to fix Flaw B0 #1) */}
-              <div className="absolute inset-0 pointer-events-none">
-                {/* Pill 1: LSHF sheath (Top Left) */}
-                <span className="absolute start-[8%] top-[14%] rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-                  LSHF sheath
-                </span>
-
-                {/* Pill 2: 0.6/1 kV (Top Right - safe inset) */}
-                <span className="absolute end-[8%] top-[22%] rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-                  0.6/1 kV
-                </span>
-
-                {/* Pill 3: XLPE insulation (Bottom Left) */}
-                <span className="absolute start-[6%] bottom-[16%] rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-                  XLPE insulation
-                </span>
-
-                {/* Pill 4: Cu conductor (Bottom Right - safe inset) */}
-                <span className="absolute end-[6%] bottom-[18%] rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-                  Cu conductor
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Line: Accent line + Slogan */}
-          <div className="relative z-10 flex items-center gap-3 text-sm font-medium tracking-wide text-white/90">
-            <span className="h-0.5 w-10 shrink-0 bg-accent-500" aria-hidden="true" />
-            <span>Building a Stronger, Safer World</span>
           </div>
         </aside>
 
         {/* RIGHT PANEL */}
-        <main className="relative flex min-h-dvh flex-col justify-between p-6 sm:p-8 lg:p-12">
+        <main className="relative flex min-h-dvh flex-col justify-between p-6 sm:p-8 lg:p-12 bg-white">
           {/* Header row: Mobile Logo + Language Selector */}
           <div className="flex items-center justify-between lg:justify-end w-full">
             <div className="lg:hidden">
-              <BrandLogo className="h-9 w-auto" alt="Energya Cables / elsewedy HELAL" />
+              <BrandLogo className="h-16 w-auto sm:h-20" alt="Energya Cables / elsewedy HELAL" />
             </div>
             {languageSelector}
           </div>
 
-          {/* Center Card */}
-          <div className="my-auto w-full max-w-[440px] mx-auto py-6">
-            <div className="rounded-2xl border-t-4 border-brand-500 bg-white p-7 sm:p-8 shadow-xl border-x border-b border-slate-200/80">
-              {showForgotPassword ? (
-                <div className="rounded-xl bg-brand-900 p-5 text-white">
-                  <ForgotPasswordForm onSwitchToLogin={() => setActiveAuthView('login')} />
-                </div>
-              ) : (
-                <>
-                  <h2 className="font-display text-2xl font-bold tracking-tight text-slate-900">
-                    Sign in to your account
-                  </h2>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500">
-                    Access the Energya Digital Platform
-                  </p>
+          {/* Center Form: Placed directly on the white background without card container */}
+          <div className="my-auto w-full max-w-[420px] mx-auto py-6">
+            {showForgotPassword ? (
+              <div className="rounded-xl bg-brand-900 p-5 text-white">
+                <ForgotPasswordForm onSwitchToLogin={() => setActiveAuthView('login')} />
+              </div>
+            ) : (
+              <>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                  Sign in to your account
+                </h2>
+                <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
+                  Access the Energya Digital Platform
+                </p>
 
-                  {error && (
-                    <div
-                      role="alert"
-                      className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs sm:text-sm text-red-700"
-                    >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span>{error}</span>
-                    </div>
-                  )}
+                {error && (
+                  <div
+                    role="alert"
+                    className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs sm:text-sm text-red-700"
+                  >
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{error}</span>
+                  </div>
+                )}
 
-                  <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
+                <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
                     <div>
                       <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-slate-700">
                         Email or Username
@@ -518,7 +473,6 @@ export default function LoginPage() {
                   </div>
                 </>
               )}
-            </div>
           </div>
 
           {/* Footer Legal Links */}
@@ -555,11 +509,11 @@ function HeroFeature({
   label: string;
 }) {
   return (
-    <li className="flex items-center gap-2.5 text-white">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10">
-        <Icon className="h-4 w-4 text-white" aria-hidden="true" />
+    <li className="flex items-center gap-3 text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/35">
+        <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
-      <span className="text-[13px] font-medium text-white/95 leading-tight">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
     </li>
   );
 }

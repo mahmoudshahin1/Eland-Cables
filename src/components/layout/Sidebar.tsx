@@ -172,31 +172,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isOpenMobile ? 'translate-x-0 w-64 rtl:-translate-x-0' : '-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:rtl:translate-x-0'
         } ${
           customerChrome
-            ? `${isCollapsed ? 'lg:w-20' : 'lg:w-56'} bg-white text-slate-800 border-e border-slate-200/90 lg:sticky lg:top-0 lg:h-screen lg:min-h-screen overflow-hidden`
+            ? `${isCollapsed ? 'lg:w-20' : 'lg:w-[13.75rem]'} bg-[#071E3A] text-white shadow-[4px_0_24px_rgba(7,30,58,0.28)] lg:sticky lg:top-0 lg:h-screen lg:min-h-screen overflow-hidden`
             : `${isCollapsed ? 'lg:w-20' : 'lg:w-64'} bg-gradient-to-b from-brand-800 to-brand-900 text-white border-e border-brand-900/60 shadow-[4px_0_24px_rgba(10,31,66,0.18)] lg:min-h-screen`
         }`}
       >
         {customerChrome ? (
           <div className={`pt-5 pb-2 ${isCollapsed ? 'px-2' : 'px-3'}`}>
-            <div className={`flex items-center pb-3 ${isCollapsed ? 'justify-center' : 'justify-between gap-2 px-1'}`}>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 flex items-center justify-center shrink-0 shadow-sm text-white font-black text-sm">
-                  <span className="tracking-tighter">EC</span>
-                </div>
-                {!isCollapsed && (
-                  <div className="min-w-0">
-                    <span className="block font-display text-[15px] font-bold text-slate-900 leading-none truncate">
-                      ELAND Cables
-                    </span>
-                    <span className="block text-[9.5px] font-bold tracking-wider uppercase text-accent-500 mt-1 truncate">
-                      ELSEWEDY HELAL GROUP
-                    </span>
-                  </div>
-                )}
-              </div>
+            <div className={`flex items-center pb-3 ${isCollapsed ? 'justify-center' : 'justify-between gap-2 px-2'}`}>
+              <CustomerBrandMark
+                showName={false}
+                onDark
+                logoClassName={isCollapsed ? 'h-11 max-w-[2.75rem]' : 'h-[4.35rem] max-h-[4.35rem] max-w-[7.5rem]'}
+              />
               <button
                 onClick={() => setIsOpenMobile(false)}
-                className="lg:hidden p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 shrink-0"
+                className="lg:hidden p-1.5 rounded-lg text-white/80 hover:text-white bg-white/10 shrink-0"
                 title="Close navigation"
               >
                 <X className="h-5 w-5" />
@@ -208,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-expanded={!isCollapsed}
-              className="hidden lg:flex items-center justify-center w-full py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:text-brand-700 hover:bg-slate-50"
+              className="hidden lg:flex items-center justify-center w-full py-2 rounded-xl text-xs font-bold transition-all text-white/70 hover:text-white bg-white/10 hover:bg-white/15"
             >
               {isCollapsed ? (
                 <ChevronRight className="h-4 w-4 rtl:-scale-x-100" />
@@ -305,15 +295,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {customerChrome &&
             CUSTOMER_HOME_NAV_ITEMS.map((item) => {
               const Icon = customerNavIcons[item.id];
-              const path = customerPathForTab(item.tab);
               const isQuotedItem = item.id === 'quotations';
               const isInquiryList = item.id === 'my_inquiries';
+              const path = isQuotedItem ? '/customer/quotations' : customerPathForTab(item.tab);
               const active =
                 !item.suppressActive &&
                 (isQuotedItem
-                  ? quotedNavActive
+                  ? location.pathname === '/customer/quotations' || quotedNavActive
                   : isInquiryList
-                    ? activeCustomerTab === 'price_estimation' && !quotedNavActive
+                    ? activeCustomerTab === 'price_estimation' && location.pathname !== '/customer/quotations' && !quotedNavActive
                     : activeCustomerTab === item.tab);
               const go = () => {
                 navigate(path, { state: item.navState || {} });
@@ -329,13 +319,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   aria-current={active ? 'page' : undefined}
                   className={`group w-full flex items-center ${
                     isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'
-                  } py-2.5 rounded-lg text-sm transition-colors ${
+                  } py-[0.7rem] rounded-xl text-[13px] font-medium transition-colors ${
                     active
-                      ? 'bg-brand-500 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 hover:bg-brand-50 hover:text-brand-700 font-medium'
+                      ? 'bg-[#2F6BFF] text-white shadow-[0_6px_16px_rgba(47,107,255,0.35)]'
+                      : 'text-white/75 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-brand-700'}`} />
+                  <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-white' : 'text-white/70 group-hover:text-white'}`} />
                   {!isCollapsed && <span className="truncate">{item.label}</span>}
                 </button>
               );
@@ -557,17 +547,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`p-3 space-y-2 ${
             customerChrome
-              ? `border-t border-slate-100 ${isCollapsed ? 'px-2 py-3' : 'p-4'}`
+              ? `border-t border-white/10 ${isCollapsed ? 'px-3 pb-4 pt-3' : 'pt-4 pb-4 px-4'}`
               : 'border-t border-white/10 bg-brand-900/60'
           }`}
         >
           {customerChrome && !isCollapsed && (
-            <div className="py-2">
-              <p className="text-xs text-slate-500 font-medium leading-snug">
+            <div className="py-1">
+              <p className="text-[12px] font-medium leading-snug text-white/80">
                 Building a Stronger,
                 <br />
-                <span className="text-accent-500 font-bold">Safer World</span>
+                Safer World
               </p>
+              <span className="mt-2 block h-[3px] w-9 rounded-full bg-[#E85D04]" aria-hidden />
             </div>
           )}
           {ENABLE_AI_QUOTATION_ASSISTANT && onOpenAiModal && !costingNavy && !customerChrome && (

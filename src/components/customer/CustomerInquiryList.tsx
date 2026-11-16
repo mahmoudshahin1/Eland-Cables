@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   copyCommercialInquiry,
@@ -87,9 +87,11 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
 }) => {
   const { jwtToken, currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isQuotationsRoute = location.pathname === '/customer/quotations';
 
   const [tab, setTab] = useState<CustomerInquiryWorkspaceTab>(
-    initialStatus === 'QUOTED' ? 'quotations' : 'inquiries'
+    isQuotationsRoute || initialStatus === 'QUOTED' ? 'quotations' : 'inquiries'
   );
   const [rows, setRows] = useState<CommercialInquiryDto[]>([]);
   const [quotations, setQuotations] = useState<CommercialQuotationListDto[]>([]);
@@ -116,6 +118,12 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (location.pathname === '/customer/quotations') {
+      setTab('quotations');
+      setStatusFilter('');
+      setPage(1);
+      return;
+    }
     if (initialStatus === undefined) return;
     if (initialStatus === 'QUOTED') {
       setTab('quotations');
@@ -126,7 +134,7 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
     }
     setPage(1);
     onInitialStatusConsumed?.();
-  }, [initialStatus, onInitialStatusConsumed]);
+  }, [location.pathname, initialStatus, onInitialStatusConsumed]);
 
   useEffect(() => {
     if (initialSearch === undefined) return;
@@ -484,7 +492,16 @@ export const CustomerInquiryList: React.FC<CustomerInquiryListProps> = ({
                     setPage(1);
                     setSelectedIds(new Set());
                     setExpandedId(null);
-                    if (id === 'inquiries' && !PORTAL_STATUS_CODES.has(statusFilter)) setStatusFilter('');
+                    if (id === 'inquiries') {
+                      if (!PORTAL_STATUS_CODES.has(statusFilter)) setStatusFilter('');
+                      if (location.pathname === '/customer/quotations') {
+                        navigate('/customer/inquiries', { replace: true });
+                      }
+                    } else if (id === 'quotations') {
+                      if (location.pathname !== '/customer/quotations') {
+                        navigate('/customer/quotations', { replace: true });
+                      }
+                    }
                   }}
                   className={`inline-flex items-center gap-1.5 px-4 py-2.5 -mb-px text-sm font-semibold border-b-2 transition-colors ${
                     active

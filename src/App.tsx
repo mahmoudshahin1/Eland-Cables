@@ -90,13 +90,20 @@ function CustomerPortalPages({
   useEffect(() => {
     const state = (location.state || {}) as CustomerNavState;
     if (state.inquiryId) setPendingInquiryId(state.inquiryId);
-    setPendingInquiryStatus(typeof state.status === 'string' ? state.status : '');
+    const isQuotationsRoute = location.pathname === '/customer/quotations';
+    setPendingInquiryStatus(
+      isQuotationsRoute ? 'QUOTED' : typeof state.status === 'string' ? state.status : ''
+    );
     setPendingOrderStatus(state.orderStatus);
     setPendingSearch(typeof state.q === 'string' ? state.q : undefined);
-  }, [location.key, location.state]);
+  }, [location.key, location.state, location.pathname]);
 
   const goCustomerTab = (tab: CustomerPortalTab, options?: CustomerNavState) => {
-    navigate(customerPathForTab(tab), { state: options });
+    if (options?.status === 'QUOTED') {
+      navigate('/customer/quotations', { state: options });
+    } else {
+      navigate(customerPathForTab(tab), { state: options });
+    }
   };
 
   return (
