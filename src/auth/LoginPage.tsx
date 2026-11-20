@@ -47,13 +47,12 @@ export default function LoginPage() {
     (import.meta as { env?: { PROD?: boolean } }).env?.PROD ? 'production' : process.env.NODE_ENV
   );
 
-  const [email, setEmail] = useState('david.smith@elandcables.com');
-  const [password, setPassword] = useState('Customer@2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedUserAccount, setSelectedUserAccount] = useState<string>('david.smith@elandcables.com');
   const [language, setLanguage] = useState<(typeof FUTURE_LANGUAGES)[number]>('English');
   const [languageOpen, setLanguageOpen] = useState(false);
   const languageMenuId = useId();
@@ -122,41 +121,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleAccountSelectChange = (accountEmail: string) => {
-    setSelectedUserAccount(accountEmail);
-    if (accountEmail === 'david.smith@elandcables.com' || accountEmail.includes('david')) {
-      setEmail('david.smith@elandcables.com');
-      setPassword('Customer@2026!');
-      return;
-    }
-    if (accountEmail === 'm.ahmed@energya.com' || accountEmail.includes('sales')) {
-      setEmail('m.ahmed@energya.com');
-      setPassword(''); // Password required manually
-      return;
-    }
-    if (accountEmail === 'admin@energya.com' || accountEmail.includes('admin')) {
-      setEmail('admin@energya.com');
-      setPassword(''); // Password required manually
-      return;
-    }
-    if (accountEmail === 'technical@energya.com' || accountEmail === 't.hasan@energya.com' || accountEmail.includes('tech')) {
-      setEmail('technical@energya.com');
-      setPassword(''); // Password required manually
-      return;
-    }
-    if (accountEmail === 'k.salem@energya.com' || accountEmail.includes('cost')) {
-      setEmail('k.salem@energya.com');
-      setPassword(''); // Password required manually
-      return;
-    }
-    if (accountEmail === 'n.nabil@energya.com' || accountEmail.includes('proc') || accountEmail.includes('prod')) {
-      setEmail('n.nabil@energya.com');
-      setPassword(''); // Password required manually
-      return;
-    }
-    setEmail('');
-    setPassword('');
-  };
+
 
   const showForgotPassword = activeAuthView === 'forgot_password';
   const fieldClass =
@@ -383,94 +348,6 @@ export default function LoginPage() {
                       Contact us
                     </a>
                   </p>
-
-                  <div className="mt-6 pt-5 border-t border-slate-100">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                      Quick Profile Switch
-                    </p>
-                    <select
-                      value={selectedUserAccount}
-                      onChange={(e) => handleAccountSelectChange(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-xs font-medium text-slate-800 focus:bg-white focus:border-brand-500 outline-none"
-                    >
-                      <option value="david.smith@elandcables.com">👑 VIP Customer — Eng. David Smith (ELAND)</option>
-                      <option value="m.ahmed@energya.com">💼 Sales — Mohamed Ahmed (m.ahmed@energya.com)</option>
-                      <option value="admin@energya.com">🛡️ Admin — System Administrator (admin@energya.com)</option>
-                      <option value="technical@energya.com">⚙️ Technical — Eng. Tarek Hasan (technical@energya.com)</option>
-                      <option value="k.salem@energya.com">📊 Costing — Khaled Salem (k.salem@energya.com)</option>
-                      <option value="n.nabil@energya.com">🏭 Production — Nader Nabil (n.nabil@energya.com)</option>
-                      <option value="custom">Type credentials manually</option>
-                    </select>
-
-                    <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('david.smith@elandcables.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'david.smith@elandcables.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        👑 VIP (Saved)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('m.ahmed@energya.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'm.ahmed@energya.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        💼 Sales (PW req.)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('admin@energya.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'admin@energya.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        🛡️ Admin (PW req.)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('technical@energya.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'technical@energya.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        ⚙️ Tech (PW req.)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('k.salem@energya.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'k.salem@energya.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        📊 Costing (PW req.)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAccountSelectChange('n.nabil@energya.com')}
-                        className={`truncate rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition-all ${
-                          selectedUserAccount === 'n.nabil@energya.com'
-                            ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                        }`}
-                      >
-                        🏭 Prod (PW req.)
-                      </button>
-                    </div>
-                  </div>
                 </>
               )}
           </div>
