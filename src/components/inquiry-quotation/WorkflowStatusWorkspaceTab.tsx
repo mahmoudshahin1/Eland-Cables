@@ -18,8 +18,9 @@ import {
   type WorkflowStageTimingSummary,
   type WorkflowEventSummary,
 } from '../../services/workflowApiService';
-import { clarificationAdvanceCode, forwardStageAction, stageOwnerLabel } from '../../domain/standardInquiryV2';
+import { actorMayTransitionStep, clarificationAdvanceCode, forwardStageAction, stageOwnerLabel } from '../../domain/standardInquiryV2';
 import { readAccessToken } from '../../auth/tokenStorage';
+import { useAuth } from '../../context/AuthContext';
 
 export interface WorkflowStatusWorkspaceTabProps {
   inquiryId: string;
@@ -64,6 +65,8 @@ export function WorkflowStatusWorkspaceTab({
   jwtToken,
   onSelectTab,
 }: WorkflowStatusWorkspaceTabProps) {
+  const { currentUser } = useAuth();
+  const actorRoles = currentUser?.roles?.length ? currentUser.roles : currentUser?.role ? [currentUser.role] : [];
   const [workflow, setWorkflow] = useState<WorkflowInstanceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -272,7 +275,7 @@ export function WorkflowStatusWorkspaceTab({
         )}
       </div>
 
-      {workflow && !isCustomer && workflow.currentStepCode === 'PO_VALIDATION' && (
+      {workflow && !isCustomer && actorMayTransitionStep(workflow.currentStepCode, actorRoles) && workflow.currentStepCode === 'PO_VALIDATION' && (
         <form
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
           onSubmit={(event) => {
@@ -343,7 +346,7 @@ export function WorkflowStatusWorkspaceTab({
         </form>
       )}
 
-      {workflow && !isCustomer && workflow.currentStepCode === 'FINANCIAL_RELEASE' && (
+      {workflow && !isCustomer && actorMayTransitionStep(workflow.currentStepCode, actorRoles) && workflow.currentStepCode === 'FINANCIAL_RELEASE' && (
         <form
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
           onSubmit={(event) => {
@@ -374,7 +377,7 @@ export function WorkflowStatusWorkspaceTab({
         </form>
       )}
 
-      {workflow && !isCustomer && forwardStageAction(workflow.currentStepCode) && (
+      {workflow && !isCustomer && actorMayTransitionStep(workflow.currentStepCode, actorRoles) && forwardStageAction(workflow.currentStepCode) && (
         <form
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
           onSubmit={(event) => {
@@ -402,7 +405,7 @@ export function WorkflowStatusWorkspaceTab({
         </form>
       )}
 
-      {workflow && !isCustomer && clarificationAdvanceCode(workflow.currentStepCode) && (
+      {workflow && !isCustomer && actorMayTransitionStep(workflow.currentStepCode, actorRoles) && clarificationAdvanceCode(workflow.currentStepCode) && (
         <form
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
           onSubmit={(event) => {
@@ -428,7 +431,7 @@ export function WorkflowStatusWorkspaceTab({
         </form>
       )}
 
-      {workflow && !isCustomer && (workflow.currentStepCode.endsWith('_RESPONSE') || workflow.currentStepCode === 'CUSTOMER_RESPONSE') && workflow.currentStepCode !== 'CUSTOMER_RESPONSE' && workflow.currentStepCode !== 'CUSTOMER_DECISION_RESPONSE' && workflow.currentStepCode !== 'PO_VALIDATION_RESPONSE' && (
+      {workflow && !isCustomer && actorMayTransitionStep(workflow.currentStepCode, actorRoles) && (workflow.currentStepCode.endsWith('_RESPONSE') || workflow.currentStepCode === 'CUSTOMER_RESPONSE') && workflow.currentStepCode !== 'CUSTOMER_RESPONSE' && workflow.currentStepCode !== 'CUSTOMER_DECISION_RESPONSE' && workflow.currentStepCode !== 'PO_VALIDATION_RESPONSE' && (
         <form
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
           onSubmit={(event) => {
