@@ -182,6 +182,93 @@ describe('currencyConversion', () => {
     assert.equal(isConsumableGovernedFxStatus('DRAFT'), false);
   });
 
+  it('uses the latest governed rate on or before the costing date and warns', () => {
+    const warnings: string[] = [];
+    const original = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.map(String).join(' '));
+    };
+    try {
+      const res = resolveFxRate('EUR', 'USD', {
+        targetCurrency: 'USD',
+        costingDate: new Date('2026-11-21T00:00:00.000Z'),
+        governedRates: [
+          {
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+            rate: 1.08,
+            effectiveFrom: new Date('2026-01-01T00:00:00.000Z'),
+            effectiveTo: new Date('2026-06-30T00:00:00.000Z'),
+            workflowStatus: 'ACTIVE',
+            code: 'EUR-USD-H1',
+          },
+          {
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+            rate: 1.2,
+            effectiveFrom: new Date('2026-12-01T00:00:00.000Z'),
+            effectiveTo: null,
+            workflowStatus: 'ACTIVE',
+            code: 'EUR-USD-FUTURE',
+          },
+        ],
+      });
+      assert.equal(res.ok, true);
+      if (res.ok) {
+        assert.equal(res.resolution.rate, 1.08);
+        assert.equal(res.resolution.source, 'GOVERNED_TABLE_PRIOR_DATE');
+        assert.equal(res.resolution.governedCode, 'EUR-USD-H1');
+      }
+      assert.equal(warnings.length, 1);
+      assert.match(warnings[0], /No exchange rate is effective on 2026-11-21 for EUR -> USD/);
+      assert.match(warnings[0], /EUR-USD-H1/);
+    } finally {
+      console.warn = original;
+    }
+  });
+
+  it('does not warn when a governed rate is effective on the costing date', () => {
+    const warnings: string[] = [];
+    const original = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.map(String).join(' '));
+    };
+    try {
+      const res = resolveFxRate('EUR', 'USD', {
+        targetCurrency: 'USD',
+        costingDate: new Date('2026-11-21T00:00:00.000Z'),
+        governedRates: [
+          {
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+            rate: 1.08,
+            effectiveFrom: new Date('2026-01-01T00:00:00.000Z'),
+            effectiveTo: new Date('2026-06-30T00:00:00.000Z'),
+            workflowStatus: 'ACTIVE',
+            code: 'EUR-USD-H1',
+          },
+          {
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+            rate: 1.11,
+            effectiveFrom: new Date('2026-07-01T00:00:00.000Z'),
+            effectiveTo: null,
+            workflowStatus: 'APPROVED',
+            code: 'EUR-USD-CURRENT',
+          },
+        ],
+      });
+      assert.equal(res.ok, true);
+      if (res.ok) {
+        assert.equal(res.resolution.rate, 1.11);
+        assert.equal(res.resolution.source, 'GOVERNED_TABLE');
+      }
+      assert.equal(warnings.length, 0);
+    } finally {
+      console.warn = original;
+    }
+  });
+
   it('convertAmount applies rate to line cost', () => {
     const res = convertAmount(2125, 'USD', 'LE', {
       targetCurrency: 'LE',

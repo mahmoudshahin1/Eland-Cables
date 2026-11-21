@@ -7,7 +7,8 @@
  * 2. Inquiry rawMaterialExchangeRate when price currency matches rawMaterialCurrency (→ inquiry target)
  * 3. Inquiry exchangeRate when converting to inquiry target currency
  * 4. Governed CostingExchangeRate table (APPROVED or ACTIVE, effective on costing date)
- * 5. FX_NOT_CONFIGURED — blocks costing (DRAFT / SUBMITTED rates are ignored)
+ * 5. Latest consumable governed rate whose window starts on or before the costing date
+ * 6. FX_NOT_CONFIGURED — blocks costing (DRAFT / SUBMITTED rates are ignored)
  */
 
 export const COMPANY_BASE_CURRENCY = 'LE';
@@ -26,6 +27,8 @@ export type FxRateSource =
   | 'INQUIRY_EXCHANGE_RATE'
   | 'GOVERNED_TABLE'
   | 'GOVERNED_TABLE_INVERSE'
+  | 'GOVERNED_TABLE_PRIOR_DATE'
+  | 'GOVERNED_TABLE_PRIOR_DATE_INVERSE'
   | 'GOVERNED_TABLE_VIA_BASE';
 
 export interface GovernedExchangeRateRecord {
@@ -99,6 +102,25 @@ function pickGovernedRate(candidates: GovernedExchangeRateRecord[]): GovernedExc
   return sorted[0];
 }
 
+function startsOnOrBefore(rate: GovernedExchangeRateRecord, costingDate: Date): boolean {
+  if (!isConsumableGovernedFxStatus(rate.workflowStatus)) return false;
+  if (!rate.effectiveFrom) return true;
+  return calendarDay(costingDate) >= calendarDay(rate.effectiveFrom);
+}
+
+function warnPriorGovernedRate(
+  rate: GovernedExchangeRateRecord,
+  from: string,
+  to: string,
+  costingDate: Date
+): void {
+  const windowStart = rate.effectiveFrom ? calendarDay(rate.effectiveFrom) : 'open';
+  const windowEnd = rate.effectiveTo ? calendarDay(rate.effectiveTo) : 'open';
+  console.warn(
+    `[FX] No exchange rate is effective on ${calendarDay(costingDate)} for ${from} -> ${to}. Using the latest governed rate ${rate.code || '(no code)'} (${windowStart} to ${windowEnd}).`
+  );
+}
+
 function findGovernedRate(
   from: string,
   to: string,
@@ -138,6 +160,47 @@ function findGovernedRate(
       fromCurrency: from,
       toCurrency: to,
       governedCode: inverse.code,
+    };
+  }
+
+  const prior = pickGovernedRate(
+    governedRates.filter(
+      (r) =>
+        normalizeCostingCurrency(r.fromCurrency) === from &&
+        normalizeCostingCurrency(r.toCurrency) === to &&
+        startsOnOrBefore(r, costingDate) &&
+        !isEffectiveOnDate(r, costingDate)
+    )
+  );
+  if (prior) {
+    warnPriorGovernedRate(prior, from, to, costingDate);
+    return {
+      rate: Number(prior.rate),
+      source: 'GOVERNED_TABLE_PRIOR_DATE',
+      fromCurrency: from,
+      toCurrency: to,
+      governedCode: prior.code,
+    };
+  }
+
+  const priorInverse = pickGovernedRate(
+    governedRates.filter(
+      (r) =>
+        normalizeCostingCurrency(r.fromCurrency) === to &&
+        normalizeCostingCurrency(r.toCurrency) === from &&
+        startsOnOrBefore(r, costingDate) &&
+        !isEffectiveOnDate(r, costingDate) &&
+        Number(r.rate) > 0
+    )
+  );
+  if (priorInverse) {
+    warnPriorGovernedRate(priorInverse, from, to, costingDate);
+    return {
+      rate: 1 / Number(priorInverse.rate),
+      source: 'GOVERNED_TABLE_PRIOR_DATE_INVERSE',
+      fromCurrency: from,
+      toCurrency: to,
+      governedCode: priorInverse.code,
     };
   }
 
