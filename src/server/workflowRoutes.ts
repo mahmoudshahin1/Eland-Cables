@@ -12,6 +12,7 @@ import {
   listMyWorkflowTasks,
   listWorkflowTemplates,
   startWorkflow,
+  submitPoValidation,
   transitionWorkflow,
 } from './workflowRuntimeRepository';
 import {
@@ -119,7 +120,37 @@ workflowRouter.post('/instances/:instanceId/transition', async (req, res) => {
       req.params.instanceId,
       String(req.body.transitionCode || ''),
       actor,
-      { taskResult: req.body.taskResult ?? null }
+      {
+        taskResult: req.body.taskResult ?? null,
+        foxOrderValidated: req.body.foxOrderValidated === true,
+        changeKind:
+          req.body.changeKind === 'TECHNICAL' || req.body.changeKind === 'PRICE' || req.body.changeKind === 'NONE'
+            ? req.body.changeKind
+            : undefined,
+        note: typeof req.body.note === 'string' ? req.body.note : null,
+      }
+    );
+    res.json(result);
+  } catch (err) {
+    handleErr(err, res);
+  }
+});
+
+workflowRouter.post('/instances/:instanceId/po-validation', async (req, res) => {
+  try {
+    const actor = await actorFromRequest(req);
+    const result = await submitPoValidation(
+      req.params.instanceId,
+      {
+        customerPoNumber: req.body.customerPoNumber,
+        customerPoDate: req.body.customerPoDate,
+        customerPoDocumentRef: req.body.customerPoDocumentRef,
+        poValue: req.body.poValue == null || req.body.poValue === '' ? null : Number(req.body.poValue),
+        poCurrency: req.body.poCurrency,
+        poQuantity: req.body.poQuantity == null || req.body.poQuantity === '' ? null : Number(req.body.poQuantity),
+        notes: req.body.notes,
+      },
+      actor
     );
     res.json(result);
   } catch (err) {

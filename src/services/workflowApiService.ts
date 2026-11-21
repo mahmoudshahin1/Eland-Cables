@@ -84,3 +84,40 @@ export async function fetchMyWorkflowTasks(token?: string): Promise<MyWorkflowTa
   const body = await res.json().catch(() => ({ tasks: [] }));
   return Array.isArray(body.tasks) ? body.tasks : [];
 }
+
+export async function submitWorkflowPoValidation(
+  instanceId: string,
+  input: {
+    customerPoNumber: string;
+    customerPoDate: string;
+    customerPoDocumentRef?: string;
+    poValue: number;
+    poCurrency: string;
+    poQuantity: number;
+    notes?: string;
+  },
+  token?: string
+): Promise<{ matched: boolean; reason: string | null }> {
+  const res = await fetch(`/api/v2/workflows/instances/${encodeURIComponent(instanceId)}/po-validation`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `PO validation failed (${res.status})`);
+  return body;
+}
+
+export async function transitionWorkflowInstance(
+  instanceId: string,
+  input: { transitionCode: string; taskResult?: string; foxOrderValidated?: boolean; changeKind?: string; note?: string },
+  token?: string
+): Promise<void> {
+  const res = await fetch(`/api/v2/workflows/instances/${encodeURIComponent(instanceId)}/transition`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `Workflow transition failed (${res.status})`);
+}

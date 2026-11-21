@@ -164,6 +164,7 @@ export const INITIAL_ROLES: Array<{
     userType: 'internal',
     permissionFilter: (p) =>
       ['BOM', 'ENGINEERING', 'CABLE', 'LOGISTICS'].includes(p.module) ||
+      (p.module === 'WORKFLOW' && ['VIEW', 'COMPLETE', 'TRANSITION'].includes(p.action)) ||
       (p.module === 'REPORT' && p.action === 'VIEW'),
   },
   {
@@ -220,7 +221,9 @@ export const INITIAL_ROLES: Array<{
     name: 'Finance Manager',
     description: 'Finance and commercial view',
     userType: 'internal',
-    permissionFilter: (p) => ['FINANCE', 'COMMERCIAL', 'REPORT'].includes(p.module),
+    permissionFilter: (p) =>
+      ['FINANCE', 'COMMERCIAL', 'REPORT'].includes(p.module) ||
+      (p.module === 'WORKFLOW' && ['VIEW', 'COMPLETE', 'TRANSITION'].includes(p.action)),
   },
   {
     code: 'COSTING_USER',
@@ -231,7 +234,8 @@ export const INITIAL_ROLES: Array<{
       p.module === 'COSTING' ||
       (p.module === 'PRICE' && p.action !== 'APPROVE') ||
       (p.module === 'CABLE' && p.action === 'VIEW') ||
-      p.module === 'REPORT',
+      p.module === 'REPORT' ||
+      (p.module === 'WORKFLOW' && ['VIEW', 'COMPLETE', 'TRANSITION'].includes(p.action)),
   },
   {
     code: 'COSTING_MANAGER',
@@ -240,7 +244,8 @@ export const INITIAL_ROLES: Array<{
     userType: 'internal',
     permissionFilter: (p) =>
       ['COSTING', 'PRICE', 'RAW_MATERIAL', 'REPORT'].includes(p.module) ||
-      (p.module === 'COMMERCIAL' && p.resource === 'PRICING_RULE'),
+      (p.module === 'COMMERCIAL' && p.resource === 'PRICING_RULE') ||
+      (p.module === 'WORKFLOW' && ['VIEW', 'COMPLETE', 'TRANSITION'].includes(p.action)),
   },
   {
     code: 'CUSTOMER_USER',
@@ -259,6 +264,16 @@ export const INITIAL_ROLES: Array<{
     description: 'Read-only reports and dashboards',
     userType: 'internal',
     permissionFilter: (p) => p.module === 'REPORT',
+  },
+  {
+    code: 'PRODUCTION_PLANNER',
+    name: 'Production Planner',
+    description: 'FOX technical release, work orders, planning release, and production handover',
+    userType: 'internal',
+    permissionFilter: (p) =>
+      (p.module === 'WORKFLOW' && ['VIEW', 'COMPLETE', 'TRANSITION'].includes(p.action)) ||
+      (p.module === 'PRODUCTION' && p.action === 'VIEW') ||
+      (p.module === 'REPORT' && p.action === 'VIEW'),
   },
   {
     code: 'AUDITOR',

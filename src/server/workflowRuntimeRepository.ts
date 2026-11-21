@@ -7,7 +7,7 @@ import {
 } from '@prisma/client';
 import { getPrisma } from './db';
 import { RequestActor } from './auth';
-import { appendServerAudit } from './serverAudit';
+import { appendServerAudit, appendServerAuditTx } from './serverAudit';
 import {
   assertCanAssignWorkflow,
   assertCanCancelWorkflow,
@@ -19,7 +19,6 @@ import {
 } from './rbac';
 import { assertCanAccessInquiryOwnership } from './rbac';
 import {
-  STANDARD_INQUIRY_TEMPLATE_CODE,
   WORKFLOW_ENTITY_COMMERCIAL_INQUIRY,
   WorkflowTemplateView,
   assertTransitionAllowed,
@@ -30,6 +29,17 @@ import {
 } from '../domain/workflowRuntimeService';
 import { getInquiryProcessCode } from '../domain/inquiryProcessCommands';
 import { readInquiryProcessFromMetadata } from '../domain/inquiryProcessResolver';
+import {
+  STANDARD_INQUIRY_V2_TEMPLATE_CODE,
+  auditActionForWorkflowMove,
+  customerTaskStepCodes,
+  evaluateCustomerPo,
+  responseTransitionCode,
+  roleForWorkflowStep,
+  stagesInvalidatedByChange,
+  type ChangeInputKind,
+} from '../domain/standardInquiryV2';
+import { createCommitmentFromQuotation } from './commercialCommitmentRepository';
 
 function requirePrisma() {
   const prisma = getPrisma();
@@ -537,11 +547,17 @@ export async function completeTask(
   });
 
   const resultCode = typeof input.result?.result === 'string' ? input.result.result : null;
-  if (task.stepCode === 'CUSTOMER_RESPONSE' && resultCode === 'RESPONDED') {
-    return transitionWorkflow(task.instanceId, 'CUSTOMER_RESPONDED', actor, { taskResult: 'RESPONDED' });
+  const responseCode = resultCode === 'RESPONDED' ? responseTransitionCode(task.stepCode) : null;
+  if (responseCode) {
+    const changeKind = input.result?.changeKind;
+    return transitionWorkflow(task.instanceId, responseCode, actor, {
+      taskResult: 'RESPONDED',
+      changeKind: changeKind === 'TECHNICAL' || changeKind === 'PRICE' || changeKind === 'NONE' ? changeKind : undefined,
+    });
   }
   if (task.stepCode === 'CUSTOMER_DECISION' && resultCode === 'ACCEPTED') {
-    return transitionWorkflow(task.instanceId, 'TO_COMMITMENT', actor, { taskResult: 'ACCEPTED' });
+    const next = task.instance.template.code === STANDARD_INQUIRY_V2_TEMPLATE_CODE ? 'TO_PO_VALIDATION' : 'TO_COMMITMENT';
+    return transitionWorkflow(task.instanceId, next, actor, { taskResult: 'ACCEPTED' });
   }
 
   return getWorkflow(task.instanceId, actor);
@@ -551,7 +567,12 @@ export async function transitionWorkflow(
   instanceId: string,
   transitionCode: string,
   actor: RequestActor,
-  context: { taskResult?: string | null } = {},
+  context: {
+    taskResult?: string | null;
+    foxOrderValidated?: boolean;
+    changeKind?: ChangeInputKind;
+    note?: string | null;
+  } = {},
   options?: { orchestrator?: boolean }
 ) {
   const prisma = requirePrisma();
@@ -587,7 +608,7 @@ export async function transitionWorkflow(
       }
       assertCanCompleteWorkflowTask(actor, { customerAction: true });
     } else {
-      assertCanTransitionWorkflow(actor);
+      assertCanTransitionWorkflow(actor, { stepCode: instance.currentStepCode });
     }
   }
 
@@ -595,6 +616,12 @@ export async function transitionWorkflow(
     instance.entityType === WORKFLOW_ENTITY_COMMERCIAL_INQUIRY
       ? await resolveInquiryProcessForEntity(instance.entityId)
       : null;
+
+  if (transitionCode === 'TO_TECHNICAL_RELEASE' && context.foxOrderValidated !== true) {
+    const err = new Error('Validate the FOX order number before technical release.') as Error & { code: string };
+    err.code = 'BUSINESS_RULE_REQUIRED';
+    throw err;
+  }
 
   const transition = assertTransitionAllowed(templateView, instance.currentStepCode, transitionCode, {
     inquiryProcessCode,
@@ -618,6 +645,37 @@ export async function transitionWorkflow(
       actor,
       payloadJson: { transitionCode, orchestrator: options?.orchestrator === true },
     });
+
+    if (instance.entityType === WORKFLOW_ENTITY_COMMERCIAL_INQUIRY) {
+      const invalidated =
+        context.changeKind && context.changeKind !== 'NONE' ? stagesInvalidatedByChange(context.changeKind) : [];
+      await appendServerAuditTx(tx, {
+        actorId: actor.id,
+        actorName: actor.name || actor.email,
+        entity: 'CommercialInquiry',
+        entityId: instance.entityId,
+        action: auditActionForWorkflowMove({
+          fromStepCode: instance.currentStepCode,
+          toStepCode: transition.toStepCode,
+          taskResult: context.taskResult,
+        }),
+        oldValue: { fromStepCode: instance.currentStepCode },
+        newValue: {
+          toStepCode: transition.toStepCode,
+          transitionCode,
+          note: context.note ?? null,
+          changeKind: context.changeKind ?? null,
+          invalidatedStages: invalidated,
+        },
+      });
+    }
+
+    if (transitionCode === 'TO_TECHNICAL_RELEASE' && instance.entityType === WORKFLOW_ENTITY_COMMERCIAL_INQUIRY) {
+      await tx.commercialCommitment.updateMany({
+        where: { inquiryId: instance.entityId },
+        data: { foxOrderValidated: true },
+      });
+    }
 
     if (terminal) {
       await tx.workflowInstance.update({
@@ -735,7 +793,7 @@ export async function listMyWorkflowTasks(actor: RequestActor) {
               status: 'ACTIVE',
               customerMasterId: { in: actor.customerMasterIds || [] },
             },
-            stepCode: { in: ['CUSTOMER_RESPONSE', 'CUSTOMER_DECISION'] },
+            stepCode: { in: [...customerTaskStepCodes()] },
           }
         : {
             OR: [
@@ -788,12 +846,7 @@ export async function listMyWorkflowTasks(actor: RequestActor) {
 }
 
 function roleForStep(stepCode: string): string | undefined {
-  if (stepCode === 'TECHNICAL_REVIEW') return 'TECHNICAL_OFFICE_ENGINEER';
-  if (stepCode === 'COSTING') return 'COSTING_USER';
-  if (stepCode === 'SALES_REVIEW' || stepCode === 'QUOTATION_APPROVAL' || stepCode === 'QUOTATION_ISSUE') {
-    return 'SALES_MANAGER';
-  }
-  return undefined;
+  return roleForWorkflowStep(stepCode);
 }
 
 async function resolveInquiryProcessForEntity(entityId: string) {
@@ -953,7 +1006,7 @@ function serializeInstance(instance: {
   };
 }
 
-/** Start STANDARD_INQUIRY_V1 for a submitted commercial inquiry (STANDARD_WORKFLOW only). */
+/** Start STANDARD_INQUIRY_V2 for a newly submitted commercial inquiry. Existing V1 instances stay on V1. */
 export async function startStandardInquiryWorkflow(
   inquiry: { id: string; inquiryNumber: string; customerMasterId: string | null; commercialMetadata?: unknown },
   actor: RequestActor
@@ -963,7 +1016,7 @@ export async function startStandardInquiryWorkflow(
     return null;
   }
   return startWorkflowCore({
-    templateCode: STANDARD_INQUIRY_TEMPLATE_CODE,
+    templateCode: STANDARD_INQUIRY_V2_TEMPLATE_CODE,
     entityType: WORKFLOW_ENTITY_COMMERCIAL_INQUIRY,
     entityId: inquiry.id,
     customerMasterId: inquiry.customerMasterId,
@@ -989,4 +1042,113 @@ export async function noteVipFastTrackWorkflowBoundary(
     newValue: { workflowTemplate: null, note: 'VIP fast track bypasses STANDARD_INQUIRY_V1 runtime (05I-C orchestrator pending)' },
     message: `VIP fast track boundary recorded for ${inquiry.inquiryNumber}`,
   });
+}
+
+export interface PoValidationInput {
+  customerPoNumber?: string | null;
+  customerPoDate?: string | null;
+  customerPoDocumentRef?: string | null;
+  poValue?: number | null;
+  poCurrency?: string | null;
+  poQuantity?: number | null;
+  notes?: string | null;
+}
+
+function decimalToNumber(value: { toString(): string } | number | null | undefined): number {
+  if (value == null) return 0;
+  const n = typeof value === 'number' ? value : Number(value.toString());
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Decision 10. Match creates the commitment. A mismatch opens the PO clarification loop and does not. */
+export async function submitPoValidation(instanceId: string, input: PoValidationInput, actor: RequestActor) {
+  const prisma = requirePrisma();
+  const instance = await prisma.workflowInstance.findUnique({
+    where: { id: instanceId },
+    include: { template: true },
+  });
+  if (!instance) {
+    const err = new Error(`Workflow instance ${instanceId} not found.`) as Error & { code: string };
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  if (instance.template.code !== STANDARD_INQUIRY_V2_TEMPLATE_CODE || instance.currentStepCode !== 'PO_VALIDATION') {
+    const err = new Error('PO validation is only available on STANDARD_INQUIRY_V2 at the PO validation stage.') as Error & {
+      code: string;
+    };
+    err.code = 'INVALID_STATE';
+    throw err;
+  }
+
+  const quotation = await prisma.commercialQuotation.findFirst({
+    where: { inquiryId: instance.entityId, isCurrent: true },
+    orderBy: { versionNo: 'desc' },
+    include: { lines: true },
+  });
+  if (!quotation) {
+    const err = new Error('No current quotation to match against the customer PO.') as Error & { code: string };
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  const quotedQuantity = quotation.lines.reduce((sum, line) => sum + decimalToNumber(line.quantity), 0);
+  const quotedValue = quotation.lines.reduce((sum, line) => {
+    const price = line.sellingPrice != null ? decimalToNumber(line.sellingPrice) : 0;
+    return sum + price * decimalToNumber(line.quantity);
+  }, 0);
+  const poDate = input.customerPoDate ? new Date(input.customerPoDate) : null;
+  const check = evaluateCustomerPo({
+    customerPoDate: poDate,
+    quotationValidUntil: quotation.validUntil,
+    poValue: input.poValue ?? null,
+    quotedValue,
+    poQuantity: input.poQuantity ?? null,
+    quotedQuantity,
+  });
+  const poNumber = String(input.customerPoNumber || '').trim();
+  const matched = check.matched && poNumber.length > 0;
+  const reason = !poNumber ? 'Customer PO number is required.' : check.reason;
+
+  if (!matched) {
+    const workflow = await transitionWorkflow(instanceId, 'PO_VALIDATION_REQUEST_INFORMATION', actor, {
+      taskResult: 'MISMATCH',
+      note: [reason, input.notes].filter(Boolean).join(' '),
+    });
+    return { matched: false, reason, workflow };
+  }
+
+  let commitmentId: string;
+  try {
+    const created = await createCommitmentFromQuotation(quotation.id, actor, { fulfillmentType: 'DIRECT_ORDER' });
+    commitmentId = created.id;
+  } catch (err) {
+    const coded = err as Error & { code?: string };
+    if (coded.code !== 'CONFLICT') throw err;
+    const existing = await prisma.commercialCommitment.findFirst({
+      where: { quotationId: quotation.id, status: { in: ['ACTIVE', 'DRAFT', 'COMPLETED'] } },
+    });
+    if (!existing) throw err;
+    commitmentId = existing.id;
+  }
+
+  await prisma.commercialCommitment.update({
+    where: { id: commitmentId },
+    data: {
+      customerPoNumber: poNumber,
+      customerPoDate: poDate,
+      customerPoDocumentRef: input.customerPoDocumentRef || null,
+      poValue: input.poValue ?? quotedValue,
+      poCurrency: input.poCurrency || quotation.currency,
+      poMatchStatus: 'MATCHED',
+      poValidatedAt: new Date(),
+      poValidatedBy: actor.id || actor.email || actor.name || null,
+      poValidationNotes: input.notes || null,
+    },
+  });
+
+  const workflow = await transitionWorkflow(instanceId, 'TO_COMMITMENT', actor, {
+    taskResult: 'MATCHED',
+    note: input.notes ?? null,
+  });
+  return { matched: true, reason: null, workflow };
 }

@@ -29,6 +29,7 @@ import {
 import type { StandardContainerStudyWorkflowEvidence } from '../domain/standardContainerStudyWorkflowReadiness';
 import { notifyStandardWorkflowEvent } from './standardWorkflowNotifications';
 import { WORKFLOW_ENTITY_COMMERCIAL_INQUIRY } from '../domain/workflowRuntimeService';
+import { routeContainerStudy, STANDARD_INQUIRY_V2_TEMPLATE_CODE } from '../domain/standardInquiryV2';
 
 function requirePrisma() {
   const prisma = getPrisma();
@@ -221,7 +222,7 @@ export async function runStandardWorkflowAfterSubmit(
   });
 
   const wfRow = await findActiveWorkflowForEntity(WORKFLOW_ENTITY_COMMERCIAL_INQUIRY, inquiry.id);
-  const wf = wfRow ? { id: wfRow.id, currentStepCode: wfRow.currentStepCode } : null;
+  const wf = wfRow ? { id: wfRow.id, currentStepCode: wfRow.currentStepCode, templateCode: wfRow.template.code } : null;
   const instanceId = wf?.id ?? null;
 
   await appendServerAudit({
@@ -291,7 +292,33 @@ export async function runStandardWorkflowAfterSubmit(
 
   if (instanceId && wf?.currentStepCode === 'TECHNICAL_REVIEW') {
     await advance(instanceId, 'TECHNICAL_COMPLETE', actor, 'APPROVED');
-    await advance(instanceId, 'TO_CONTAINER_STUDY', actor);
+    if (wf.templateCode === STANDARD_INQUIRY_V2_TEMPLATE_CODE) {
+      const segment = inquiry.customerMasterId
+        ? await prisma.customer.findUnique({
+            where: { id: inquiry.customerMasterId },
+            select: { segment: { select: { code: true } } },
+          })
+        : null;
+      const route = routeContainerStudy({
+        shipmentGroupCount: containerStudyEvidence.shipmentGroups.length,
+        containerStudyCount: containerStudyEvidence.studies.length,
+        customerSegmentCode: segment?.segment?.code ?? null,
+      });
+      if (route === 'BLOCK') {
+        return {
+          status: 'CONTAINER_STUDY_BLOCKED',
+          inquiryId: inquiry.id,
+          inquiryNumber: inquiry.inquiryNumber,
+          workflowStep: 'TECHNICAL_COMPLETE',
+          gates: [...readiness.engineering.gates, ...readiness.lineageGates, readiness.containerStudy],
+          blockingReasons: ['Export inquiry has no shipment groups. Container study is required before costing.'],
+          quotation: null,
+        };
+      }
+      await advance(instanceId, route === 'SKIP' ? 'SKIP_CONTAINER_STUDY' : 'TO_CONTAINER_STUDY', actor);
+    } else {
+      await advance(instanceId, 'TO_CONTAINER_STUDY', actor);
+    }
   }
 
   const lineageBlocks = readiness.lineageGates.filter((g) => g.status === 'BLOCK');
@@ -391,6 +418,7 @@ export async function runStandardWorkflowAfterSubmit(
     try {
       const costing = await calculateV2CostingRun(inquiry.id, line.id, actor, {
         containerStudyResultId: requiredResultId,
+        orchestrator: true,
       });
       if (costing.status === 'NOT_READY') {
         costingFailed = true;
@@ -533,7 +561,10 @@ export async function syncStandardWorkflowAfterReturn(inquiryId: string, actor: 
   const wf = await findActiveWorkflowForEntity(WORKFLOW_ENTITY_COMMERCIAL_INQUIRY, inquiryId);
   if (!wf) return;
   if (wf.currentStepCode === 'QUOTATION_APPROVAL') {
-    await advance(wf.id, 'RETURN_TO_SALES', actor, 'RETURNED');
+    const code = wf.template.code === STANDARD_INQUIRY_V2_TEMPLATE_CODE
+      ? 'QUOTATION_APPROVAL_REQUEST_INFORMATION'
+      : 'RETURN_TO_SALES';
+    await advance(wf.id, code, actor, 'RETURNED');
   } else if (wf.currentStepCode === 'QUOTATION_ISSUE') {
     await advance(wf.id, 'RETURN_FROM_ISSUE', actor, 'RETURNED');
   }
@@ -551,6 +582,10 @@ export async function syncStandardWorkflowAfterCustomerAccept(inquiryId: string,
   const wf = await findActiveWorkflowForEntity(WORKFLOW_ENTITY_COMMERCIAL_INQUIRY, inquiryId);
   if (!wf) return;
   if (wf.currentStepCode === 'CUSTOMER_DECISION') {
+    if (wf.template.code === STANDARD_INQUIRY_V2_TEMPLATE_CODE) {
+      await advance(wf.id, 'TO_PO_VALIDATION', actor, 'ACCEPTED');
+      return;
+    }
     await advance(wf.id, 'TO_COMMITMENT', actor, 'ACCEPTED');
     const latest = await findActiveWorkflowForEntity(WORKFLOW_ENTITY_COMMERCIAL_INQUIRY, inquiryId);
     if (latest?.currentStepCode === 'COMMERCIAL_COMMITMENT') {

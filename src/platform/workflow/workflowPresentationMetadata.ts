@@ -11,6 +11,8 @@ export type WorkflowQueueCode =
   | 'CUSTOMER'
   | 'LOGISTICS'
   | 'COSTING'
+  | 'FINANCE'
+  | 'PLANNING'
   | 'FULFILLMENT';
 
 export interface WorkflowStepPresentation {
@@ -35,6 +37,29 @@ export const STANDARD_WORKFLOW_STEP_PRESENTATION: readonly WorkflowStepPresentat
   { stepCode: 'CUSTOMER_DECISION', label: 'Customer decision', queue: 'CUSTOMER', inquiryStatusHint: 'QUOTED' },
   { stepCode: 'COMMERCIAL_COMMITMENT', label: 'Commercial commitment', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
   { stepCode: 'FULFILLMENT', label: 'Fulfillment', queue: 'FULFILLMENT', inquiryStatusHint: 'CLOSED' },
+  { stepCode: 'COSTING_NEEDS_INFORMATION', label: 'Costing needs information', queue: 'COSTING', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'COSTING_CLARIFICATION', label: 'Costing clarification', queue: 'TECHNICAL_OFFICE', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'COSTING_RESPONSE', label: 'Costing response', queue: 'TECHNICAL_OFFICE', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'SALES_REVIEW_NEEDS_INFORMATION', label: 'Sales review needs information', queue: 'SALES', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'SALES_REVIEW_CLARIFICATION', label: 'Sales review clarification', queue: 'COSTING', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'SALES_REVIEW_RESPONSE', label: 'Sales review response', queue: 'COSTING', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'QUOTATION_APPROVAL_NEEDS_INFORMATION', label: 'Quotation approval needs information', queue: 'SALES', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'QUOTATION_APPROVAL_CLARIFICATION', label: 'Quotation approval clarification', queue: 'SALES', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'QUOTATION_APPROVAL_RESPONSE', label: 'Quotation approval response', queue: 'SALES', inquiryStatusHint: 'READY_FOR_COMMERCIAL' },
+  { stepCode: 'CUSTOMER_DECISION_NEEDS_INFORMATION', label: 'Customer decision needs information', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'CUSTOMER_DECISION_CLARIFICATION', label: 'Customer decision clarification', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'CUSTOMER_DECISION_RESPONSE', label: 'Customer decision response', queue: 'CUSTOMER', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'PO_VALIDATION', label: 'PO validation', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'PO_VALIDATION_NEEDS_INFORMATION', label: 'PO validation needs information', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'PO_VALIDATION_CLARIFICATION', label: 'PO validation clarification', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'PO_VALIDATION_RESPONSE', label: 'PO validation response', queue: 'CUSTOMER', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'SALES_ORDER_CREATED', label: 'Sales order created', queue: 'SALES', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'FINANCIAL_RELEASE', label: 'Financial release', queue: 'FINANCE', inquiryStatusHint: 'QUOTED' },
+  { stepCode: 'TECHNICAL_RELEASE', label: 'Technical release', queue: 'PLANNING', inquiryStatusHint: 'CLOSED' },
+  { stepCode: 'WORK_ORDERS_CREATED', label: 'Work orders created', queue: 'PLANNING', inquiryStatusHint: 'CLOSED' },
+  { stepCode: 'PLANNING_RELEASE', label: 'Planning release', queue: 'PLANNING', inquiryStatusHint: 'CLOSED' },
+  { stepCode: 'CONFIRMED_SALES_ORDER', label: 'Confirmed sales order', queue: 'PLANNING', inquiryStatusHint: 'CLOSED' },
+  { stepCode: 'PRODUCTION_HANDOVER', label: 'Production handover', queue: 'PLANNING', inquiryStatusHint: 'CLOSED' },
 ];
 
 export function presentationForWorkflowStep(stepCode: string): WorkflowStepPresentation | null {

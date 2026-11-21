@@ -1,6 +1,7 @@
 import { issue } from '../platform/errors/domainError';
 import { assertCustomerBusinessScope } from './customerScope';
 import { hasPermission } from '../domain/rbacEngine';
+import { actorMayTransitionStep } from '../domain/standardInquiryV2';
 import { RequestActor } from './auth';
 
 function denyIfMissingGranular(actor: RequestActor, allowed: Array<[string, string, string]>): boolean {
@@ -798,7 +799,10 @@ export function assertCanCompleteWorkflowTask(
   }
 }
 
-export function assertCanTransitionWorkflow(actor: RequestActor): void {
+export function assertCanTransitionWorkflow(
+  actor: RequestActor,
+  opts: { stepCode?: string } = {}
+): void {
   if (!actor.id && !actor.email && !actor.name) {
     throw issue('UNAUTHORIZED', 'Sign in is required to transition workflows.');
   }
@@ -807,6 +811,12 @@ export function assertCanTransitionWorkflow(actor: RequestActor): void {
   }
   if (denyIfMissingWorkflow(actor, 'TRANSITION')) {
     throw issue('UNAUTHORIZED', 'Your role is not authorized to transition workflows.');
+  }
+  if (opts.stepCode) {
+    const roles = [...(actor.roles ?? []), actor.role].filter((role): role is string => Boolean(role));
+    if (!actorMayTransitionStep(opts.stepCode, roles)) {
+      throw issue('UNAUTHORIZED', 'Your role is not authorized to move this workflow stage.');
+    }
   }
 }
 

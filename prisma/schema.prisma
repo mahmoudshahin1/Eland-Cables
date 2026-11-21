@@ -658,6 +658,12 @@ enum EpcSalesOrderStatus {
   CANCELLED
 }
 
+enum PoMatchStatus {
+  PENDING
+  MATCHED
+  MISMATCH
+}
+
 /// How the Sales Order was created — independent of MTO/MTS fulfillment mode.
 enum SalesOrderOrigin {
   QUOTATION
@@ -1263,6 +1269,19 @@ model CommercialCommitment {
   status                   CommercialCommitmentStatus @default(ACTIVE)
   d365DocumentNumber       String?
   d365RecordId             String?
+  /// STANDARD_INQUIRY_V2 PO gate. Empty on commitments created before that template.
+  customerPoNumber         String?
+  customerPoDate           DateTime?
+  /// Id of an existing CommercialInquiryAttachment. No new file column.
+  customerPoDocumentRef    String?
+  poValue                  Decimal?
+  poCurrency               String?
+  poMatchStatus            PoMatchStatus?
+  poValidatedAt            DateTime?
+  poValidatedBy            String?
+  poValidationNotes        String?
+  /// Decision 7: FOX order number checked inside financial release, not its own stage.
+  foxOrderValidated        Boolean                    @default(false)
   createdBy                String?
   approvedAt               DateTime?
   createdAt                DateTime                   @default(now())
@@ -1277,6 +1296,7 @@ model CommercialCommitment {
   @@index([customerMasterId])
   @@index([status])
   @@index([fulfillmentType])
+  @@index([poMatchStatus])
 }
 
 model EpcSalesOrder {

@@ -1644,9 +1644,17 @@ export async function recordCustomerQuotationDecision(
   });
 
   if (decision === 'ACCEPT') {
+    let templateCode: string | null = null;
     try {
-      const { createCommitmentFromQuotation } = await import('./commercialCommitmentRepository');
-      await createCommitmentFromQuotation(quotation.id, actor, { fulfillmentType: 'DIRECT_ORDER' });
+      const { findActiveWorkflowForEntity } = await import('./workflowRuntimeRepository');
+      const { WORKFLOW_ENTITY_COMMERCIAL_INQUIRY } = await import('../domain/workflowRuntimeService');
+      const { STANDARD_INQUIRY_V2_TEMPLATE_CODE } = await import('../domain/standardInquiryV2');
+      const wf = await findActiveWorkflowForEntity(WORKFLOW_ENTITY_COMMERCIAL_INQUIRY, inquiry.id);
+      templateCode = wf?.template?.code ?? null;
+      if (templateCode !== STANDARD_INQUIRY_V2_TEMPLATE_CODE) {
+        const { createCommitmentFromQuotation } = await import('./commercialCommitmentRepository');
+        await createCommitmentFromQuotation(quotation.id, actor, { fulfillmentType: 'DIRECT_ORDER' });
+      }
     } catch (err) {
       const coded = err as Error & { code?: string };
       if (coded.code !== 'CONFLICT') {

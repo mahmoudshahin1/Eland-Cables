@@ -17,7 +17,11 @@ function requirePrisma() {
   return prisma;
 }
 
-function assertCostingAllowed(inquiry: { inquiryNumber: string; status: string }) {
+function assertCostingAllowed(
+  inquiry: { inquiryNumber: string; status: string },
+  options?: { orchestrator?: boolean }
+) {
+  if (options?.orchestrator) return;
   if (inquiry.status !== 'DRAFT' && inquiry.status !== 'UNDER_REVIEW') {
     const err = new Error(
       `Inquiry ${inquiry.inquiryNumber} is ${inquiry.status}. Create a new version to recalculate costs.`
@@ -96,10 +100,10 @@ export async function calculateV2CostingRun(
   inquiryId: string,
   lineId: string,
   actor: RequestActor,
-  options?: { containerStudyResultId?: string | null }
+  options?: { containerStudyResultId?: string | null; orchestrator?: boolean }
 ) {
   const { inquiry, line, handoff } = await resolveV2Handoff(inquiryId, lineId, actor);
-  assertCostingAllowed(inquiry);
+  assertCostingAllowed(inquiry, options);
 
   const result = await runV2CostingForLine(
     {

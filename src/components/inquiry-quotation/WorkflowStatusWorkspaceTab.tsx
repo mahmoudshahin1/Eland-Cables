@@ -12,10 +12,13 @@ import {
 } from 'lucide-react';
 import {
   fetchWorkflowForInquiry,
+  submitWorkflowPoValidation,
+  transitionWorkflowInstance,
   type WorkflowInstanceSummary,
   type WorkflowStageTimingSummary,
   type WorkflowEventSummary,
 } from '../../services/workflowApiService';
+import { clarificationAdvanceCode, forwardStageAction, stageOwnerLabel } from '../../domain/standardInquiryV2';
 import { readAccessToken } from '../../auth/tokenStorage';
 
 export interface WorkflowStatusWorkspaceTabProps {
@@ -65,6 +68,17 @@ export function WorkflowStatusWorkspaceTab({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [poNumber, setPoNumber] = useState('');
+  const [poDate, setPoDate] = useState('');
+  const [poDocumentRef, setPoDocumentRef] = useState('');
+  const [poValue, setPoValue] = useState('');
+  const [poCurrency, setPoCurrency] = useState('USD');
+  const [poQuantity, setPoQuantity] = useState('');
+  const [poNotes, setPoNotes] = useState('');
+  const [foxValidated, setFoxValidated] = useState(false);
+  const [changeKind, setChangeKind] = useState<'NONE' | 'PRICE' | 'TECHNICAL'>('NONE');
 
   const loadData = async () => {
     try {
@@ -153,7 +167,7 @@ export function WorkflowStatusWorkspaceTab({
               Workflow Status & Lifecycle Tracking
             </h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-50 text-indigo-700 border border-indigo-200">
-              {workflow?.templateCode || 'STANDARD_INQUIRY_V1'}
+              {workflow?.templateCode || 'Not started'}
             </span>
           </div>
           <p className="text-slate-500 text-[11px] mt-0.5">
@@ -234,7 +248,7 @@ export function WorkflowStatusWorkspaceTab({
               return (
                 <span
                   key={step.stepCode}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  className={`inline-flex flex-col rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
                     isActive
                       ? 'border border-indigo-600 bg-indigo-600 text-white font-bold shadow-xs'
                       : isCompleted
@@ -242,14 +256,213 @@ export function WorkflowStatusWorkspaceTab({
                         : 'border border-slate-200 bg-white/70 text-slate-400'
                   }`}
                 >
-                  {isCompleted ? '✓ ' : ''}
-                  {step.name}
+                  <span>
+                    {isCompleted ? '✓ ' : ''}
+                    {step.name}
+                  </span>
+                  {stageOwnerLabel(step.stepCode) && (
+                    <span className={`text-[9px] font-semibold ${isActive ? 'text-indigo-100' : 'opacity-80'}`}>
+                      {stageOwnerLabel(step.stepCode)}
+                    </span>
+                  )}
                 </span>
               );
             })}
           </div>
         )}
       </div>
+
+      {workflow && !isCustomer && workflow.currentStepCode === 'PO_VALIDATION' && (
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!workflow) return;
+            const token = jwtToken || readAccessToken() || undefined;
+            setActionBusy(true);
+            setActionError(null);
+            void submitWorkflowPoValidation(
+              workflow.id,
+              {
+                customerPoNumber: poNumber.trim(),
+                customerPoDate: poDate,
+                customerPoDocumentRef: poDocumentRef.trim() || undefined,
+                poValue: Number(poValue),
+                poCurrency: poCurrency.trim() || 'USD',
+                poQuantity: Number(poQuantity),
+                notes: poNotes.trim() || undefined,
+              },
+              token
+            )
+              .then(async (result) => {
+                if (!result.matched && result.reason) setActionError(result.reason);
+                await loadData();
+              })
+              .catch((err: Error) => setActionError(err.message))
+              .finally(() => setActionBusy(false));
+          }}
+        >
+          <h3 className="text-sm font-bold text-slate-800">Customer purchase order</h3>
+          <p className="text-xs text-slate-500">
+            Match the PO number, date, value, and quantity to the issued quotation. A date after validity, or a value or quantity mismatch, returns the PO to the customer.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-xs font-semibold text-slate-600">
+              PO number
+              <input required value={poNumber} onChange={(e) => setPoNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </label>
+            <label className="text-xs font-semibold text-slate-600">
+              PO date
+              <input required type="date" value={poDate} onChange={(e) => setPoDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </label>
+            <label className="text-xs font-semibold text-slate-600">
+              Attachment id
+              <input value={poDocumentRef} onChange={(e) => setPoDocumentRef(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Existing inquiry attachment id" />
+            </label>
+            <label className="text-xs font-semibold text-slate-600">
+              Currency
+              <input value={poCurrency} onChange={(e) => setPoCurrency(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </label>
+            <label className="text-xs font-semibold text-slate-600">
+              PO value
+              <input required type="number" step="0.01" value={poValue} onChange={(e) => setPoValue(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </label>
+            <label className="text-xs font-semibold text-slate-600">
+              PO quantity
+              <input required type="number" step="0.001" value={poQuantity} onChange={(e) => setPoQuantity(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </label>
+          </div>
+          <label className="block text-xs font-semibold text-slate-600">
+            Notes
+            <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" rows={2} />
+          </label>
+          {actionError && <p className="text-xs font-semibold text-rose-700">{actionError}</p>}
+          <button type="submit" disabled={actionBusy} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            {actionBusy ? 'Checking PO…' : 'Validate purchase order'}
+          </button>
+        </form>
+      )}
+
+      {workflow && !isCustomer && workflow.currentStepCode === 'FINANCIAL_RELEASE' && (
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!workflow) return;
+            const token = jwtToken || readAccessToken() || undefined;
+            setActionBusy(true);
+            setActionError(null);
+            void transitionWorkflowInstance(
+              workflow.id,
+              { transitionCode: 'TO_TECHNICAL_RELEASE', taskResult: 'APPROVED', foxOrderValidated: true },
+              token
+            )
+              .then(() => loadData())
+              .catch((err: Error) => setActionError(err.message))
+              .finally(() => setActionBusy(false));
+          }}
+        >
+          <h3 className="text-sm font-bold text-slate-800">Financial release</h3>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" checked={foxValidated} onChange={(e) => setFoxValidated(e.target.checked)} />
+            FOX order number is validated
+          </label>
+          {actionError && <p className="text-xs font-semibold text-rose-700">{actionError}</p>}
+          <button type="submit" disabled={actionBusy || !foxValidated} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            Approve financial release
+          </button>
+        </form>
+      )}
+
+      {workflow && !isCustomer && forwardStageAction(workflow.currentStepCode) && (
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!workflow) return;
+            const action = forwardStageAction(workflow.currentStepCode);
+            if (!action) return;
+            const token = jwtToken || readAccessToken() || undefined;
+            setActionBusy(true);
+            setActionError(null);
+            void transitionWorkflowInstance(workflow.id, { transitionCode: action.transitionCode }, token)
+              .then(() => loadData())
+              .catch((err: Error) => setActionError(err.message))
+              .finally(() => setActionBusy(false));
+          }}
+        >
+          <h3 className="text-sm font-bold text-slate-800">Stage action</h3>
+          <p className="text-xs text-slate-500">
+            {stageOwnerLabel(workflow.currentStepCode)} moves this inquiry to the next stage.
+          </p>
+          {actionError && <p className="text-xs font-semibold text-rose-700">{actionError}</p>}
+          <button type="submit" disabled={actionBusy} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            {actionBusy ? 'Moving…' : forwardStageAction(workflow.currentStepCode)?.label}
+          </button>
+        </form>
+      )}
+
+      {workflow && !isCustomer && clarificationAdvanceCode(workflow.currentStepCode) && (
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!workflow) return;
+            const token = jwtToken || readAccessToken() || undefined;
+            const transitionCode = clarificationAdvanceCode(workflow.currentStepCode);
+            if (!transitionCode) return;
+            setActionBusy(true);
+            setActionError(null);
+            void transitionWorkflowInstance(workflow.id, { transitionCode }, token)
+              .then(() => loadData())
+              .catch((err: Error) => setActionError(err.message))
+              .finally(() => setActionBusy(false));
+          }}
+        >
+          <h3 className="text-sm font-bold text-slate-800">Clarification</h3>
+          <p className="text-xs text-slate-500">Send this change request to the owning stage, then wait for the response.</p>
+          {actionError && <p className="text-xs font-semibold text-rose-700">{actionError}</p>}
+          <button type="submit" disabled={actionBusy} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            {actionBusy ? 'Sending…' : 'Continue clarification'}
+          </button>
+        </form>
+      )}
+
+      {workflow && !isCustomer && (workflow.currentStepCode.endsWith('_RESPONSE') || workflow.currentStepCode === 'CUSTOMER_RESPONSE') && workflow.currentStepCode !== 'CUSTOMER_RESPONSE' && workflow.currentStepCode !== 'CUSTOMER_DECISION_RESPONSE' && workflow.currentStepCode !== 'PO_VALIDATION_RESPONSE' && (
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!workflow) return;
+            const token = jwtToken || readAccessToken() || undefined;
+            const transitionCode = `${workflow.currentStepCode.slice(0, -'_RESPONSE'.length)}_RESPONDED`;
+            setActionBusy(true);
+            setActionError(null);
+            void transitionWorkflowInstance(
+              workflow.id,
+              { transitionCode, taskResult: 'RESPONDED', changeKind },
+              token
+            )
+              .then(() => loadData())
+              .catch((err: Error) => setActionError(err.message))
+              .finally(() => setActionBusy(false));
+          }}
+        >
+          <h3 className="text-sm font-bold text-slate-800">Close change request</h3>
+          <label className="text-xs font-semibold text-slate-600">
+            What changed
+            <select value={changeKind} onChange={(e) => setChangeKind(e.target.value as 'NONE' | 'PRICE' | 'TECHNICAL')} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <option value="NONE">No downstream rerun</option>
+              <option value="PRICE">Price only — costing stays closed</option>
+              <option value="TECHNICAL">Technical — costing onward must be redone</option>
+            </select>
+          </label>
+          {actionError && <p className="text-xs font-semibold text-rose-700">{actionError}</p>}
+          <button type="submit" disabled={actionBusy} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            Send response
+          </button>
+        </form>
+      )}
 
       {/* Section B: Stage Timings History Table */}
       <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">

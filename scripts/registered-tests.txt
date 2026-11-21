@@ -99,6 +99,7 @@ src/platform/v2CableConfigurationProductionReadiness.test.ts
 src/platform/v2InquiryConfigurationPersistence.test.ts
 src/platform/inquiryProcessFoundation.test.ts
 src/domain/workflowRuntimeService.test.ts
+src/domain/standardInquiryV2.test.ts
 src/platform/workflowRuntime.test.ts
 src/platform/vipCalculateOrchestrator.test.ts
 src/platform/standardWorkflowOrchestrator.test.ts
